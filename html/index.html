@@ -1,237 +1,417 @@
 <!DOCTYPE html>
 <html lang="ko">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>태커 | 태성고등학교 커뮤니티</title>
 
-    <link rel="stylesheet" href="../css/style.css">
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0">
+
+    <title>Taecker</title>
+
+    <link
+        rel="stylesheet"
+        href="../css/style.css">
+
 </head>
 
 <body>
 
 <header class="header">
 
-    <button id="menuBtn" class="icon-button">
-        ☰
+    <button
+        class="nav-toggle"
+        id="menuBtn">
+
+        <svg
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none">
+
+            <path
+                d="M3 6H21M3 12H21M3 18H21"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"/>
+
+        </svg>
+
     </button>
 
-    <div class="logo">
+    <div class="brand">
+
         <h1>태커</h1>
-        <span>태성고등학교 커뮤니티</span>
+
+        <span>
+            태성고등학교 커뮤니티
+        </span>
+
     </div>
 
-    <div class="header-right">
+    <div class="header-actions">
 
-        <button class="icon-button">
-            🔔
+        <button class="icon-btn">
+
+            <svg
+                width="22"
+                height="22"
+                viewBox="0 0 24 24"
+                fill="none">
+
+                <path
+                    d="M15 17H20L18.5 15.5V10C18.5 6.96 16.54 4.36 13.75 3.45V3C13.75 2.03 12.97 1.25 12 1.25C11.03 1.25 10.25 2.03 10.25 3V3.45C7.46 4.36 5.5 6.96 5.5 10V15.5L4 17H9"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linejoin="round"/>
+
+            </svg>
+
         </button>
 
-        <button class="icon-button">
-            👤
+        <button class="icon-btn">
+
+            <svg
+                width="22"
+                height="22"
+                viewBox="0 0 24 24"
+                fill="none">
+
+                <circle
+                    cx="12"
+                    cy="8"
+                    r="4"
+                    stroke="currentColor"
+                    stroke-width="2"/>
+
+                <path
+                    d="M4 20C4 16.69 7.58 14 12 14C16.42 14 20 16.69 20 20"
+                    stroke="currentColor"
+                    stroke-width="2"/>
+
+            </svg>
+
         </button>
 
     </div>
 
 </header>
 
-<!-- 사이드 메뉴 -->
+<aside
+    class="sidebar"
+    id="sidebar">
 
-<nav class="sidebar">
+    <nav>
 
-    <ul>
+        <ul>
 
-        <li>
-            <a href="index.html">
-                🏠 홈
-            </a>
-        </li>
+            <li><a href="#">홈</a></li>
 
-        <li>
-            <a href="board.html">
-                📋 게시판
-            </a>
-        </li>
+            <li><a href="#">자유게시판</a></li>
 
-        <li>
-            <a href="#">
-                🍚 급식
-            </a>
-        </li>
+            <li><a href="#">질문게시판</a></li>
 
-        <li>
-            <a href="#">
-                📅 시간표
-            </a>
-        </li>
+            <li><a href="#">정보게시판</a></li>
 
-        <li>
-            <a href="#">
-                🗓 학사일정
-            </a>
-        </li>
+            <li><a href="#">시간표</a></li>
 
-        <li>
-            <a href="#">
-                📢 공지사항
-            </a>
-        </li>
+            <li><a href="#">급식</a></li>
 
-        <li>
-            <a href="#">
-                👤 프로필
-            </a>
-        </li>
+            <li><a href="#">학사일정</a></li>
 
-        <li>
-            <a href="#">
-                ⚙ 설정
-            </a>
-        </li>
+            <li><a href="#">마이페이지</a></li>
 
-    </ul>
+        </ul>
 
-</nav>
+    </nav>
+
+</aside>
 
 <main class="container">
 
-<section class="card">
+<section class="hero-card">
 
 <h2>
-공지사항
+
+안녕하세요.
+
 </h2>
 
-<div class="notice-list">
+<p>
 
-<div class="notice-item">
-신입생 OT 일정 안내
-</div>
+오늘도 좋은 하루 보내세요.
 
-<div class="notice-item">
-2학기 수행평가 일정
-</div>
-
-<div class="notice-item">
-학교 축제 공지
-</div>
-
-</div>
+</p>
 
 </section>
 
+<section class="grid">
+
+<div class="card">
+
+<h3>
+
+오늘의 급식
+
+</h3>
+
+<p>
+
+급식 정보가 표시됩니다.
+
+</p>
+
+</div>
+
+<div class="card">
+
+<h3>
+
+오늘 시간표
+
+</h3>
+
+<p>
+
+시간표가 표시됩니다.
+
+</p>
+
+</div>
+
+<div class="card">
+
+<h3>
+
+학교 공지
+
+</h3>
+
+<p>
+
+공지사항을 불러옵니다.
+
+</p>
+
+</div>
+
+<div class="card">
+
+<h3>
+
+실시간 인기글
+
+</h3>
+
+<p>
+
+인기 게시글을 표시합니다.
+
+</p>
+
+</div>
+
+<div class="card">
+
+<h3>
+
+최근 게시글
+
+</h3>
+
+<p>
+
+최신 글을 표시합니다.
+
+</p>
+
+</div>
+
+<div class="card">
+
+<h3>
+
+학사일정
+
+</h3>
+
+<p>
+
+일정을 표시합니다.
+
+</p>
+
+</div>
 <section class="card">
 
-<h2>
-인기글
-</h2>
+    <h3>
 
-<div class="post">
+        빠른 메뉴
 
-<h3>
-오늘 급식 미쳤다ㅋㅋ
-</h3>
+    </h3>
 
-<p>
-좋아요 126 · 댓글 34
-</p>
+    <div class="quick-grid">
 
-</div>
+        <a href="board.html" class="quick-item">
 
-<div class="post">
+            <span class="quick-title">게시판</span>
+            <span class="quick-desc">자유롭게 소통하기</span>
 
-<h3>
-시험범위 공유
-</h3>
+        </a>
 
-<p>
-좋아요 95 · 댓글 18
-</p>
+        <a href="#" class="quick-item">
 
-</div>
+            <span class="quick-title">급식</span>
+            <span class="quick-desc">오늘의 메뉴 확인</span>
 
-</section>
+        </a>
 
-<section class="card">
+        <a href="#" class="quick-item">
 
-<h2>
-최근글
-</h2>
+            <span class="quick-title">시간표</span>
+            <span class="quick-desc">오늘 수업 보기</span>
 
-<div class="post">
+        </a>
 
-<h3>
-동아리 추천해주세요
-</h3>
+        <a href="#" class="quick-item">
 
-<p>
-1분 전
-</p>
+            <span class="quick-title">학사일정</span>
+            <span class="quick-desc">학교 일정 확인</span>
 
-</div>
+        </a>
 
-<div class="post">
-
-<h3>
-수학 수행 질문
-</h3>
-
-<p>
-5분 전
-</p>
-
-</div>
-
-<div class="post">
-
-<h3>
-매점 신메뉴 후기
-</h3>
-
-<p>
-12분 전
-</p>
-
-</div>
+    </div>
 
 </section>
 
 </main>
 
+<button class="fab" id="writeBtn">
+
+    <svg
+        width="26"
+        height="26"
+        viewBox="0 0 24 24"
+        fill="none">
+
+        <path
+            d="M12 5V19M5 12H19"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"/>
+
+    </svg>
+
+</button>
+
+<div
+    id="overlay"
+    class="overlay">
+
+</div>
+
 <nav class="bottom-nav">
 
-<a href="index.html">
+    <a href="index.html" class="active">
 
-🏠
+        <svg
+            width="22"
+            height="22"
+            viewBox="0 0 24 24"
+            fill="none">
 
-<span>
-홈
-</span>
+            <path
+                d="M3 10L12 3L21 10V20H15V14H9V20H3Z"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linejoin="round"/>
 
-</a>
+        </svg>
 
-<a href="write.html">
+        <span>홈</span>
 
-✏
+    </a>
 
-<span>
-글쓰기
-</span>
+    <a href="board.html">
 
-</a>
+        <svg
+            width="22"
+            height="22"
+            viewBox="0 0 24 24"
+            fill="none">
 
-<a href="#">
+            <path
+                d="M4 5H20V15H7L4 18V5Z"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linejoin="round"/>
 
-👤
+        </svg>
 
-<span>
-마이페이지
-</span>
+        <span>게시판</span>
 
-</a>
+    </a>
+
+    <a href="#">
+
+        <svg
+            width="22"
+            height="22"
+            viewBox="0 0 24 24"
+            fill="none">
+
+            <rect
+                x="4"
+                y="4"
+                width="16"
+                height="16"
+                rx="2"
+                stroke="currentColor"
+                stroke-width="2"/>
+
+            <path
+                d="M8 8H16M8 12H16M8 16H13"
+                stroke="currentColor"
+                stroke-width="2"/>
+
+        </svg>
+
+        <span>시간표</span>
+
+    </a>
+
+    <a href="#">
+
+        <svg
+            width="22"
+            height="22"
+            viewBox="0 0 24 24"
+            fill="none">
+
+            <circle
+                cx="12"
+                cy="8"
+                r="4"
+                stroke="currentColor"
+                stroke-width="2"/>
+
+            <path
+                d="M4 20C4 16.7 7.6 14 12 14C16.4 14 20 16.7 20 20"
+                stroke="currentColor"
+                stroke-width="2"/>
+
+        </svg>
+
+        <span>마이</span>
+
+    </a>
 
 </nav>
 
 <script src="../js/app.js"></script>
 
 </body>
+
 </html>
