@@ -1,11 +1,9 @@
-/* =========================================================
-   Taecker Community
-   style.css
-   ========================================================= */
+/* =====================================================
+   Taecker Community Rev.2
+   Apple + Discord + Notion
+===================================================== */
 
-/* ===========================
-   RESET
-=========================== */
+/* ---------- RESET ---------- */
 
 *{
     margin:0;
@@ -18,28 +16,29 @@ html{
 }
 
 body{
-    font-family:
-        "Pretendard",
-        "Apple SD Gothic Neo",
-        "Noto Sans KR",
-        sans-serif;
 
-    background:#F5F7FB;
-    color:#1F2937;
+    font-family:
+    Pretendard,
+    "Noto Sans KR",
+    sans-serif;
+
+    background:#F4F7FB;
+
+    color:#111827;
+
     line-height:1.6;
+
 }
 
-/* ===========================
-   ROOT
-=========================== */
+/* ---------- ROOT ---------- */
 
 :root{
 
     --primary:#2563EB;
 
-    --primary-hover:#1D4ED8;
+    --primary-dark:#1D4ED8;
 
-    --background:#F5F7FB;
+    --background:#F4F7FB;
 
     --card:#FFFFFF;
 
@@ -47,21 +46,18 @@ body{
 
     --text:#111827;
 
-    --sub-text:#6B7280;
+    --sub:#6B7280;
+
+    --radius:20px;
 
     --shadow:
-
-        0 10px 30px rgba(0,0,0,.06);
-
-    --radius:18px;
+    0 12px 35px rgba(15,23,42,.06);
 
     --transition:.25s ease;
 
 }
 
-/* ===========================
-   LINK
-=========================== */
+/* ---------- COMMON ---------- */
 
 a{
 
@@ -71,10 +67,6 @@ a{
 
 }
 
-/* ===========================
-   BUTTON
-=========================== */
-
 button{
 
     border:none;
@@ -83,23 +75,7 @@ button{
 
     cursor:pointer;
 
-    font:inherit;
-
 }
-
-/* ===========================
-   LIST
-=========================== */
-
-ul{
-
-    list-style:none;
-
-}
-
-/* ===========================
-   IMAGE
-=========================== */
 
 img{
 
@@ -109,9 +85,7 @@ img{
 
 }
 
-/* ===========================
-   HEADER
-=========================== */
+/* ---------- HEADER ---------- */
 
 .header{
 
@@ -119,25 +93,27 @@ img{
 
     top:0;
 
-    z-index:100;
-
     height:72px;
-
-    background:white;
 
     display:flex;
 
-    align-items:center;
-
     justify-content:space-between;
+
+    align-items:center;
 
     padding:0 18px;
 
-    box-shadow:0 2px 15px rgba(0,0,0,.05);
+    background:rgba(255,255,255,.8);
+
+    backdrop-filter:blur(18px);
+
+    border-bottom:1px solid rgba(229,231,235,.7);
+
+    z-index:999;
 
 }
 
-.logo{
+.brand{
 
     display:flex;
 
@@ -145,25 +121,25 @@ img{
 
 }
 
-.logo h1{
+.brand h1{
 
-    font-size:24px;
-
-    color:var(--primary);
+    font-size:22px;
 
     font-weight:800;
 
+    color:var(--primary);
+
 }
 
-.logo span{
+.brand span{
 
     font-size:12px;
 
-    color:var(--sub-text);
+    color:var(--sub);
 
 }
 
-.header-right{
+.header-actions{
 
     display:flex;
 
@@ -171,17 +147,15 @@ img{
 
 }
 
-/* ===========================
-   ICON BUTTON
-=========================== */
+/* ---------- ICON ---------- */
 
-.icon-button{
+.icon-btn,
 
-    width:42px;
+.nav-toggle{
 
-    height:42px;
+    width:44px;
 
-    border-radius:50%;
+    height:44px;
 
     display:flex;
 
@@ -189,13 +163,15 @@ img{
 
     align-items:center;
 
-    background:white;
+    border-radius:14px;
 
     transition:var(--transition);
 
 }
 
-.icon-button:hover{
+.icon-btn:hover,
+
+.nav-toggle:hover{
 
     background:#EFF6FF;
 
@@ -203,9 +179,7 @@ img{
 
 }
 
-/* ===========================
-   SIDEBAR
-=========================== */
+/* ---------- SIDEBAR ---------- */
 
 .sidebar{
 
@@ -213,19 +187,29 @@ img{
 
     top:72px;
 
-    left:0;
+    left:-280px;
 
-    width:250px;
+    width:270px;
 
     height:calc(100vh - 72px);
 
-    background:white;
+    background:#FFFFFF;
 
     border-right:1px solid var(--border);
 
-    padding:25px;
+    transition:.3s;
 
-    overflow-y:auto;
+    overflow:auto;
+
+    padding:24px;
+
+    z-index:900;
+
+}
+
+.sidebar.active{
+
+    left:0;
 
 }
 
@@ -239,21 +223,25 @@ img{
 
 }
 
+.sidebar li{
+
+    list-style:none;
+
+}
+
 .sidebar a{
 
     display:flex;
 
     align-items:center;
 
-    gap:12px;
+    padding:14px 16px;
 
-    padding:14px;
-
-    border-radius:12px;
+    border-radius:14px;
 
     transition:var(--transition);
 
-    font-weight:500;
+    font-weight:600;
 
 }
 
@@ -265,125 +253,185 @@ img{
 
 }
 
-/* ===========================
-   MAIN
-=========================== */
+/* ---------- OVERLAY ---------- */
+
+.overlay{
+
+    position:fixed;
+
+    inset:0;
+
+    background:rgba(0,0,0,.35);
+
+    opacity:0;
+
+    visibility:hidden;
+
+    transition:.3s;
+
+    z-index:800;
+
+}
+
+.overlay.active{
+
+    opacity:1;
+
+    visibility:visible;
+
+}
+
+/* ---------- MAIN ---------- */
 
 .container{
 
-    margin-left:270px;
+    padding:24px;
+
+    max-width:1200px;
+
+    margin:auto;
+
+}
+
+/* ---------- HERO ---------- */
+
+.hero-card{
+
+    background:
+    linear-gradient(
+        135deg,
+        #2563EB,
+        #3B82F6
+    );
+
+    color:white;
+
+    border-radius:26px;
 
     padding:30px;
 
+    margin-bottom:25px;
+
+    box-shadow:
+    0 20px 40px rgba(37,99,235,.25);
+
 }
 
-/* ===========================
-   CARD
-=========================== */
+.hero-card h2{
+
+    font-size:28px;
+
+    margin-bottom:8px;
+
+}
+
+.hero-card p{
+
+    opacity:.9;
+
+}
+
+/* ---------- GRID ---------- */
+
+.grid{
+
+    display:grid;
+
+    gap:20px;
+
+}
+
+/* ---------- CARD ---------- */
 
 .card{
 
-    background:var(--card);
+    background:#FFFFFF;
 
-    border-radius:var(--radius);
-
-    box-shadow:var(--shadow);
+    border-radius:20px;
 
     padding:24px;
 
-    margin-bottom:25px;
+    box-shadow:var(--shadow);
 
-    animation:fadeUp .5s ease;
-
-}
-
-.card h2{
-
-    font-size:22px;
-
-    margin-bottom:18px;
+    transition:var(--transition);
 
 }
 
-/* ===========================
-   NOTICE
-=========================== */
+.card:hover{
 
-.notice-list{
+    transform:translateY(-4px);
 
-    display:flex;
+    box-shadow:
+    0 20px 40px rgba(15,23,42,.08);
 
-    flex-direction:column;
+}
+
+.card h3{
+
+    font-size:20px;
+
+    margin-bottom:14px;
+
+}
+
+.card p{
+
+    color:var(--sub);
+
+}
+
+/* ---------- QUICK GRID ---------- */
+
+.quick-grid{
+
+    display:grid;
+
+    grid-template-columns:
+    repeat(2,1fr);
 
     gap:14px;
 
 }
 
-.notice-item{
-
-    padding:18px;
+.quick-item{
 
     background:#F8FAFC;
 
-    border-radius:12px;
-
-    transition:var(--transition);
-
-}
-
-.notice-item:hover{
-
-    background:#EFF6FF;
-
-    transform:translateY(-2px);
-
-}
-
-/* ===========================
-   POST
-=========================== */
-
-.post{
-
-    background:#FAFAFA;
-
-    border-radius:14px;
+    border-radius:18px;
 
     padding:18px;
 
-    margin-bottom:15px;
-
     transition:var(--transition);
 
 }
 
-.post:hover{
+.quick-item:hover{
 
-    transform:translateY(-4px);
+    background:#EFF6FF;
 
-    box-shadow:0 10px 20px rgba(0,0,0,.08);
-
-}
-
-.post h3{
-
-    margin-bottom:8px;
-
-    font-size:18px;
+    transform:translateY(-3px);
 
 }
 
-.post p{
+.quick-title{
 
-    color:var(--sub-text);
+    display:block;
+
+    font-weight:700;
+
+    margin-bottom:6px;
+
+}
+
+.quick-desc{
+
+    color:var(--sub);
 
     font-size:14px;
 
 }
 
-/* ===========================
-   ANIMATION
-=========================== */
+/* ---------- ANIMATION ---------- */
 
 @keyframes fadeUp{
 
@@ -391,7 +439,7 @@ img{
 
         opacity:0;
 
-        transform:translateY(20px);
+        transform:translateY(18px);
 
     }
 
@@ -404,9 +452,16 @@ img{
     }
 
 }
-/* ===========================
+
+.hero-card,
+.card{
+
+    animation:fadeUp .4s ease;
+
+}
+/* =====================================================
    BOTTOM NAVIGATION
-=========================== */
+===================================================== */
 
 .bottom-nav{
 
@@ -418,11 +473,13 @@ img{
 
     bottom:0;
 
-    height:70px;
+    height:72px;
 
-    background:#FFFFFF;
+    background:rgba(255,255,255,.92);
 
-    border-top:1px solid var(--border);
+    backdrop-filter:blur(18px);
+
+    border-top:1px solid rgba(229,231,235,.8);
 
     display:flex;
 
@@ -430,33 +487,47 @@ img{
 
     align-items:center;
 
-    box-shadow:0 -5px 20px rgba(0,0,0,.05);
-
-    z-index:100;
+    z-index:950;
 
 }
 
 .bottom-nav a{
 
+    flex:1;
+
+    height:100%;
+
     display:flex;
 
     flex-direction:column;
 
-    align-items:center;
-
     justify-content:center;
+
+    align-items:center;
 
     gap:5px;
 
-    width:100%;
-
-    height:100%;
-
-    color:var(--sub-text);
+    color:var(--sub);
 
     transition:var(--transition);
 
-    font-size:13px;
+    font-size:12px;
+
+    font-weight:600;
+
+}
+
+.bottom-nav a svg{
+
+    width:22px;
+
+    height:22px;
+
+}
+
+.bottom-nav a.active{
+
+    color:var(--primary);
 
 }
 
@@ -466,27 +537,260 @@ img{
 
 }
 
-.bottom-nav a.active{
+/* =====================================================
+   FLOAT ACTION BUTTON
+===================================================== */
 
-    color:var(--primary);
+.fab{
 
-    font-weight:600;
+    position:fixed;
+
+    right:24px;
+
+    bottom:92px;
+
+    width:60px;
+
+    height:60px;
+
+    border-radius:50%;
+
+    background:linear-gradient(
+        135deg,
+        var(--primary),
+        #3B82F6
+    );
+
+    color:#FFFFFF;
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+    box-shadow:
+        0 15px 30px rgba(37,99,235,.35);
+
+    transition:var(--transition);
+
+    z-index:970;
 
 }
 
-/* ===========================
+.fab:hover{
+
+    transform:scale(1.06);
+
+}
+
+.fab:active{
+
+    transform:scale(.96);
+
+}
+
+/* =====================================================
+   POST CARD
+===================================================== */
+
+.post-card{
+
+    background:#FFFFFF;
+
+    border-radius:18px;
+
+    padding:20px;
+
+    margin-bottom:18px;
+
+    box-shadow:var(--shadow);
+
+    transition:var(--transition);
+
+}
+
+.post-card:hover{
+
+    transform:translateY(-3px);
+
+}
+
+.post-header{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    margin-bottom:12px;
+
+}
+
+.post-title{
+
+    font-size:18px;
+
+    font-weight:700;
+
+}
+
+.post-meta{
+
+    color:var(--sub);
+
+    font-size:13px;
+
+}
+
+.post-content{
+
+    color:#374151;
+
+    line-height:1.7;
+
+    margin-bottom:18px;
+
+}
+
+.post-footer{
+
+    display:flex;
+
+    gap:18px;
+
+    color:var(--sub);
+
+    font-size:14px;
+
+}
+
+/* =====================================================
+   BADGE
+===================================================== */
+
+.badge{
+
+    display:inline-flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    padding:4px 10px;
+
+    border-radius:999px;
+
+    background:#DBEAFE;
+
+    color:var(--primary);
+
+    font-size:12px;
+
+    font-weight:700;
+
+}
+
+/* =====================================================
+   FORM
+===================================================== */
+
+.input{
+
+    width:100%;
+
+    padding:14px 16px;
+
+    border:1px solid var(--border);
+
+    border-radius:14px;
+
+    background:#FFFFFF;
+
+    transition:var(--transition);
+
+    font-size:15px;
+
+}
+
+.input:focus{
+
+    outline:none;
+
+    border-color:var(--primary);
+
+    box-shadow:
+
+        0 0 0 4px
+
+        rgba(37,99,235,.12);
+
+}
+
+textarea.input{
+
+    resize:vertical;
+
+    min-height:140px;
+
+}
+
+/* =====================================================
+   BUTTON
+===================================================== */
+
+.btn{
+
+    display:inline-flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+    gap:8px;
+
+    padding:12px 18px;
+
+    border-radius:14px;
+
+    background:var(--primary);
+
+    color:white;
+
+    font-weight:700;
+
+    transition:var(--transition);
+
+}
+
+.btn:hover{
+
+    background:var(--primary-dark);
+
+}
+
+.btn-secondary{
+
+    background:#F3F4F6;
+
+    color:#111827;
+
+}
+
+.btn-secondary:hover{
+
+    background:#E5E7EB;
+
+}
+
+/* =====================================================
    SCROLLBAR
-=========================== */
+===================================================== */
 
 ::-webkit-scrollbar{
 
     width:8px;
-
-}
-
-::-webkit-scrollbar-track{
-
-    background:#F3F4F6;
 
 }
 
@@ -504,9 +808,9 @@ img{
 
 }
 
-/* ===========================
+/* =====================================================
    UTIL
-=========================== */
+===================================================== */
 
 .hidden{
 
@@ -538,340 +842,202 @@ img{
 
 }
 
-.mb-10{
-
-    margin-bottom:10px;
-
-}
-
 .mb-20{
 
     margin-bottom:20px;
 
 }
 
-.mb-30{
+.w-100{
 
-    margin-bottom:30px;
-
-}
-
-/* ===========================
-   CARD EFFECT
-=========================== */
-
-.card:hover{
-
-    transform:translateY(-3px);
-
-    transition:var(--transition);
+    width:100%;
 
 }
 
-/* ===========================
-   MOBILE
-=========================== */
+/* =====================================================
+   RESPONSIVE
+===================================================== */
 
-@media (max-width:768px){
+@media (min-width:768px){
 
-    .sidebar{
+    .grid{
 
-        left:-270px;
+        grid-template-columns:
 
-        transition:.3s;
-
-        z-index:300;
-
-        box-shadow:5px 0 30px rgba(0,0,0,.15);
+        repeat(2,1fr);
 
     }
 
-    .sidebar.active{
+}
 
-        left:0;
+@media (min-width:1200px){
 
-    }
+    .grid{
 
-    .container{
+        grid-template-columns:
 
-        margin-left:0;
-
-        padding:20px;
-
-        padding-bottom:100px;
+        repeat(3,1fr);
 
     }
 
-    .header{
+}
 
-        padding:0 15px;
+@media (max-width:767px){
 
-    }
-
-    .logo h1{
-
-        font-size:21px;
-
-    }
-
-    .logo span{
+    .brand span{
 
         display:none;
 
     }
 
-    .card{
+    .container{
 
         padding:18px;
 
-    }
-
-    .card h2{
-
-        font-size:20px;
+        padding-bottom:110px;
 
     }
 
-    .post h3{
+    .quick-grid{
 
-        font-size:16px;
+        grid-template-columns:1fr;
 
     }
 
 }
+/* =====================================================
+   MODAL
+===================================================== */
 
-/* ===========================
-   TABLET
-=========================== */
+.modal{
 
-@media (min-width:769px) and (max-width:1100px){
+    position:fixed;
 
-    .sidebar{
+    inset:0;
 
-        width:220px;
-
-    }
-
-    .container{
-
-        margin-left:240px;
-
-    }
-
-}
-
-/* ===========================
-   DESKTOP
-=========================== */
-
-@media (min-width:1101px){
-
-    .container{
-
-        max-width:1200px;
-
-    }
-
-}
-
-/* ===========================
-   FOOTER SPACE
-=========================== */
-
-body{
-
-    padding-bottom:90px;
-
-}
-/* ===========================
-   BUTTON
-=========================== */
-
-.btn{
-
-    display:inline-flex;
-
-    align-items:center;
+    display:none;
 
     justify-content:center;
 
-    gap:8px;
-
-    padding:12px 18px;
-
-    border:none;
-
-    border-radius:12px;
-
-    background:var(--primary);
-
-    color:#FFFFFF;
-
-    font-size:15px;
-
-    font-weight:600;
-
-    cursor:pointer;
-
-    transition:var(--transition);
-
-}
-
-.btn:hover{
-
-    background:var(--primary-hover);
-
-    transform:translateY(-2px);
-
-}
-
-.btn-outline{
-
-    background:#FFFFFF;
-
-    color:var(--primary);
-
-    border:2px solid var(--primary);
-
-}
-
-.btn-outline:hover{
-
-    background:var(--primary);
-
-    color:#FFFFFF;
-
-}
-
-/* ===========================
-   INPUT
-=========================== */
-
-.input-group{
-
-    display:flex;
-
-    flex-direction:column;
-
-    gap:8px;
-
-    margin-bottom:18px;
-
-}
-
-.input-group label{
-
-    font-size:14px;
-
-    font-weight:600;
-
-}
-
-.input-group input,
-
-.input-group textarea,
-
-.input-group select{
-
-    width:100%;
-
-    padding:14px;
-
-    border:1px solid var(--border);
-
-    border-radius:12px;
-
-    background:#FFFFFF;
-
-    font-size:15px;
-
-    transition:var(--transition);
-
-}
-
-.input-group input:focus,
-
-.input-group textarea:focus,
-
-.input-group select:focus{
-
-    outline:none;
-
-    border-color:var(--primary);
-
-    box-shadow:0 0 0 4px rgba(37,99,235,.15);
-
-}
-
-/* ===========================
-   SEARCH
-=========================== */
-
-.search-box{
-
-    display:flex;
-
     align-items:center;
 
+    background:rgba(15,23,42,.45);
+
+    backdrop-filter:blur(4px);
+
+    z-index:1000;
+
+}
+
+.modal.active{
+
+    display:flex;
+
+}
+
+.modal-content{
+
+    width:min(520px,92%);
+
     background:#FFFFFF;
 
-    border:1px solid var(--border);
+    border-radius:24px;
+
+    padding:28px;
+
+    box-shadow:
+
+        0 24px 60px rgba(15,23,42,.15);
+
+    animation:modalOpen .25s ease;
+
+}
+
+@keyframes modalOpen{
+
+    from{
+
+        opacity:0;
+
+        transform:translateY(20px) scale(.97);
+
+    }
+
+    to{
+
+        opacity:1;
+
+        transform:translateY(0) scale(1);
+
+    }
+
+}
+
+/* =====================================================
+   TOAST
+===================================================== */
+
+.toast{
+
+    position:fixed;
+
+    left:50%;
+
+    bottom:95px;
+
+    transform:translateX(-50%);
+
+    background:#111827;
+
+    color:#FFFFFF;
+
+    padding:14px 20px;
 
     border-radius:14px;
 
-    padding:12px 16px;
+    opacity:0;
 
-    margin-bottom:24px;
+    pointer-events:none;
 
-}
+    transition:.3s;
 
-.search-box input{
-
-    flex:1;
-
-    border:none;
-
-    outline:none;
-
-    font-size:15px;
-
-    background:transparent;
+    z-index:1100;
 
 }
 
-/* ===========================
-   BADGE
-=========================== */
+.toast.show{
 
-.badge{
-
-    display:inline-block;
-
-    padding:4px 10px;
-
-    border-radius:999px;
-
-    background:#DBEAFE;
-
-    color:var(--primary);
-
-    font-size:12px;
-
-    font-weight:700;
+    opacity:1;
 
 }
 
-/* ===========================
+/* =====================================================
    PROFILE
-=========================== */
+===================================================== */
+
+.profile-card{
+
+    background:#FFFFFF;
+
+    border-radius:22px;
+
+    padding:28px;
+
+    text-align:center;
+
+    box-shadow:var(--shadow);
+
+}
 
 .avatar{
 
-    width:44px;
+    width:82px;
 
-    height:44px;
+    height:82px;
 
     border-radius:50%;
+
+    margin:0 auto 18px;
 
     background:#E5E7EB;
 
@@ -889,87 +1055,71 @@ body{
 
 }
 
-/* ===========================
-   MODAL
-=========================== */
+.profile-name{
 
-.modal{
+    font-size:22px;
 
-    position:fixed;
-
-    inset:0;
-
-    display:none;
-
-    align-items:center;
-
-    justify-content:center;
-
-    background:rgba(0,0,0,.45);
-
-    z-index:999;
+    font-weight:700;
 
 }
 
-.modal.active{
+.profile-info{
 
-    display:flex;
+    margin-top:6px;
+
+    color:var(--sub);
 
 }
 
-.modal-content{
+/* =====================================================
+   STATS
+===================================================== */
 
-    width:min(500px,90%);
+.stats{
+
+    display:grid;
+
+    grid-template-columns:repeat(auto-fit,minmax(140px,1fr));
+
+    gap:16px;
+
+    margin-top:24px;
+
+}
+
+.stat-card{
 
     background:#FFFFFF;
 
-    border-radius:20px;
+    border-radius:18px;
 
-    padding:24px;
+    padding:20px;
 
-    animation:fadeUp .25s ease;
+    text-align:center;
 
-}
-
-/* ===========================
-   TOAST
-=========================== */
-
-.toast{
-
-    position:fixed;
-
-    bottom:90px;
-
-    left:50%;
-
-    transform:translateX(-50%);
-
-    background:#111827;
-
-    color:#FFFFFF;
-
-    padding:14px 18px;
-
-    border-radius:12px;
-
-    opacity:0;
-
-    pointer-events:none;
-
-    transition:.3s;
+    box-shadow:var(--shadow);
 
 }
 
-.toast.show{
+.stat-card h3{
 
-    opacity:1;
+    font-size:26px;
+
+    color:var(--primary);
 
 }
 
-/* ===========================
-   LOADING
-=========================== */
+.stat-card p{
+
+    margin-top:6px;
+
+    color:var(--sub);
+
+}
+
+/* =====================================================
+   LOADER
+===================================================== */
 
 .loader{
 
@@ -979,7 +1129,7 @@ body{
 
     border:4px solid #E5E7EB;
 
-    border-top:4px solid var(--primary);
+    border-top-color:var(--primary);
 
     border-radius:50%;
 
@@ -997,368 +1147,67 @@ body{
 
 }
 
-/* ===========================
-   FLOAT BUTTON
-=========================== */
-
-.fab{
-
-    position:fixed;
-
-    right:20px;
-
-    bottom:95px;
-
-    width:58px;
-
-    height:58px;
-
-    border-radius:50%;
-
-    background:var(--primary);
-
-    color:#FFFFFF;
-
-    display:flex;
-
-    justify-content:center;
-
-    align-items:center;
-
-    font-size:24px;
-
-    box-shadow:0 12px 30px rgba(37,99,235,.35);
-
-    transition:var(--transition);
-
-}
-
-.fab:hover{
-
-    transform:scale(1.08);
-
-    background:var(--primary-hover);
-
-}
-/* ===========================
-   POST DETAIL
-=========================== */
-
-.post-detail{
-
-    background:#FFFFFF;
-
-    border-radius:18px;
-
-    padding:28px;
-
-    box-shadow:var(--shadow);
-
-    margin-bottom:24px;
-
-}
-
-.post-detail-title{
-
-    font-size:28px;
-
-    font-weight:700;
-
-    margin-bottom:12px;
-
-}
-
-.post-detail-info{
-
-    display:flex;
-
-    gap:15px;
-
-    color:var(--sub-text);
-
-    font-size:14px;
-
-    margin-bottom:20px;
-
-    flex-wrap:wrap;
-
-}
-
-.post-detail-content{
-
-    line-height:1.9;
-
-    font-size:16px;
-
-    word-break:break-word;
-
-}
-
-/* ===========================
-   COMMENT
-=========================== */
-
-.comment-list{
-
-    display:flex;
-
-    flex-direction:column;
-
-    gap:15px;
-
-}
-
-.comment{
-
-    background:#FFFFFF;
-
-    border-radius:15px;
-
-    padding:18px;
-
-    border:1px solid var(--border);
-
-}
-
-.comment-header{
-
-    display:flex;
-
-    justify-content:space-between;
-
-    margin-bottom:10px;
-
-    font-size:14px;
-
-}
-
-.comment-author{
-
-    font-weight:700;
-
-}
-
-.comment-time{
-
-    color:var(--sub-text);
-
-}
-
-.comment-content{
-
-    font-size:15px;
-
-    line-height:1.7;
-
-}
-
-/* ===========================
-   PROFILE CARD
-=========================== */
-
-.profile-card{
-
-    background:#FFFFFF;
-
-    border-radius:20px;
-
-    padding:30px;
-
-    text-align:center;
-
-    box-shadow:var(--shadow);
-
-}
-
-.profile-card .avatar{
-
-    width:90px;
-
-    height:90px;
-
-    margin:0 auto 20px;
-
-}
-
-.profile-name{
-
-    font-size:22px;
-
-    font-weight:700;
-
-}
-
-.profile-info{
-
-    color:var(--sub-text);
-
-    margin-top:8px;
-
-}
-
-/* ===========================
-   STATS
-=========================== */
-
-.stats{
-
-    display:grid;
-
-    grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
-
-    gap:16px;
-
-    margin-top:25px;
-
-}
-
-.stat-card{
-
-    background:#FFFFFF;
-
-    border-radius:16px;
-
-    padding:20px;
-
-    text-align:center;
-
-    box-shadow:var(--shadow);
-
-}
-
-.stat-card h3{
-
-    font-size:28px;
-
-    color:var(--primary);
-
-}
-
-.stat-card p{
-
-    color:var(--sub-text);
-
-    margin-top:6px;
-
-}
-
-/* ===========================
-   TABLE
-=========================== */
-
-.table{
-
-    width:100%;
-
-    border-collapse:collapse;
-
-    background:#FFFFFF;
-
-    border-radius:18px;
-
-    overflow:hidden;
-
-}
-
-.table th{
-
-    background:#EFF6FF;
-
-    color:var(--primary);
-
-    padding:16px;
-
-    text-align:left;
-
-}
-
-.table td{
-
-    padding:16px;
-
-    border-top:1px solid var(--border);
-
-}
-
-.table tr:hover{
-
-    background:#F8FAFC;
-
-}
-
-/* ===========================
-   PAGINATION
-=========================== */
-
-.pagination{
-
-    display:flex;
-
-    justify-content:center;
-
-    gap:10px;
-
-    margin-top:30px;
-
-}
-
-.pagination button{
-
-    width:42px;
-
-    height:42px;
-
-    border-radius:12px;
-
-    background:#FFFFFF;
-
-    border:1px solid var(--border);
-
-}
-
-.pagination button:hover{
-
-    background:var(--primary);
-
-    color:#FFFFFF;
-
-}
-
-/* ===========================
-   EMPTY
-=========================== */
+/* =====================================================
+   EMPTY STATE
+===================================================== */
 
 .empty{
 
-    text-align:center;
-
     padding:60px 20px;
 
-    color:var(--sub-text);
+    text-align:center;
+
+    color:var(--sub);
 
 }
 
 .empty h2{
 
-    margin-top:15px;
+    margin:14px 0;
 
-    margin-bottom:10px;
-
-}
-
-.empty p{
-
-    font-size:15px;
+    color:var(--text);
 
 }
 
-/* ===========================
-   FADE
-=========================== */
+/* =====================================================
+   FOOTER
+===================================================== */
+
+.footer{
+
+    margin:60px 0 110px;
+
+    text-align:center;
+
+    color:var(--sub);
+
+    font-size:14px;
+
+}
+
+/* =====================================================
+   DARK MODE READY
+===================================================== */
+
+body.dark{
+
+    --background:#111827;
+
+    --card:#1F2937;
+
+    --text:#F9FAFB;
+
+    --sub:#D1D5DB;
+
+}
+
+/* =====================================================
+   EFFECT
+===================================================== */
 
 .fade-in{
 
-    animation:fadeIn .35s ease;
+    animation:fadeIn .3s ease;
 
 }
 
@@ -1378,36 +1227,32 @@ body{
 
 }
 
-/* ===========================
-   SCALE
-=========================== */
+.scale-in{
 
-.scale{
-
-    animation:scale .25s ease;
+    animation:scaleIn .25s ease;
 
 }
 
-@keyframes scale{
+@keyframes scaleIn{
 
     from{
 
-        transform:scale(.95);
-
         opacity:0;
+
+        transform:scale(.95);
 
     }
 
     to{
 
-        transform:scale(1);
-
         opacity:1;
+
+        transform:scale(1);
 
     }
 
 }
 
-/* ===========================
-   END OF FILE
-=========================== */
+/* =====================================================
+   END
+===================================================== */
