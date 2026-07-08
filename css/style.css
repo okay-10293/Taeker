@@ -1040,3 +1040,374 @@ body{
     background:var(--primary-hover);
 
 }
+/* ===========================
+   POST DETAIL
+=========================== */
+
+.post-detail{
+
+    background:#FFFFFF;
+
+    border-radius:18px;
+
+    padding:28px;
+
+    box-shadow:var(--shadow);
+
+    margin-bottom:24px;
+
+}
+
+.post-detail-title{
+
+    font-size:28px;
+
+    font-weight:700;
+
+    margin-bottom:12px;
+
+}
+
+.post-detail-info{
+
+    display:flex;
+
+    gap:15px;
+
+    color:var(--sub-text);
+
+    font-size:14px;
+
+    margin-bottom:20px;
+
+    flex-wrap:wrap;
+
+}
+
+.post-detail-content{
+
+    line-height:1.9;
+
+    font-size:16px;
+
+    word-break:break-word;
+
+}
+
+/* ===========================
+   COMMENT
+=========================== */
+
+.comment-list{
+
+    display:flex;
+
+    flex-direction:column;
+
+    gap:15px;
+
+}
+
+.comment{
+
+    background:#FFFFFF;
+
+    border-radius:15px;
+
+    padding:18px;
+
+    border:1px solid var(--border);
+
+}
+
+.comment-header{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    margin-bottom:10px;
+
+    font-size:14px;
+
+}
+
+.comment-author{
+
+    font-weight:700;
+
+}
+
+.comment-time{
+
+    color:var(--sub-text);
+
+}
+
+.comment-content{
+
+    font-size:15px;
+
+    line-height:1.7;
+
+}
+
+/* ===========================
+   PROFILE CARD
+=========================== */
+
+.profile-card{
+
+    background:#FFFFFF;
+
+    border-radius:20px;
+
+    padding:30px;
+
+    text-align:center;
+
+    box-shadow:var(--shadow);
+
+}
+
+.profile-card .avatar{
+
+    width:90px;
+
+    height:90px;
+
+    margin:0 auto 20px;
+
+}
+
+.profile-name{
+
+    font-size:22px;
+
+    font-weight:700;
+
+}
+
+.profile-info{
+
+    color:var(--sub-text);
+
+    margin-top:8px;
+
+}
+
+/* ===========================
+   STATS
+=========================== */
+
+.stats{
+
+    display:grid;
+
+    grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
+
+    gap:16px;
+
+    margin-top:25px;
+
+}
+
+.stat-card{
+
+    background:#FFFFFF;
+
+    border-radius:16px;
+
+    padding:20px;
+
+    text-align:center;
+
+    box-shadow:var(--shadow);
+
+}
+
+.stat-card h3{
+
+    font-size:28px;
+
+    color:var(--primary);
+
+}
+
+.stat-card p{
+
+    color:var(--sub-text);
+
+    margin-top:6px;
+
+}
+
+/* ===========================
+   TABLE
+=========================== */
+
+.table{
+
+    width:100%;
+
+    border-collapse:collapse;
+
+    background:#FFFFFF;
+
+    border-radius:18px;
+
+    overflow:hidden;
+
+}
+
+.table th{
+
+    background:#EFF6FF;
+
+    color:var(--primary);
+
+    padding:16px;
+
+    text-align:left;
+
+}
+
+.table td{
+
+    padding:16px;
+
+    border-top:1px solid var(--border);
+
+}
+
+.table tr:hover{
+
+    background:#F8FAFC;
+
+}
+
+/* ===========================
+   PAGINATION
+=========================== */
+
+.pagination{
+
+    display:flex;
+
+    justify-content:center;
+
+    gap:10px;
+
+    margin-top:30px;
+
+}
+
+.pagination button{
+
+    width:42px;
+
+    height:42px;
+
+    border-radius:12px;
+
+    background:#FFFFFF;
+
+    border:1px solid var(--border);
+
+}
+
+.pagination button:hover{
+
+    background:var(--primary);
+
+    color:#FFFFFF;
+
+}
+
+/* ===========================
+   EMPTY
+=========================== */
+
+.empty{
+
+    text-align:center;
+
+    padding:60px 20px;
+
+    color:var(--sub-text);
+
+}
+
+.empty h2{
+
+    margin-top:15px;
+
+    margin-bottom:10px;
+
+}
+
+.empty p{
+
+    font-size:15px;
+
+}
+
+/* ===========================
+   FADE
+=========================== */
+
+.fade-in{
+
+    animation:fadeIn .35s ease;
+
+}
+
+@keyframes fadeIn{
+
+    from{
+
+        opacity:0;
+
+    }
+
+    to{
+
+        opacity:1;
+
+    }
+
+}
+
+/* ===========================
+   SCALE
+=========================== */
+
+.scale{
+
+    animation:scale .25s ease;
+
+}
+
+@keyframes scale{
+
+    from{
+
+        transform:scale(.95);
+
+        opacity:0;
+
+    }
+
+    to{
+
+        transform:scale(1);
+
+        opacity:1;
+
+    }
+
+}
+
+/* ===========================
+   END OF FILE
+=========================== */
