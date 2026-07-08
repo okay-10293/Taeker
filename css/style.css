@@ -1,0 +1,1042 @@
+/* =========================================================
+   Taecker Community
+   style.css
+   ========================================================= */
+
+/* ===========================
+   RESET
+=========================== */
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+html{
+    scroll-behavior:smooth;
+}
+
+body{
+    font-family:
+        "Pretendard",
+        "Apple SD Gothic Neo",
+        "Noto Sans KR",
+        sans-serif;
+
+    background:#F5F7FB;
+    color:#1F2937;
+    line-height:1.6;
+}
+
+/* ===========================
+   ROOT
+=========================== */
+
+:root{
+
+    --primary:#2563EB;
+
+    --primary-hover:#1D4ED8;
+
+    --background:#F5F7FB;
+
+    --card:#FFFFFF;
+
+    --border:#E5E7EB;
+
+    --text:#111827;
+
+    --sub-text:#6B7280;
+
+    --shadow:
+
+        0 10px 30px rgba(0,0,0,.06);
+
+    --radius:18px;
+
+    --transition:.25s ease;
+
+}
+
+/* ===========================
+   LINK
+=========================== */
+
+a{
+
+    color:inherit;
+
+    text-decoration:none;
+
+}
+
+/* ===========================
+   BUTTON
+=========================== */
+
+button{
+
+    border:none;
+
+    background:none;
+
+    cursor:pointer;
+
+    font:inherit;
+
+}
+
+/* ===========================
+   LIST
+=========================== */
+
+ul{
+
+    list-style:none;
+
+}
+
+/* ===========================
+   IMAGE
+=========================== */
+
+img{
+
+    width:100%;
+
+    display:block;
+
+}
+
+/* ===========================
+   HEADER
+=========================== */
+
+.header{
+
+    position:sticky;
+
+    top:0;
+
+    z-index:100;
+
+    height:72px;
+
+    background:white;
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:space-between;
+
+    padding:0 18px;
+
+    box-shadow:0 2px 15px rgba(0,0,0,.05);
+
+}
+
+.logo{
+
+    display:flex;
+
+    flex-direction:column;
+
+}
+
+.logo h1{
+
+    font-size:24px;
+
+    color:var(--primary);
+
+    font-weight:800;
+
+}
+
+.logo span{
+
+    font-size:12px;
+
+    color:var(--sub-text);
+
+}
+
+.header-right{
+
+    display:flex;
+
+    gap:10px;
+
+}
+
+/* ===========================
+   ICON BUTTON
+=========================== */
+
+.icon-button{
+
+    width:42px;
+
+    height:42px;
+
+    border-radius:50%;
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+    background:white;
+
+    transition:var(--transition);
+
+}
+
+.icon-button:hover{
+
+    background:#EFF6FF;
+
+    color:var(--primary);
+
+}
+
+/* ===========================
+   SIDEBAR
+=========================== */
+
+.sidebar{
+
+    position:fixed;
+
+    top:72px;
+
+    left:0;
+
+    width:250px;
+
+    height:calc(100vh - 72px);
+
+    background:white;
+
+    border-right:1px solid var(--border);
+
+    padding:25px;
+
+    overflow-y:auto;
+
+}
+
+.sidebar ul{
+
+    display:flex;
+
+    flex-direction:column;
+
+    gap:8px;
+
+}
+
+.sidebar a{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:12px;
+
+    padding:14px;
+
+    border-radius:12px;
+
+    transition:var(--transition);
+
+    font-weight:500;
+
+}
+
+.sidebar a:hover{
+
+    background:#EFF6FF;
+
+    color:var(--primary);
+
+}
+
+/* ===========================
+   MAIN
+=========================== */
+
+.container{
+
+    margin-left:270px;
+
+    padding:30px;
+
+}
+
+/* ===========================
+   CARD
+=========================== */
+
+.card{
+
+    background:var(--card);
+
+    border-radius:var(--radius);
+
+    box-shadow:var(--shadow);
+
+    padding:24px;
+
+    margin-bottom:25px;
+
+    animation:fadeUp .5s ease;
+
+}
+
+.card h2{
+
+    font-size:22px;
+
+    margin-bottom:18px;
+
+}
+
+/* ===========================
+   NOTICE
+=========================== */
+
+.notice-list{
+
+    display:flex;
+
+    flex-direction:column;
+
+    gap:14px;
+
+}
+
+.notice-item{
+
+    padding:18px;
+
+    background:#F8FAFC;
+
+    border-radius:12px;
+
+    transition:var(--transition);
+
+}
+
+.notice-item:hover{
+
+    background:#EFF6FF;
+
+    transform:translateY(-2px);
+
+}
+
+/* ===========================
+   POST
+=========================== */
+
+.post{
+
+    background:#FAFAFA;
+
+    border-radius:14px;
+
+    padding:18px;
+
+    margin-bottom:15px;
+
+    transition:var(--transition);
+
+}
+
+.post:hover{
+
+    transform:translateY(-4px);
+
+    box-shadow:0 10px 20px rgba(0,0,0,.08);
+
+}
+
+.post h3{
+
+    margin-bottom:8px;
+
+    font-size:18px;
+
+}
+
+.post p{
+
+    color:var(--sub-text);
+
+    font-size:14px;
+
+}
+
+/* ===========================
+   ANIMATION
+=========================== */
+
+@keyframes fadeUp{
+
+    from{
+
+        opacity:0;
+
+        transform:translateY(20px);
+
+    }
+
+    to{
+
+        opacity:1;
+
+        transform:translateY(0);
+
+    }
+
+}
+/* ===========================
+   BOTTOM NAVIGATION
+=========================== */
+
+.bottom-nav{
+
+    position:fixed;
+
+    left:0;
+
+    right:0;
+
+    bottom:0;
+
+    height:70px;
+
+    background:#FFFFFF;
+
+    border-top:1px solid var(--border);
+
+    display:flex;
+
+    justify-content:space-around;
+
+    align-items:center;
+
+    box-shadow:0 -5px 20px rgba(0,0,0,.05);
+
+    z-index:100;
+
+}
+
+.bottom-nav a{
+
+    display:flex;
+
+    flex-direction:column;
+
+    align-items:center;
+
+    justify-content:center;
+
+    gap:5px;
+
+    width:100%;
+
+    height:100%;
+
+    color:var(--sub-text);
+
+    transition:var(--transition);
+
+    font-size:13px;
+
+}
+
+.bottom-nav a:hover{
+
+    color:var(--primary);
+
+}
+
+.bottom-nav a.active{
+
+    color:var(--primary);
+
+    font-weight:600;
+
+}
+
+/* ===========================
+   SCROLLBAR
+=========================== */
+
+::-webkit-scrollbar{
+
+    width:8px;
+
+}
+
+::-webkit-scrollbar-track{
+
+    background:#F3F4F6;
+
+}
+
+::-webkit-scrollbar-thumb{
+
+    background:#CBD5E1;
+
+    border-radius:999px;
+
+}
+
+::-webkit-scrollbar-thumb:hover{
+
+    background:#94A3B8;
+
+}
+
+/* ===========================
+   UTIL
+=========================== */
+
+.hidden{
+
+    display:none !important;
+
+}
+
+.text-center{
+
+    text-align:center;
+
+}
+
+.mt-10{
+
+    margin-top:10px;
+
+}
+
+.mt-20{
+
+    margin-top:20px;
+
+}
+
+.mt-30{
+
+    margin-top:30px;
+
+}
+
+.mb-10{
+
+    margin-bottom:10px;
+
+}
+
+.mb-20{
+
+    margin-bottom:20px;
+
+}
+
+.mb-30{
+
+    margin-bottom:30px;
+
+}
+
+/* ===========================
+   CARD EFFECT
+=========================== */
+
+.card:hover{
+
+    transform:translateY(-3px);
+
+    transition:var(--transition);
+
+}
+
+/* ===========================
+   MOBILE
+=========================== */
+
+@media (max-width:768px){
+
+    .sidebar{
+
+        left:-270px;
+
+        transition:.3s;
+
+        z-index:300;
+
+        box-shadow:5px 0 30px rgba(0,0,0,.15);
+
+    }
+
+    .sidebar.active{
+
+        left:0;
+
+    }
+
+    .container{
+
+        margin-left:0;
+
+        padding:20px;
+
+        padding-bottom:100px;
+
+    }
+
+    .header{
+
+        padding:0 15px;
+
+    }
+
+    .logo h1{
+
+        font-size:21px;
+
+    }
+
+    .logo span{
+
+        display:none;
+
+    }
+
+    .card{
+
+        padding:18px;
+
+    }
+
+    .card h2{
+
+        font-size:20px;
+
+    }
+
+    .post h3{
+
+        font-size:16px;
+
+    }
+
+}
+
+/* ===========================
+   TABLET
+=========================== */
+
+@media (min-width:769px) and (max-width:1100px){
+
+    .sidebar{
+
+        width:220px;
+
+    }
+
+    .container{
+
+        margin-left:240px;
+
+    }
+
+}
+
+/* ===========================
+   DESKTOP
+=========================== */
+
+@media (min-width:1101px){
+
+    .container{
+
+        max-width:1200px;
+
+    }
+
+}
+
+/* ===========================
+   FOOTER SPACE
+=========================== */
+
+body{
+
+    padding-bottom:90px;
+
+}
+/* ===========================
+   BUTTON
+=========================== */
+
+.btn{
+
+    display:inline-flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    gap:8px;
+
+    padding:12px 18px;
+
+    border:none;
+
+    border-radius:12px;
+
+    background:var(--primary);
+
+    color:#FFFFFF;
+
+    font-size:15px;
+
+    font-weight:600;
+
+    cursor:pointer;
+
+    transition:var(--transition);
+
+}
+
+.btn:hover{
+
+    background:var(--primary-hover);
+
+    transform:translateY(-2px);
+
+}
+
+.btn-outline{
+
+    background:#FFFFFF;
+
+    color:var(--primary);
+
+    border:2px solid var(--primary);
+
+}
+
+.btn-outline:hover{
+
+    background:var(--primary);
+
+    color:#FFFFFF;
+
+}
+
+/* ===========================
+   INPUT
+=========================== */
+
+.input-group{
+
+    display:flex;
+
+    flex-direction:column;
+
+    gap:8px;
+
+    margin-bottom:18px;
+
+}
+
+.input-group label{
+
+    font-size:14px;
+
+    font-weight:600;
+
+}
+
+.input-group input,
+
+.input-group textarea,
+
+.input-group select{
+
+    width:100%;
+
+    padding:14px;
+
+    border:1px solid var(--border);
+
+    border-radius:12px;
+
+    background:#FFFFFF;
+
+    font-size:15px;
+
+    transition:var(--transition);
+
+}
+
+.input-group input:focus,
+
+.input-group textarea:focus,
+
+.input-group select:focus{
+
+    outline:none;
+
+    border-color:var(--primary);
+
+    box-shadow:0 0 0 4px rgba(37,99,235,.15);
+
+}
+
+/* ===========================
+   SEARCH
+=========================== */
+
+.search-box{
+
+    display:flex;
+
+    align-items:center;
+
+    background:#FFFFFF;
+
+    border:1px solid var(--border);
+
+    border-radius:14px;
+
+    padding:12px 16px;
+
+    margin-bottom:24px;
+
+}
+
+.search-box input{
+
+    flex:1;
+
+    border:none;
+
+    outline:none;
+
+    font-size:15px;
+
+    background:transparent;
+
+}
+
+/* ===========================
+   BADGE
+=========================== */
+
+.badge{
+
+    display:inline-block;
+
+    padding:4px 10px;
+
+    border-radius:999px;
+
+    background:#DBEAFE;
+
+    color:var(--primary);
+
+    font-size:12px;
+
+    font-weight:700;
+
+}
+
+/* ===========================
+   PROFILE
+=========================== */
+
+.avatar{
+
+    width:44px;
+
+    height:44px;
+
+    border-radius:50%;
+
+    background:#E5E7EB;
+
+    overflow:hidden;
+
+}
+
+.avatar img{
+
+    width:100%;
+
+    height:100%;
+
+    object-fit:cover;
+
+}
+
+/* ===========================
+   MODAL
+=========================== */
+
+.modal{
+
+    position:fixed;
+
+    inset:0;
+
+    display:none;
+
+    align-items:center;
+
+    justify-content:center;
+
+    background:rgba(0,0,0,.45);
+
+    z-index:999;
+
+}
+
+.modal.active{
+
+    display:flex;
+
+}
+
+.modal-content{
+
+    width:min(500px,90%);
+
+    background:#FFFFFF;
+
+    border-radius:20px;
+
+    padding:24px;
+
+    animation:fadeUp .25s ease;
+
+}
+
+/* ===========================
+   TOAST
+=========================== */
+
+.toast{
+
+    position:fixed;
+
+    bottom:90px;
+
+    left:50%;
+
+    transform:translateX(-50%);
+
+    background:#111827;
+
+    color:#FFFFFF;
+
+    padding:14px 18px;
+
+    border-radius:12px;
+
+    opacity:0;
+
+    pointer-events:none;
+
+    transition:.3s;
+
+}
+
+.toast.show{
+
+    opacity:1;
+
+}
+
+/* ===========================
+   LOADING
+=========================== */
+
+.loader{
+
+    width:42px;
+
+    height:42px;
+
+    border:4px solid #E5E7EB;
+
+    border-top:4px solid var(--primary);
+
+    border-radius:50%;
+
+    animation:spin .8s linear infinite;
+
+}
+
+@keyframes spin{
+
+    to{
+
+        transform:rotate(360deg);
+
+    }
+
+}
+
+/* ===========================
+   FLOAT BUTTON
+=========================== */
+
+.fab{
+
+    position:fixed;
+
+    right:20px;
+
+    bottom:95px;
+
+    width:58px;
+
+    height:58px;
+
+    border-radius:50%;
+
+    background:var(--primary);
+
+    color:#FFFFFF;
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+    font-size:24px;
+
+    box-shadow:0 12px 30px rgba(37,99,235,.35);
+
+    transition:var(--transition);
+
+}
+
+.fab:hover{
+
+    transform:scale(1.08);
+
+    background:var(--primary-hover);
+
+}
