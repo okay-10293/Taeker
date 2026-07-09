@@ -378,7 +378,7 @@ const agreePrivacy=document.getElementById("agreePrivacy");
 
 const bioCount=document.getElementById("bioCount");
 
-const togglePassword=document.getElementById("toggleRegisterPassword");
+const registerTogglePasswordBtn=document.getElementById("toggleRegisterPassword");
 
 const registerButton=document.getElementById("registerButton");
 
@@ -459,7 +459,7 @@ nickname.addEventListener("input",()=>{
 
 });
 
-togglePassword.addEventListener("click",()=>{
+registerTogglePasswordBtn.addEventListener("click",()=>{
 
     const hidden=password.type==="password";
 
@@ -471,7 +471,7 @@ togglePassword.addEventListener("click",()=>{
 
         :"password";
 
-    togglePassword.textContent=
+    registerTogglePasswordBtn.textContent=
 
         hidden
 
