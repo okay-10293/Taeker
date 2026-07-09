@@ -3222,3 +3222,576 @@ body.dark ::-webkit-scrollbar-thumb:hover{
 /* =====================================================
    LOGIN END
 ===================================================== */
+/* =====================================================
+   REGISTER
+===================================================== */
+
+.register-page{
+
+    min-height:100vh;
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    padding:40px 20px;
+
+    background:
+
+    linear-gradient(
+
+        135deg,
+
+        #F5F7FB,
+
+        #E9EEF8
+
+    );
+
+}
+
+.register-card{
+
+    width:100%;
+
+    max-width:760px;
+
+    background:#FFFFFF;
+
+    border-radius:24px;
+
+    padding:40px;
+
+    box-shadow:
+
+        0 20px 60px
+
+        rgba(0,0,0,.08);
+
+}
+
+.register-card h1{
+
+    font-size:2rem;
+
+    font-weight:700;
+
+    margin-bottom:10px;
+
+}
+
+.register-card p{
+
+    color:#666;
+
+    margin-bottom:24px;
+
+}
+
+.form-row{
+
+    display:grid;
+
+    grid-template-columns:
+
+        repeat(3,1fr);
+
+    gap:16px;
+
+}
+
+.checkbox-group{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:10px;
+
+    margin-top:16px;
+
+    font-size:.95rem;
+
+}
+
+.checkbox-group input{
+
+    width:18px;
+
+    height:18px;
+
+    cursor:pointer;
+
+}
+.password-strength{
+
+    width:100%;
+
+    height:8px;
+
+    background:#E5E7EB;
+
+    border-radius:999px;
+
+    overflow:hidden;
+
+    margin-top:10px;
+
+}
+
+.password-strength-bar{
+
+    width:0%;
+
+    height:100%;
+
+    background:linear-gradient(
+
+        90deg,
+
+        #EF4444,
+
+        #F59E0B,
+
+        #10B981
+
+    );
+
+    transition:.3s;
+
+}
+
+textarea.input{
+
+    resize:vertical;
+
+    min-height:110px;
+
+}
+
+.register-card .btn{
+
+    margin-top:24px;
+
+    font-size:1rem;
+
+    font-weight:600;
+
+}
+
+.register-card .login-links{
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+    gap:10px;
+
+    margin-top:24px;
+
+}
+
+.register-card .login-links a{
+
+    color:var(--primary);
+
+    font-weight:600;
+
+    text-decoration:none;
+
+}
+
+.register-card .login-links a:hover{
+
+    text-decoration:underline;
+
+}
+.register-card .input{
+
+    transition:
+
+        border-color .25s,
+
+        box-shadow .25s,
+
+        background .25s;
+
+}
+
+.register-card .input:focus{
+
+    border-color:var(--primary);
+
+    box-shadow:
+
+        0 0 0 4px
+
+        rgba(37,99,235,.12);
+
+    outline:none;
+
+}
+
+.register-card .form-message{
+
+    display:block;
+
+    margin-top:8px;
+
+    font-size:.85rem;
+
+    min-height:20px;
+
+}
+
+.checkbox-group{
+
+    padding:12px 0;
+
+}
+
+.checkbox-group label{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:10px;
+
+    cursor:pointer;
+
+    user-select:none;
+
+}
+
+.checkbox-group input[type="checkbox"]{
+
+    accent-color:var(--primary);
+
+    cursor:pointer;
+
+}
+
+.register-card textarea{
+
+    font-family:inherit;
+
+    line-height:1.5;
+
+}
+
+.register-card select{
+
+    cursor:pointer;
+}
+.loader-overlay{
+
+    position:fixed;
+
+    inset:0;
+
+    background:rgba(255,255,255,.75);
+
+    backdrop-filter:blur(6px);
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+    z-index:9999;
+
+}
+
+.loader{
+
+    width:56px;
+
+    height:56px;
+
+    border:5px solid #E5E7EB;
+
+    border-top-color:var(--primary);
+
+    border-radius:50%;
+
+    animation:spin .8s linear infinite;
+
+}
+
+@keyframes spin{
+
+    to{
+
+        transform:rotate(360deg);
+
+    }
+
+}
+
+.register-card{
+
+    animation:fadeUp .45s ease;
+
+}
+
+@keyframes fadeUp{
+
+    from{
+
+        opacity:0;
+
+        transform:translateY(24px);
+
+    }
+
+    to{
+
+        opacity:1;
+
+        transform:translateY(0);
+
+    }
+
+}
+
+@media (max-width:768px){
+
+    .register-card{
+
+        padding:28px;
+
+    }
+
+    .form-row{
+
+        grid-template-columns:1fr;
+
+        gap:14px;
+
+    }
+
+}
+
+@media (max-width:480px){
+
+    .register-page{
+
+        padding:20px 12px;
+
+    }
+
+    .register-card{
+
+        padding:22px;
+
+        border-radius:18px;
+
+    }
+
+}
+.register-card .btn{
+
+    transition:
+
+        transform .2s,
+
+        box-shadow .2s,
+
+        opacity .2s;
+
+}
+
+.register-card .btn:hover{
+
+    transform:translateY(-2px);
+
+    box-shadow:
+
+        0 10px 24px
+
+        rgba(37,99,235,.18);
+
+}
+
+.register-card .btn:active{
+
+    transform:translateY(0);
+
+}
+
+.register-card .btn:disabled{
+
+    opacity:.6;
+
+    cursor:not-allowed;
+
+    transform:none;
+
+    box-shadow:none;
+
+}
+
+.input.error{
+
+    border-color:#DC2626;
+
+    animation:shake .3s;
+
+}
+
+.input.success{
+
+    border-color:#16A34A;
+
+}
+
+@keyframes shake{
+
+    0%{
+
+        transform:translateX(0);
+
+    }
+
+    25%{
+
+        transform:translateX(-4px);
+
+    }
+
+    50%{
+
+        transform:translateX(4px);
+
+    }
+
+    75%{
+
+        transform:translateX(-4px);
+
+    }
+
+    100%{
+
+        transform:translateX(0);
+
+    }
+
+}
+
+.register-card .form-group{
+
+    margin-bottom:18px;
+
+}
+
+.register-card label{
+
+    display:block;
+
+    margin-bottom:8px;
+
+    font-weight:600;
+
+    color:#374151;
+
+}
+/* =====================================================
+   REGISTER FINISH
+===================================================== */
+
+.register-card{
+
+    position:relative;
+
+    overflow:hidden;
+
+}
+
+.register-card::before{
+
+    content:"";
+
+    position:absolute;
+
+    top:0;
+
+    left:0;
+
+    width:100%;
+
+    height:5px;
+
+    background:linear-gradient(
+
+        90deg,
+
+        var(--primary),
+
+        #60A5FA
+
+    );
+
+}
+
+.register-footer{
+
+    margin-top:28px;
+
+    text-align:center;
+
+    color:#6B7280;
+
+    font-size:.9rem;
+
+}
+
+.register-footer a{
+
+    color:var(--primary);
+
+    text-decoration:none;
+
+    font-weight:600;
+
+}
+
+.register-footer a:hover{
+
+    text-decoration:underline;
+
+}
+
+.hidden{
+
+    display:none !important;
+
+}
+
+@media (max-width:768px){
+
+    .register-card{
+
+        max-width:100%;
+
+    }
+
+}
+
+@media (prefers-reduced-motion:reduce){
+
+    *{
+
+        animation:none !important;
+
+        transition:none !important;
+
+    }
+
+}
