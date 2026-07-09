@@ -378,7 +378,7 @@ const agreePrivacy=document.getElementById("agreePrivacy");
 
 const bioCount=document.getElementById("bioCount");
 
-const registerTogglePasswordBtn=document.getElementById("toggleRegisterPassword");
+const togglePassword=document.getElementById("toggleRegisterPassword");
 
 const registerButton=document.getElementById("registerButton");
 
@@ -459,7 +459,7 @@ nickname.addEventListener("input",()=>{
 
 });
 
-registerTogglePasswordBtn.addEventListener("click",()=>{
+togglePassword.addEventListener("click",()=>{
 
     const hidden=password.type==="password";
 
@@ -471,7 +471,7 @@ registerTogglePasswordBtn.addEventListener("click",()=>{
 
         :"password";
 
-    registerTogglePasswordBtn.textContent=
+    togglePassword.textContent=
 
         hidden
 
@@ -568,7 +568,7 @@ bio.addEventListener("input",()=>{
 
     const {data}=
 
-    await supabase
+    await window.sb
 
     .from("profiles")
 
@@ -660,7 +660,7 @@ registerForm.addEventListener(
 
             }=
 
-            await supabase.auth.signUp({
+            await window.sb.auth.signUp({
 
                 email:
 
