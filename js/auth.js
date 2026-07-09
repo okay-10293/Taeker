@@ -1172,3 +1172,540 @@ if(form){
     );
 
 }
+/* =====================================================
+   AUTH STATE
+===================================================== */
+
+supabase.auth.onAuthStateChange(
+
+    async(event,session)=>{
+
+        switch(event){
+
+            case "SIGNED_IN":
+
+                console.log(
+
+                    "SIGNED IN"
+
+                );
+
+                break;
+
+            case "SIGNED_OUT":
+
+                console.log(
+
+                    "SIGNED OUT"
+
+                );
+
+                break;
+
+            case "TOKEN_REFRESHED":
+
+                console.log(
+
+                    "TOKEN REFRESHED"
+
+                );
+
+                break;
+
+        }
+
+    }
+
+);
+
+/* =====================================================
+   CURRENT USER
+===================================================== */
+
+async function getCurrentUser(){
+
+    const {
+
+        data,
+
+        error
+
+    }=
+
+    await supabase.auth.getUser();
+
+    if(error){
+
+        return null;
+
+    }
+
+    return data.user;
+
+}
+
+/* =====================================================
+   PROFILE
+===================================================== */
+
+async function getProfile(){
+
+    const user=
+
+        await getCurrentUser();
+
+    if(!user){
+
+        return null;
+
+    }
+
+    const {
+
+        data,
+
+        error
+
+    }=
+
+    await supabase
+
+    .from("profiles")
+
+    .select("*")
+
+    .eq("id",user.id)
+
+    .single();
+
+    if(error){
+
+        return null;
+
+    }
+
+    return data;
+
+}
+
+/* =====================================================
+   LOGOUT
+===================================================== */
+
+async function logout(){
+
+    await supabase.auth.signOut();
+
+    Storage.remove(
+
+        "rememberEmail"
+
+    );
+
+    toast(
+
+        "로그아웃되었습니다."
+
+    );
+
+    setTimeout(()=>{
+
+        location.href=
+
+            "login.html";
+
+    },500);
+
+}
+
+/* =====================================================
+   GLOBAL
+===================================================== */
+
+window.Auth={
+
+    login,
+
+    logout,
+
+    getCurrentUser,
+
+    getProfile,
+
+    checkSession,
+
+    ensureProfile
+
+};
+/* =====================================================
+   AUTH GUARD
+===================================================== */
+
+async function requireAuth(){
+
+    const {
+
+        data
+
+    }=
+
+    await supabase.auth.getSession();
+
+    if(!data.session){
+
+        toast(
+
+            "로그인이 필요합니다."
+
+        );
+
+        setTimeout(()=>{
+
+            location.href=
+
+                "login.html";
+
+        },500);
+
+        return false;
+
+    }
+
+    return true;
+
+}
+
+/* =====================================================
+   LOGIN PAGE REDIRECT
+===================================================== */
+
+async function redirectIfLoggedIn(){
+
+    const {
+
+        data
+
+    }=
+
+    await supabase.auth.getSession();
+
+    if(
+
+        data.session &&
+
+        location.pathname.endsWith(
+
+            "login.html"
+
+        )
+
+    ){
+
+        location.replace(
+
+            "index.html"
+
+        );
+
+    }
+
+}
+
+/* =====================================================
+   SESSION REFRESH
+===================================================== */
+
+async function refreshSession(){
+
+    const {
+
+        data,
+
+        error
+
+    }=
+
+    await supabase.auth.refreshSession();
+
+    if(error){
+
+        console.error(error);
+
+        return null;
+
+    }
+
+    return data.session;
+
+}
+
+/* =====================================================
+   PROFILE CACHE
+===================================================== */
+
+async function cacheProfile(){
+
+    const profile=
+
+        await getProfile();
+
+    if(profile){
+
+        Storage.set(
+
+            "profile",
+
+            profile
+
+        );
+
+    }
+
+}
+
+async function getCachedProfile(){
+
+    const cached=
+
+        Storage.get(
+
+            "profile",
+
+            null
+
+        );
+
+    if(cached){
+
+        return cached;
+
+    }
+
+    const profile=
+
+        await getProfile();
+
+    if(profile){
+
+        Storage.set(
+
+            "profile",
+
+            profile
+
+        );
+
+    }
+
+    return profile;
+
+}
+
+/* =====================================================
+   INIT
+===================================================== */
+
+redirectIfLoggedIn();
+
+cacheProfile();
+
+/* =====================================================
+   EXPORT
+===================================================== */
+
+Object.assign(
+
+    window.Auth,
+
+    {
+
+        requireAuth,
+
+        refreshSession,
+
+        getCachedProfile
+
+    }
+
+);
+/* =====================================================
+   LOGIN LIMIT
+===================================================== */
+
+let loginAttempts=0;
+
+const MAX_LOGIN_ATTEMPTS=5;
+
+function resetAttempts(){
+
+    loginAttempts=0;
+
+}
+
+function increaseAttempts(){
+
+    loginAttempts++;
+
+}
+
+function canLogin(){
+
+    return loginAttempts<MAX_LOGIN_ATTEMPTS;
+
+}
+
+/* =====================================================
+   SAFE LOGIN
+===================================================== */
+
+async function safeLogin(){
+
+    if(!canLogin()){
+
+        toast(
+
+            "로그인 시도가 너무 많습니다. 잠시 후 다시 시도해주세요."
+
+        );
+
+        return false;
+
+    }
+
+    try{
+
+        const result=
+
+            await login();
+
+        resetAttempts();
+
+        return result;
+
+    }
+
+    catch(error){
+
+        increaseAttempts();
+
+        throw error;
+
+    }
+
+}
+
+/* =====================================================
+   RESET FORM
+===================================================== */
+
+function resetForm(){
+
+    if(form){
+
+        form.reset();
+
+    }
+
+    if(emailMessage){
+
+        emailMessage.textContent="";
+
+    }
+
+    if(passwordMessage){
+
+        passwordMessage.textContent="";
+
+    }
+
+    if(passwordStrengthBar){
+
+        passwordStrengthBar.style.width="0%";
+
+    }
+
+    if(passwordStrengthText){
+
+        passwordStrengthText.textContent="";
+
+    }
+
+}
+
+/* =====================================================
+   AUTH INFO
+===================================================== */
+
+async function isLoggedIn(){
+
+    const {
+
+        data
+
+    }=
+
+    await supabase.auth.getSession();
+
+    return !!data.session;
+
+}
+
+async function getAccessToken(){
+
+    const {
+
+        data
+
+    }=
+
+    await supabase.auth.getSession();
+
+    return data.session?.access_token ?? null;
+
+}
+
+/* =====================================================
+   GLOBAL
+===================================================== */
+
+Object.assign(
+
+    window.Auth,
+
+    {
+
+        safeLogin,
+
+        resetForm,
+
+        resetAttempts,
+
+        isLoggedIn,
+
+        getAccessToken
+
+    }
+
+);
+
+/* =====================================================
+   DEV
+===================================================== */
+
+window.TaeckerAuth={
+
+    supabase,
+
+    Auth
+
+};
+
+/* =====================================================
+   READY
+===================================================== */
+
+console.log(
+
+    "Taecker Auth Loaded"
+
+);
