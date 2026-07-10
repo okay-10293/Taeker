@@ -382,9 +382,55 @@ function memberItemHTML(profile){
                 <button class="btn-warn" data-action="suspend1" data-user="${profile.id}">1일 정지</button>
                 <button class="btn-danger" data-action="ban" data-user="${profile.id}">영구 정지</button>
                 <button data-action="unsuspend" data-user="${profile.id}">정지 해제</button>
+                <button data-action="rename" data-user="${profile.id}" data-current-nickname="${escapeHtml(profile.nickname || "")}">닉네임 변경</button>
             </div>
         </div>
     `;
+
+}
+
+async function renameMember(userId,newNickname){
+
+    const client=getClient();
+
+    if(!client || !userId) return;
+
+    const trimmed=(newNickname || "").trim();
+
+    if(!trimmed){
+
+        window.Taecker?.toast?.("닉네임을 입력해주세요.");
+
+        return;
+
+    }
+
+    try{
+
+        const {error}=await client
+            .from("profiles")
+            .update({nickname:trimmed})
+            .eq("id",userId);
+
+        if(error) throw error;
+
+        window.Taecker?.toast?.("닉네임을 변경했습니다.");
+
+        if(el.memberSearchInput.value.trim()){
+
+            await searchMembers(el.memberSearchInput.value.trim());
+
+        }
+
+    }
+
+    catch(error){
+
+        console.warn("닉네임 변경에 실패했습니다:",error.message || error);
+
+        window.Taecker?.toast?.("닉네임 변경에 실패했습니다. 잠시 후 다시 시도해주세요.");
+
+    }
 
 }
 
@@ -715,6 +761,24 @@ function setupActionDelegation(){
                 applySuspension(userId,action);
 
             }
+
+            return;
+
+        }
+
+        if(action==="rename"){
+
+            const userId=btn.dataset.user;
+
+            if(!userId) return;
+
+            const current=btn.dataset.currentNickname || "";
+
+            const next=prompt("새 닉네임을 입력하세요.",current);
+
+            if(next===null) return;
+
+            renameMember(userId,next);
 
             return;
 
