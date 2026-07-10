@@ -4872,3 +4872,210 @@ body.dark .header-search.header-search-mobile-open{
     }
 
 }
+
+/* =====================================================
+   SCHOOL (급식 / 시간표 / 학사일정)
+===================================================== */
+
+.school-tabs{
+
+    margin-bottom:16px;
+
+}
+
+.school-panel{
+
+    display:flex;
+    flex-direction:column;
+    gap:14px;
+
+}
+
+.school-date-nav{
+
+    display:flex;
+    align-items:center;
+    gap:10px;
+
+}
+
+.school-date-label{
+
+    font-weight:600;
+    font-size:15px;
+
+}
+
+.school-login-required{
+
+    text-align:center;
+
+}
+
+.school-config-warning{
+
+    margin-top:16px;
+
+}
+
+.school-grade-select-card{
+
+    display:flex;
+    align-items:center;
+    gap:10px;
+    flex-wrap:wrap;
+
+}
+
+.school-inline-label{
+
+    font-size:14px;
+    color:var(--sub);
+    font-weight:500;
+
+}
+
+.school-select{
+
+    padding:8px 12px;
+    border-radius:10px;
+    border:1px solid var(--border);
+    background:var(--card);
+    color:var(--text);
+    font-size:14px;
+
+}
+
+.meal-block + .meal-block{
+
+    margin-top:18px;
+    padding-top:18px;
+    border-top:1px solid var(--border);
+
+}
+
+.meal-block-title{
+
+    font-weight:700;
+    font-size:15px;
+    margin-bottom:10px;
+    color:var(--primary);
+
+}
+
+.meal-dish-list{
+
+    list-style:none;
+    display:flex;
+    flex-direction:column;
+    gap:6px;
+
+}
+
+.meal-dish-list li{
+
+    font-size:14px;
+    color:var(--text);
+
+}
+
+.meal-cal{
+
+    margin-top:10px;
+    font-size:13px;
+    color:var(--sub);
+
+}
+
+.timetable-list{
+
+    list-style:none;
+    display:flex;
+    flex-direction:column;
+    gap:2px;
+
+}
+
+.timetable-item{
+
+    display:flex;
+    align-items:center;
+    gap:14px;
+    padding:12px 4px;
+    border-bottom:1px solid var(--border);
+
+}
+
+.timetable-item:last-child{
+
+    border-bottom:none;
+
+}
+
+.timetable-perio{
+
+    flex:0 0 56px;
+    font-weight:700;
+    color:var(--primary);
+    font-size:14px;
+
+}
+
+.timetable-subject{
+
+    font-size:14px;
+    color:var(--text);
+
+}
+
+.schedule-list{
+
+    list-style:none;
+    display:flex;
+    flex-direction:column;
+    gap:2px;
+
+}
+
+.schedule-item{
+
+    display:flex;
+    align-items:center;
+    gap:14px;
+    padding:12px 4px;
+    border-bottom:1px solid var(--border);
+
+}
+
+.schedule-item:last-child{
+
+    border-bottom:none;
+
+}
+
+.schedule-date{
+
+    flex:0 0 52px;
+    font-weight:700;
+    color:var(--primary);
+    font-size:14px;
+
+}
+
+.schedule-event{
+
+    font-size:14px;
+    color:var(--text);
+
+}
+
+@media (max-width:640px){
+
+    .school-grade-select-card{
+
+        flex-direction:column;
+        align-items:stretch;
+
+    }
+
+}

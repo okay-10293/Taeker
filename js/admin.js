@@ -18,6 +18,16 @@ const el={
     panelReports:document.getElementById("panelReports"),
     panelMembers:document.getElementById("panelMembers"),
     panelNotices:document.getElementById("panelNotices"),
+    panelSchool:document.getElementById("panelSchool"),
+
+    schoolApiKeyInput:document.getElementById("schoolApiKeyInput"),
+    schoolNameInput:document.getElementById("schoolNameInput"),
+    schoolSearchBtn:document.getElementById("schoolSearchBtn"),
+    schoolSearchResult:document.getElementById("schoolSearchResult"),
+    schoolOfficeCodeInput:document.getElementById("schoolOfficeCodeInput"),
+    schoolCodeInput:document.getElementById("schoolCodeInput"),
+    schoolConfigSaveBtn:document.getElementById("schoolConfigSaveBtn"),
+    schoolConfigStatus:document.getElementById("schoolConfigStatus"),
 
     statusTabs:document.querySelectorAll("#panelReports .admin-tab"),
     reportList:document.getElementById("reportList"),
@@ -666,6 +676,187 @@ async function deleteNotice(noticeId){
 
 }
 
+/* ---------- 학교설정 (NEIS 연동) ---------- */
+
+async function loadSchoolConfig(){
+
+    const client=getClient();
+
+    if(!client) return;
+
+    try{
+
+        const {data,error}=await client
+            .from("school_config")
+            .select("neis_api_key,atpt_ofcdc_sc_code,sd_schul_code,school_name")
+            .eq("id",1)
+            .maybeSingle();
+
+        if(error) throw error;
+
+        if(data){
+
+            if(el.schoolApiKeyInput) el.schoolApiKeyInput.value=data.neis_api_key || "";
+            if(el.schoolOfficeCodeInput) el.schoolOfficeCodeInput.value=data.atpt_ofcdc_sc_code || "";
+            if(el.schoolCodeInput) el.schoolCodeInput.value=data.sd_schul_code || "";
+            if(el.schoolNameInput && data.school_name) el.schoolNameInput.value=data.school_name;
+
+        }
+
+        if(el.schoolConfigStatus){
+
+            el.schoolConfigStatus.textContent=(data?.neis_api_key && data?.atpt_ofcdc_sc_code && data?.sd_schul_code)
+                ? "✅ 현재 학교 정보 연동이 설정되어 있습니다."
+                : "⚠️ 아직 설정이 완료되지 않았습니다.";
+
+        }
+
+    }
+
+    catch(error){
+
+        console.warn("학교설정을 불러오지 못했습니다:",error.message || error);
+
+    }
+
+}
+
+async function searchSchoolCode(){
+
+    const key=el.schoolApiKeyInput?.value.trim();
+    const schoolName=el.schoolNameInput?.value.trim();
+
+    if(!key){
+
+        window.Taecker?.toast?.("먼저 NEIS 인증키를 입력해주세요.");
+
+        return;
+
+    }
+
+    if(!schoolName){
+
+        window.Taecker?.toast?.("학교명을 입력해주세요.");
+
+        return;
+
+    }
+
+    if(el.schoolSearchResult) el.schoolSearchResult.innerHTML=`<p class="admin-item-sub">검색 중...</p>`;
+
+    try{
+
+        const query=new URLSearchParams({
+
+            KEY:key,
+            Type:"json",
+            pIndex:"1",
+            pSize:"10",
+            SCHUL_NM:schoolName
+
+        });
+
+        const res=await fetch(`https://open.neis.go.kr/hub/schoolInfo?${query.toString()}`);
+
+        if(!res.ok) throw new Error(`HTTP_${res.status}`);
+
+        const data=await res.json();
+
+        const rows=data.schoolInfo?.[1]?.row || [];
+
+        if(!rows.length){
+
+            if(el.schoolSearchResult) el.schoolSearchResult.innerHTML=`<p class="admin-item-sub">검색 결과가 없습니다. 학교명을 다시 확인해주세요.</p>`;
+
+            return;
+
+        }
+
+        if(el.schoolSearchResult){
+
+            el.schoolSearchResult.innerHTML=rows.map((row)=>`
+                <div class="admin-item" data-office="${escapeHtml(row.ATPT_OFCDC_SC_CODE)}" data-school="${escapeHtml(row.SD_SCHUL_CODE)}" style="cursor:pointer;">
+                    <div class="admin-item-title">${escapeHtml(row.SCHUL_NM)}</div>
+                    <div class="admin-item-sub">${escapeHtml(row.ATPT_OFCDC_SC_CODE)} · ${escapeHtml(row.SD_SCHUL_CODE)} · ${escapeHtml(row.ORG_RDNMA || "")}</div>
+                </div>
+            `).join("");
+
+        }
+
+    }
+
+    catch(error){
+
+        console.warn("학교 검색에 실패했습니다:",error.message || error);
+
+        if(el.schoolSearchResult) el.schoolSearchResult.innerHTML=`<p class="admin-item-sub">검색에 실패했습니다. 인증키를 확인해주세요.</p>`;
+
+    }
+
+}
+
+el.schoolSearchResult?.addEventListener("click",(e)=>{
+
+    const item=e.target.closest("[data-office]");
+
+    if(!item) return;
+
+    if(el.schoolOfficeCodeInput) el.schoolOfficeCodeInput.value=item.dataset.office;
+    if(el.schoolCodeInput) el.schoolCodeInput.value=item.dataset.school;
+
+    window.Taecker?.toast?.("학교 코드를 입력했습니다. 아래 저장 버튼을 눌러주세요.");
+
+});
+
+async function saveSchoolConfig(){
+
+    const client=getClient();
+
+    if(!client) return;
+
+    const payload={
+
+        neis_api_key:el.schoolApiKeyInput?.value.trim() || null,
+        atpt_ofcdc_sc_code:el.schoolOfficeCodeInput?.value.trim() || null,
+        sd_schul_code:el.schoolCodeInput?.value.trim() || null,
+        school_name:el.schoolNameInput?.value.trim() || "태성고등학교",
+        updated_at:new Date().toISOString(),
+        updated_by:adminId
+
+    };
+
+    try{
+
+        const {error}=await client
+            .from("school_config")
+            .update(payload)
+            .eq("id",1);
+
+        if(error) throw error;
+
+        window.Taecker?.toast?.("학교설정을 저장했습니다.");
+
+        await loadSchoolConfig();
+
+    }
+
+    catch(error){
+
+        console.warn("학교설정 저장에 실패했습니다:",error.message || error);
+
+        window.Taecker?.toast?.("저장에 실패했습니다. 잠시 후 다시 시도해주세요.");
+
+    }
+
+}
+
+function setupSchoolForm(){
+
+    el.schoolSearchBtn?.addEventListener("click",searchSchoolCode);
+    el.schoolConfigSaveBtn?.addEventListener("click",saveSchoolConfig);
+
+}
+
 function setupNoticeForm(){
 
     el.noticePublishBtn?.addEventListener("click",()=>{
@@ -698,10 +889,17 @@ function setupMainTabs(){
             el.panelReports.classList.toggle("active",target==="reports");
             el.panelMembers.classList.toggle("active",target==="members");
             el.panelNotices.classList.toggle("active",target==="notices");
+            el.panelSchool?.classList.toggle("active",target==="school");
 
             if(target==="notices"){
 
                 loadNotices();
+
+            }
+
+            if(target==="school"){
+
+                loadSchoolConfig();
 
             }
 
@@ -877,6 +1075,7 @@ window.addEventListener("load",async()=>{
     setupStatusTabs();
     setupActionDelegation();
     setupNoticeForm();
+    setupSchoolForm();
 
     await loadReports();
 

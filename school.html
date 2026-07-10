@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>게시판 | 태커</title>
-<meta name="description" content="태성고등학교 학생들의 자유게시판, 질문게시판, 정보게시판을 한곳에서 확인하세요.">
+<title>학교 정보 | 태커</title>
+<meta name="description" content="태성고등학교 급식, 시간표, 학사일정을 한곳에서 확인하세요.">
 <meta name="theme-color" content="#2563EB">
 <link rel="stylesheet" href="css/style.css">
 </head>
@@ -51,7 +51,7 @@
         </button>
 
         <button class="icon-btn" id="themeToggleBtn" aria-label="다크모드 전환">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" id="themeIconSun">
                 <circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="2"/>
                 <path d="M12 2V4M12 20V22M4 12H2M22 12H20M5 5L6.5 6.5M18 18L19.5 19.5M19.5 5L18 6.5M6.5 18L5 19.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
             </svg>
@@ -129,13 +129,13 @@
     <nav>
         <ul>
             <li><a href="index.html">홈</a></li>
-            <li><a href="board.html" class="active">게시판</a></li>
+            <li><a href="board.html">게시판</a></li>
             <li><a href="board.html?category=free">자유게시판</a></li>
             <li><a href="board.html?category=question">질문게시판</a></li>
             <li><a href="board.html?category=info">정보게시판</a></li>
-            <li><a href="school.html?tab=timetable">시간표</a></li>
-            <li><a href="school.html?tab=meal">급식</a></li>
-            <li><a href="school.html?tab=schedule">학사일정</a></li>
+            <li><a href="school.html?tab=timetable" class="active">시간표</a></li>
+            <li><a href="school.html?tab=meal" class="active">급식</a></li>
+            <li><a href="school.html?tab=schedule" class="active">학사일정</a></li>
             <li><a href="mypage.html">마이페이지</a></li>
         </ul>
     </nav>
@@ -147,51 +147,113 @@
 <main class="container">
 
     <section class="board-title">
-        <h2 id="boardTitle">게시판</h2>
-        <p id="boardSubtitle">태성고등학교 학생들과 자유롭게 이야기를 나눠보세요.</p>
+        <h2>학교 정보</h2>
+        <p>태성고등학교의 급식, 시간표, 학사일정을 확인하세요.</p>
     </section>
 
-    <section class="category-bar" id="boardCategoryBar">
-        <button class="chip" data-category="">전체</button>
-        <button class="chip" data-category="notice">공지사항</button>
-        <button class="chip" data-category="free">자유게시판</button>
-        <button class="chip" data-category="question">질문게시판</button>
-        <button class="chip" data-category="info">정보게시판</button>
-    </section>
-
-    <div class="feed-toolbar">
-        <div class="feed-tabs" id="boardFeedTabs">
-            <button class="feed-tab active" data-sort="latest">최신순</button>
-            <button class="feed-tab" data-sort="popular">인기순</button>
-        </div>
-        <span class="feed-count" id="boardFeedCount"></span>
+    <!-- 로그인 필요 안내 (비로그인 상태) -->
+    <div class="card school-login-required hidden" id="schoolLoginRequired">
+        <h3>로그인이 필요합니다</h3>
+        <p>급식·시간표·학사일정 정보는 로그인한 학생만 확인할 수 있습니다.</p>
+        <a href="login.html" class="btn" style="margin-top:10px;display:inline-flex;">로그인하러 가기</a>
     </div>
 
-    <div class="post-list" id="boardPostList">
-        <div class="skeleton-post" aria-hidden="true">
-            <div class="skeleton-line skeleton-line-sm"></div>
-            <div class="skeleton-line skeleton-line-lg"></div>
-            <div class="skeleton-line skeleton-line-md"></div>
-        </div>
-        <div class="skeleton-post" aria-hidden="true">
-            <div class="skeleton-line skeleton-line-sm"></div>
-            <div class="skeleton-line skeleton-line-lg"></div>
-            <div class="skeleton-line skeleton-line-md"></div>
-        </div>
-        <div class="skeleton-post" aria-hidden="true">
-            <div class="skeleton-line skeleton-line-sm"></div>
-            <div class="skeleton-line skeleton-line-lg"></div>
-            <div class="skeleton-line skeleton-line-md"></div>
-        </div>
-        <div class="skeleton-post" aria-hidden="true">
-            <div class="skeleton-line skeleton-line-sm"></div>
-            <div class="skeleton-line skeleton-line-lg"></div>
-            <div class="skeleton-line skeleton-line-md"></div>
-        </div>
-    </div>
+    <div class="school-wrap hidden" id="schoolWrap">
 
-    <div class="feed-footer" id="loadMoreWrap">
-        <button class="btn btn-outline btn-block" id="loadMoreBtn">더 보기</button>
+        <div class="feed-tabs school-tabs" id="schoolTabs">
+            <button class="feed-tab" data-tab="meal">🍱 급식</button>
+            <button class="feed-tab" data-tab="timetable">🗓 시간표</button>
+            <button class="feed-tab" data-tab="schedule">📌 학사일정</button>
+        </div>
+
+        <!-- ---------- 급식 ---------- -->
+        <section class="school-panel" id="panelMeal">
+
+            <div class="school-date-nav">
+                <button class="icon-btn" id="mealPrevBtn" aria-label="이전 날짜">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M15 6L9 12L15 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </button>
+                <span class="school-date-label" id="mealDateLabel">오늘</span>
+                <button class="icon-btn" id="mealNextBtn" aria-label="다음 날짜">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M9 6L15 12L9 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </button>
+                <button class="btn btn-outline" id="mealTodayBtn" style="margin-left:auto;">오늘</button>
+            </div>
+
+            <div class="card" id="mealCard">
+                <p class="widget-empty" id="mealEmpty">불러오는 중...</p>
+            </div>
+
+        </section>
+
+        <!-- ---------- 시간표 ---------- -->
+        <section class="school-panel hidden" id="panelTimetable">
+
+            <div class="school-date-nav">
+                <button class="icon-btn" id="ttPrevBtn" aria-label="이전 날짜">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M15 6L9 12L15 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </button>
+                <span class="school-date-label" id="ttDateLabel">오늘</span>
+                <button class="icon-btn" id="ttNextBtn" aria-label="다음 날짜">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M9 6L15 12L9 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </button>
+                <button class="btn btn-outline" id="ttTodayBtn" style="margin-left:auto;">오늘</button>
+            </div>
+
+            <div class="card school-grade-select-card">
+                <label class="school-inline-label" for="ttGradeSelect">학년</label>
+                <select id="ttGradeSelect" class="school-select">
+                    <option value="1">1학년</option>
+                    <option value="2">2학년</option>
+                    <option value="3">3학년</option>
+                </select>
+                <label class="school-inline-label" for="ttClassSelect">반</label>
+                <select id="ttClassSelect" class="school-select">
+                    <option value="1">1반</option>
+                    <option value="2">2반</option>
+                    <option value="3">3반</option>
+                    <option value="4">4반</option>
+                    <option value="5">5반</option>
+                    <option value="6">6반</option>
+                    <option value="7">7반</option>
+                    <option value="8">8반</option>
+                    <option value="9">9반</option>
+                    <option value="10">10반</option>
+                </select>
+            </div>
+
+            <div class="card" id="timetableCard">
+                <p class="widget-empty" id="timetableEmpty">불러오는 중...</p>
+            </div>
+
+        </section>
+
+        <!-- ---------- 학사일정 ---------- -->
+        <section class="school-panel hidden" id="panelSchedule">
+
+            <div class="school-date-nav">
+                <button class="icon-btn" id="schedulePrevBtn" aria-label="이전 달">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M15 6L9 12L15 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </button>
+                <span class="school-date-label" id="scheduleDateLabel">이번 달</span>
+                <button class="icon-btn" id="scheduleNextBtn" aria-label="다음 달">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M9 6L15 12L9 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </button>
+            </div>
+
+            <div class="card" id="scheduleList">
+                <p class="widget-empty" id="scheduleEmpty">불러오는 중...</p>
+            </div>
+
+        </section>
+
+        <!-- ---------- 설정 안 됨 안내 (관리자에게만 표시) ---------- -->
+        <div class="card school-config-warning hidden" id="schoolConfigWarning">
+            <h3>⚠️ 학교 정보 연동이 아직 설정되지 않았습니다</h3>
+            <p>NEIS Open API 인증키와 학교 코드가 등록되어야 급식·시간표·학사일정이 표시됩니다. 관리자 패널 &gt; 학교설정 탭에서 등록해주세요.</p>
+            <a href="admin.html" class="btn btn-outline" style="margin-top:10px;display:inline-flex;">관리자 패널로 이동</a>
+        </div>
+
     </div>
 
 </main>
@@ -212,14 +274,14 @@
         <span>홈</span>
     </a>
 
-    <a href="board.html" class="active">
+    <a href="board.html">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
             <path d="M4 5H20V15H7L4 18V5Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
         </svg>
         <span>게시판</span>
     </a>
 
-    <a href="school.html?tab=timetable">
+    <a href="school.html?tab=timetable" class="active">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
             <rect x="4" y="4" width="16" height="16" rx="2" stroke="currentColor" stroke-width="2"/>
             <path d="M8 8H16M8 12H16M8 16H13" stroke="currentColor" stroke-width="2"/>
@@ -239,7 +301,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="js/app.js"></script>
 <script src="js/auth.js"></script>
-<script src="js/board.js"></script>
+<script src="js/school.js"></script>
 
 </body>
 </html>

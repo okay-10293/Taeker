@@ -219,6 +219,7 @@
             <button class="admin-tab active" data-tab="reports">신고 내역</button>
             <button class="admin-tab" data-tab="members">회원 검색 / 정지</button>
             <button class="admin-tab" data-tab="notices">공지사항</button>
+            <button class="admin-tab" data-tab="school">학교설정</button>
         </div>
 
         <!-- ================= 신고 내역 ================= -->
@@ -275,6 +276,48 @@
 
             <div id="noticeList">
                 <div class="admin-empty">불러오는 중...</div>
+            </div>
+
+        </section>
+
+        <!-- ================= 학교설정 (NEIS 연동) ================= -->
+        <section class="admin-panel" id="panelSchool">
+
+            <div class="card" style="margin-bottom:20px;">
+
+                <p style="color:var(--sub);font-size:14px;margin-bottom:16px;">
+                    급식·시간표·학사일정 표시를 위해 NEIS(나이스 교육정보 개방 포털) 인증키와 학교 코드가 필요합니다.
+                    <a href="https://open.neis.go.kr" target="_blank" rel="noopener">open.neis.go.kr</a>에서 인증키를 발급받아 입력해주세요.
+                </p>
+
+                <div class="form-group">
+                    <label for="schoolApiKeyInput">NEIS Open API 인증키</label>
+                    <input type="text" class="input" id="schoolApiKeyInput" placeholder="발급받은 인증키를 입력하세요" autocomplete="off">
+                </div>
+
+                <div class="admin-search-row" style="margin-bottom:14px;">
+                    <input type="text" class="input" id="schoolNameInput" placeholder="학교명 (예: 태성고등학교)" value="태성고등학교">
+                    <button class="btn btn-outline" id="schoolSearchBtn">학교 코드 검색</button>
+                </div>
+
+                <div id="schoolSearchResult"></div>
+
+                <div class="form-group">
+                    <label for="schoolOfficeCodeInput">시도교육청코드 (ATPT_OFCDC_SC_CODE)</label>
+                    <input type="text" class="input" id="schoolOfficeCodeInput" placeholder="예: G10">
+                </div>
+
+                <div class="form-group">
+                    <label for="schoolCodeInput">표준학교코드 (SD_SCHUL_CODE)</label>
+                    <input type="text" class="input" id="schoolCodeInput" placeholder="예: 7430310">
+                </div>
+
+                <div class="admin-actions" style="justify-content:flex-end;">
+                    <button class="btn" id="schoolConfigSaveBtn">저장</button>
+                </div>
+
+                <p id="schoolConfigStatus" style="margin-top:10px;font-size:13px;color:var(--sub);"></p>
+
             </div>
 
         </section>
