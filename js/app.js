@@ -463,6 +463,9 @@ const el={
 
     notifBtn:document.getElementById("notifBtn"),
     notifMenu:document.getElementById("notifMenu"),
+    notifList:document.getElementById("notifList"),
+    notifEmpty:document.getElementById("notifEmpty"),
+    notifBadge:document.getElementById("notifBadge"),
 
     profileBtn:document.getElementById("profileBtn"),
     profileMenu:document.getElementById("profileMenu"),
@@ -621,6 +624,99 @@ document.addEventListener("keydown",(e)=>{
 
 setupDropdown(el.notifBtn,el.notifMenu);
 setupDropdown(el.profileBtn,el.profileMenu);
+
+/* ---------- 알림 (공지사항) ---------- */
+
+const NOTIF_SEEN_KEY="taecker_notif_seen_at";
+
+let latestNoticeAt=null;
+
+function notifItemHTML(notice){
+
+    return `
+        <div class="notif-item">
+            <span class="notif-item-dot"></span>
+            <div class="notif-item-body">
+                <div class="notif-item-title">
+                    <span>${escapeHtml(notice.title)}</span>
+                    <span class="notif-item-badge">공지</span>
+                </div>
+                <div class="notif-item-content">${escapeHtml(notice.content)}</div>
+                <div class="notif-item-time">${timeAgo(notice.published_at)}</div>
+            </div>
+        </div>
+    `;
+
+}
+
+function refreshNotifBadge(){
+
+    if(!el.notifBadge || !latestNoticeAt) return;
+
+    const seenAt=Storage.get(NOTIF_SEEN_KEY,null);
+
+    const isUnread=!seenAt || new Date(seenAt)<new Date(latestNoticeAt);
+
+    el.notifBadge.classList.toggle("hidden",!isUnread);
+
+}
+
+async function fetchNotifications(){
+
+    if(!el.notifList || !el.notifEmpty) return;
+
+    const client=getClient();
+
+    if(!client) return;
+
+    try{
+
+        const {data,error}=await client
+            .from("notices")
+            .select("id,title,content,published_at")
+            .eq("is_published",true)
+            .order("published_at",{ascending:false})
+            .limit(10);
+
+        if(error) throw error;
+
+        if(!data || data.length===0){
+
+            el.notifEmpty.classList.remove("hidden");
+            el.notifList.classList.add("hidden");
+            el.notifBadge?.classList.add("hidden");
+
+            return;
+
+        }
+
+        el.notifEmpty.classList.add("hidden");
+        el.notifList.classList.remove("hidden");
+        el.notifList.innerHTML=data.map(notifItemHTML).join("");
+
+        latestNoticeAt=data[0].published_at;
+
+        refreshNotifBadge();
+
+    }
+
+    catch(error){
+
+        console.error(error);
+
+    }
+
+}
+
+el.notifBtn?.addEventListener("click",()=>{
+
+    if(!latestNoticeAt) return;
+
+    Storage.set(NOTIF_SEEN_KEY,latestNoticeAt);
+
+    el.notifBadge?.classList.add("hidden");
+
+});
 
 /* ---------- THEME TOGGLE (HEADER ICON) ---------- */
 
@@ -1039,6 +1135,7 @@ window.addEventListener("load",()=>{
     renderAuthUI();
     fetchPosts();
     fetchPopular();
+    fetchNotifications();
 
 });
 

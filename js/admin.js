@@ -17,13 +17,20 @@ const el={
     mainTabs:document.querySelectorAll(".admin-tabs")[0]?.querySelectorAll(".admin-tab"),
     panelReports:document.getElementById("panelReports"),
     panelMembers:document.getElementById("panelMembers"),
+    panelNotices:document.getElementById("panelNotices"),
 
     statusTabs:document.querySelectorAll("#panelReports .admin-tab"),
     reportList:document.getElementById("reportList"),
 
     memberSearchInput:document.getElementById("memberSearchInput"),
     memberSearchBtn:document.getElementById("memberSearchBtn"),
-    memberList:document.getElementById("memberList")
+    memberList:document.getElementById("memberList"),
+
+    noticeTitleInput:document.getElementById("noticeTitleInput"),
+    noticeContentInput:document.getElementById("noticeContentInput"),
+    noticeSaveDraftBtn:document.getElementById("noticeSaveDraftBtn"),
+    noticePublishBtn:document.getElementById("noticePublishBtn"),
+    noticeList:document.getElementById("noticeList")
 
 };
 
@@ -421,6 +428,214 @@ async function searchMembers(keyword){
 
 }
 
+/* ---------- 공지사항 ---------- */
+
+function noticeItemHTML(notice){
+
+    const statusHTML=notice.is_published
+        ? `<span class="status-pill status-resolved">배포됨</span>`
+        : `<span class="status-pill status-pending">임시저장</span>`;
+
+    const dateLabel=notice.is_published
+        ? `배포일시 ${new Date(notice.published_at).toLocaleString("ko-KR",{month:"numeric",day:"numeric",hour:"2-digit",minute:"2-digit"})}`
+        : `작성일시 ${new Date(notice.created_at).toLocaleString("ko-KR",{month:"numeric",day:"numeric",hour:"2-digit",minute:"2-digit"})}`;
+
+    return `
+        <div class="admin-item" data-notice-id="${notice.id}">
+            <div class="admin-item-top">
+                <div>
+                    <div class="admin-item-title">${escapeHtml(notice.title)}</div>
+                    <div class="admin-item-sub">${dateLabel}</div>
+                </div>
+                ${statusHTML}
+            </div>
+            <div class="admin-item-sub" style="white-space:pre-wrap;margin-bottom:6px;">${escapeHtml(notice.content)}</div>
+            <div class="admin-actions">
+                ${
+                    notice.is_published
+                        ? `<button data-action="unpublish-notice" data-notice="${notice.id}">배포 취소</button>`
+                        : `<button class="btn-ok" data-action="publish-notice" data-notice="${notice.id}">배포하기</button>`
+                }
+                <button class="btn-danger" data-action="delete-notice" data-notice="${notice.id}">삭제</button>
+            </div>
+        </div>
+    `;
+
+}
+
+async function loadNotices(){
+
+    const client=getClient();
+
+    if(!client || !el.noticeList) return;
+
+    el.noticeList.innerHTML=`<div class="admin-empty">불러오는 중...</div>`;
+
+    try{
+
+        const {data,error}=await client
+            .from("notices")
+            .select("id,title,content,is_published,created_at,published_at")
+            .order("created_at",{ascending:false})
+            .limit(50);
+
+        if(error) throw error;
+
+        if(!data || data.length===0){
+
+            el.noticeList.innerHTML=`<div class="admin-empty">등록된 공지사항이 없습니다.</div>`;
+
+            return;
+
+        }
+
+        el.noticeList.innerHTML=data.map(noticeItemHTML).join("");
+
+    }
+
+    catch(error){
+
+        console.warn("공지사항을 불러오지 못했습니다:",error.message || error);
+
+        el.noticeList.innerHTML=`<div class="admin-empty">공지사항을 불러오지 못했습니다. (notices 테이블이 아직 없다면 sql/notice_setup.sql을 먼저 실행해주세요)</div>`;
+
+    }
+
+}
+
+async function createNotice(publish){
+
+    const client=getClient();
+
+    if(!client) return;
+
+    const title=el.noticeTitleInput?.value.trim();
+    const content=el.noticeContentInput?.value.trim();
+
+    if(!title || !content){
+
+        window.Taecker?.toast?.("제목과 내용을 모두 입력해주세요.");
+
+        return;
+
+    }
+
+    const payload={
+        title,
+        content,
+        created_by:adminId,
+        is_published:publish,
+        published_at:publish ? new Date().toISOString() : null
+    };
+
+    try{
+
+        const {error}=await client
+            .from("notices")
+            .insert(payload);
+
+        if(error) throw error;
+
+        window.Taecker?.toast?.(publish ? "공지사항을 배포했습니다." : "임시저장했습니다.");
+
+        el.noticeTitleInput.value="";
+        el.noticeContentInput.value="";
+
+        await loadNotices();
+
+    }
+
+    catch(error){
+
+        console.warn("공지사항 등록에 실패했습니다:",error.message || error);
+
+        window.Taecker?.toast?.("등록에 실패했습니다. 잠시 후 다시 시도해주세요.");
+
+    }
+
+}
+
+async function setNoticePublished(noticeId,publish){
+
+    const client=getClient();
+
+    if(!client) return;
+
+    try{
+
+        const {error}=await client
+            .from("notices")
+            .update({
+                is_published:publish,
+                published_at:publish ? new Date().toISOString() : null
+            })
+            .eq("id",noticeId);
+
+        if(error) throw error;
+
+        window.Taecker?.toast?.(publish ? "공지사항을 배포했습니다." : "배포를 취소했습니다.");
+
+        await loadNotices();
+
+    }
+
+    catch(error){
+
+        console.warn("공지사항 상태 변경에 실패했습니다:",error.message || error);
+
+        window.Taecker?.toast?.("처리에 실패했습니다. 잠시 후 다시 시도해주세요.");
+
+    }
+
+}
+
+async function deleteNotice(noticeId){
+
+    const client=getClient();
+
+    if(!client) return;
+
+    try{
+
+        const {error}=await client
+            .from("notices")
+            .delete()
+            .eq("id",noticeId);
+
+        if(error) throw error;
+
+        window.Taecker?.toast?.("공지사항을 삭제했습니다.");
+
+        await loadNotices();
+
+    }
+
+    catch(error){
+
+        console.warn("공지사항 삭제에 실패했습니다:",error.message || error);
+
+        window.Taecker?.toast?.("삭제에 실패했습니다. 잠시 후 다시 시도해주세요.");
+
+    }
+
+}
+
+function setupNoticeForm(){
+
+    el.noticePublishBtn?.addEventListener("click",()=>{
+
+        createNotice(true);
+
+    });
+
+    el.noticeSaveDraftBtn?.addEventListener("click",()=>{
+
+        createNotice(false);
+
+    });
+
+}
+
 /* ---------- 탭 전환 ---------- */
 
 function setupMainTabs(){
@@ -436,6 +651,13 @@ function setupMainTabs(){
 
             el.panelReports.classList.toggle("active",target==="reports");
             el.panelMembers.classList.toggle("active",target==="members");
+            el.panelNotices.classList.toggle("active",target==="notices");
+
+            if(target==="notices"){
+
+                loadNotices();
+
+            }
 
         });
 
@@ -506,6 +728,34 @@ function setupActionDelegation(){
 
             updateReportStatus(reportId,action==="resolve" ? "resolved" : "rejected",adminId);
 
+            return;
+
+        }
+
+        if(action==="publish-notice" || action==="unpublish-notice"){
+
+            const noticeId=btn.dataset.notice;
+
+            if(!noticeId) return;
+
+            setNoticePublished(noticeId,action==="publish-notice");
+
+            return;
+
+        }
+
+        if(action==="delete-notice"){
+
+            const noticeId=btn.dataset.notice;
+
+            if(!noticeId) return;
+
+            if(confirm("이 공지사항을 삭제할까요?")){
+
+                deleteNotice(noticeId);
+
+            }
+
         }
 
     });
@@ -562,6 +812,7 @@ window.addEventListener("load",async()=>{
     setupMainTabs();
     setupStatusTabs();
     setupActionDelegation();
+    setupNoticeForm();
 
     await loadReports();
 

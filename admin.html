@@ -218,6 +218,7 @@
         <div class="admin-tabs">
             <button class="admin-tab active" data-tab="reports">신고 내역</button>
             <button class="admin-tab" data-tab="members">회원 검색 / 정지</button>
+            <button class="admin-tab" data-tab="notices">공지사항</button>
         </div>
 
         <!-- ================= 신고 내역 ================= -->
@@ -246,6 +247,34 @@
 
             <div id="memberList">
                 <div class="admin-empty">닉네임을 검색해보세요.</div>
+            </div>
+
+        </section>
+
+        <!-- ================= 공지사항 ================= -->
+        <section class="admin-panel" id="panelNotices">
+
+            <div class="card" style="margin-bottom:20px;">
+
+                <div class="form-group">
+                    <label for="noticeTitleInput">제목</label>
+                    <input type="text" class="input" id="noticeTitleInput" placeholder="공지 제목을 입력하세요" maxlength="80">
+                </div>
+
+                <div class="form-group">
+                    <label for="noticeContentInput">내용</label>
+                    <textarea class="input" id="noticeContentInput" rows="5" placeholder="공지 내용을 입력하세요"></textarea>
+                </div>
+
+                <div class="admin-actions" style="justify-content:flex-end;">
+                    <button class="btn btn-outline" id="noticeSaveDraftBtn">임시저장</button>
+                    <button class="btn" id="noticePublishBtn">배포하기</button>
+                </div>
+
+            </div>
+
+            <div id="noticeList">
+                <div class="admin-empty">불러오는 중...</div>
             </div>
 
         </section>
