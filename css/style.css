@@ -3485,6 +3485,46 @@ textarea.input{
 
 }
 
+.checkbox-group input[type="radio"]{
+
+    accent-color:var(--primary);
+
+    cursor:pointer;
+
+}
+
+.role-toggle{
+
+    display:flex;
+
+    gap:24px;
+
+    padding:4px 0 16px;
+
+}
+
+.teacher-badge{
+
+    display:inline-flex;
+
+    align-items:center;
+
+    padding:3px 10px;
+
+    margin-top:2px;
+
+    border-radius:999px;
+
+    background:#DCFCE7;
+
+    color:#15803D;
+
+    font-size:12px;
+
+    font-weight:700;
+
+}
+
 .register-card textarea{
 
     font-family:inherit;

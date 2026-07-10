@@ -158,13 +158,13 @@ function validatePassword(password){
 
     }
 
-    if(password.length<8){
+    if(password.length<6){
 
         return{
 
             valid:false,
 
-            message:"8자 이상 입력해주세요."
+            message:"6자 이상 입력해주세요."
 
         };
 
@@ -188,7 +188,7 @@ function calculateStrength(password){
 
     let score=0;
 
-    if(password.length>=8){
+    if(password.length>=6){
 
         score++;
 
@@ -897,7 +897,9 @@ async function ensureProfile(user){
 
                 : String(meta.student_number),
 
-        bio:meta.bio ?? ""
+        bio:meta.bio ?? "",
+
+        is_teacher:meta.is_teacher===true
 
     });
 

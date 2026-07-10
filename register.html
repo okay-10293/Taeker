@@ -41,7 +41,7 @@
 
             <p>
 
-                태성고등학교 학생 인증 후 가입하세요.
+                태성고등학교 학생 또는 선생님이라면 가입하세요.
 
             </p>
 
@@ -50,6 +50,35 @@
         <form
             id="registerForm"
             autocomplete="on">
+
+            <div class="checkbox-group role-toggle">
+
+                <label>
+
+                    <input
+                        type="radio"
+                        name="registerRole"
+                        id="roleStudent"
+                        value="student"
+                        checked>
+
+                    학생
+
+                </label>
+
+                <label>
+
+                    <input
+                        type="radio"
+                        name="registerRole"
+                        id="roleTeacher"
+                        value="teacher">
+
+                    선생님
+
+                </label>
+
+            </div>
 
             <div class="form-group">
 
@@ -63,7 +92,7 @@
                     id="registerEmail"
                     class="input"
                     type="email"
-                    placeholder="학교 이메일">
+                    placeholder="이메일">
 
                 <small
                     id="registerEmailMessage"
@@ -162,7 +191,7 @@
                 </small>
 
             </div>
-                        <div class="form-row">
+                        <div class="form-row" id="studentFields">
 
                 <div class="form-group">
 
@@ -239,6 +268,28 @@
                         placeholder="번호">
 
                 </div>
+
+            </div>
+
+            <div class="form-group hidden" id="teacherFields">
+
+                <label for="teacherCode">
+
+                    선생님 추천코드
+
+                </label>
+
+                <input
+                    id="teacherCode"
+                    class="input"
+                    type="text"
+                    placeholder="선생님 추천코드를 입력하세요">
+
+                <small
+                    id="teacherCodeMessage"
+                    class="form-message">
+
+                </small>
 
             </div>
 
@@ -407,6 +458,40 @@ const confirmPasswordMessage=document.getElementById("confirmPasswordMessage");
 const registerStrengthBar=document.getElementById("registerStrengthBar");
 
 const registerStrengthText=document.getElementById("registerStrengthText");
+
+const roleStudent=document.getElementById("roleStudent");
+
+const roleTeacher=document.getElementById("roleTeacher");
+
+const studentFields=document.getElementById("studentFields");
+
+const teacherFields=document.getElementById("teacherFields");
+
+const teacherCode=document.getElementById("teacherCode");
+
+const teacherCodeMessage=document.getElementById("teacherCodeMessage");
+
+function isTeacherRole(){
+
+    return !!(roleTeacher && roleTeacher.checked);
+
+}
+
+function updateRoleFields(){
+
+    const teacher=isTeacherRole();
+
+    studentFields?.classList.toggle("hidden",teacher);
+
+    teacherFields?.classList.toggle("hidden",!teacher);
+
+}
+
+roleStudent?.addEventListener("change",updateRoleFields);
+
+roleTeacher?.addEventListener("change",updateRoleFields);
+
+updateRoleFields();
   email.addEventListener("input",()=>{
 
     const value=email.value.trim();
@@ -503,7 +588,7 @@ password.addEventListener("input",()=>{
 
     let score=0;
 
-    if(value.length>=8) score++;
+    if(value.length>=6) score++;
 
     if(/[A-Z]/.test(value)) score++;
 
@@ -670,6 +755,34 @@ registerForm.addEventListener(
 
         }
 
+        if(password.value.length<6){
+
+            toast(
+
+                "비밀번호는 6자 이상 입력해주세요."
+
+            );
+
+            return;
+
+        }
+
+        const teacher=isTeacherRole();
+
+        if(teacher && !teacherCode.value.trim()){
+
+            toast(
+
+                "선생님 추천코드를 입력해주세요."
+
+            );
+
+            teacherCode.focus();
+
+            return;
+
+        }
+
         showLoader();
 
         registerButton.disabled=true;
@@ -690,17 +803,51 @@ registerForm.addEventListener(
 
             }
 
-            const studentIdAvailable=
+            if(!teacher){
 
-                await checkStudentId();
+                const studentIdAvailable=
 
-            if(!studentIdAvailable){
+                    await checkStudentId();
 
-                throw new Error(
+                if(!studentIdAvailable){
 
-                    "이미 가입된 학번입니다. 본인 계정이 맞다면 로그인해주세요."
+                    throw new Error(
 
-                );
+                        "이미 가입된 학번입니다. 본인 계정이 맞다면 로그인해주세요."
+
+                    );
+
+                }
+
+            }
+
+            if(teacher){
+
+                const {data:codeOk,error:codeError}=
+
+                    await window.sb.rpc(
+
+                        "redeem_teacher_code",
+
+                        {p_code:teacherCode.value.trim()}
+
+                    );
+
+                if(codeError){
+
+                    throw codeError;
+
+                }
+
+                if(!codeOk){
+
+                    throw new Error(
+
+                        "잘못된 코드이거나 이미 사용된 추천코드입니다."
+
+                    );
+
+                }
 
             }
 
@@ -724,11 +871,41 @@ registerForm.addEventListener(
 
                 options:{
 
-                    data:{
+                    data: teacher ? {
 
                         nickname:
 
                             nickname.value.trim(),
+
+                        is_teacher:
+
+                            true,
+
+                        grade:
+
+                            null,
+
+                        class_number:
+
+                            null,
+
+                        student_number:
+
+                            null,
+
+                        bio:
+
+                            bio.value.trim()
+
+                    } : {
+
+                        nickname:
+
+                            nickname.value.trim(),
+
+                        is_teacher:
+
+                            false,
 
                         grade:
 

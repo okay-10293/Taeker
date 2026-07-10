@@ -15,6 +15,7 @@ const el={
     avatarImg:document.getElementById("mypageAvatarImg"),
     avatarInitial:document.getElementById("mypageAvatarInitial"),
     nickname:document.getElementById("mypageNickname"),
+    teacherBadge:document.getElementById("mypageTeacherBadge"),
     meta:document.getElementById("mypageMeta"),
     email:document.getElementById("mypageEmail"),
 
@@ -136,6 +137,8 @@ async function loadProfile(){
     /* ---- 프로필 요약 ---- */
 
     el.nickname.textContent=profile.nickname || "회원";
+
+    el.teacherBadge?.classList.toggle("hidden",!profile.is_teacher);
 
     const metaParts=[];
 
