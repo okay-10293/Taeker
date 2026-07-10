@@ -26,7 +26,7 @@ if(!el.form) return;
 
 function getClient(){
 
-    return (typeof supabase!=="undefined") ? supabase : null;
+    return window.sb || null;
 
 }
 

@@ -101,7 +101,7 @@ function timeAgo(dateStr){
 
 function getClient(){
 
-    return (typeof supabase!=="undefined") ? supabase : null;
+    return window.sb || null;
 
 }
 
@@ -164,19 +164,6 @@ async function loadPost(){
         el.detail?.classList.remove("hidden");
         el.commentSection?.classList.remove("hidden");
 
-        /* 조회수 증가는 화면 렌더 이후 백그라운드로 처리 (실패해도 화면엔 영향 없음) */
-
-        client.rpc("increment_view_count",{post_id:postId}).then(({error:rpcError})=>{
-
-            if(rpcError) console.warn("조회수 증가 실패:",rpcError.message);
-
-        });
-
-        await Promise.all([
-            refreshLikeState(),
-            loadComments()
-        ]);
-
     }
 
     catch(error){
@@ -184,6 +171,50 @@ async function loadPost(){
         console.error("게시글을 불러오지 못했습니다:",error.message || error);
 
         showError("게시글을 불러오지 못했습니다.");
+
+        return;
+
+    }
+
+    /* 조회수 증가는 화면 렌더 이후 백그라운드로 처리 (실패해도 화면엔 영향 없음) */
+
+    client.rpc("increment_view_count",{post_id:postId}).then(({error:rpcError})=>{
+
+        if(rpcError) console.warn("조회수 증가 실패:",rpcError.message);
+
+    });
+
+    /* 게시글 자체는 이미 화면에 표시된 상태이므로,
+       좋아요 상태/댓글 로딩이 실패해도 게시글 화면을 지우지 않고
+       각자 알아서 실패를 처리하도록 분리 (전체 에러 화면으로 덮어쓰지 않음) */
+
+    try{
+
+        await refreshLikeState();
+
+    }
+
+    catch(error){
+
+        console.warn("좋아요 상태를 불러오지 못했습니다:",error.message || error);
+
+    }
+
+    try{
+
+        await loadComments();
+
+    }
+
+    catch(error){
+
+        console.warn("댓글을 불러오지 못했습니다:",error.message || error);
+
+        if(el.commentList){
+
+            el.commentList.innerHTML=`<div class="comment-empty">댓글을 불러오지 못했습니다.</div>`;
+
+        }
 
     }
 

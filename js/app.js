@@ -1028,7 +1028,7 @@ el.bottomNavMy?.addEventListener("click",(e)=>{
 
     }
 
-    toast("마이페이지는 준비 중입니다.");
+    location.href="mypage.html";
 
 });
 
