@@ -598,6 +598,28 @@ bio.addEventListener("input",()=>{
 
 }
 
+async function checkStudentId(){
+
+    const {data}=
+
+    await window.sb
+
+    .from("profiles")
+
+    .select("id")
+
+    .eq("grade",Number(grade.value))
+
+    .eq("class_number",Number(classNumber.value))
+
+    .eq("student_number",String(Number(studentNumber.value)))
+
+    .maybeSingle();
+
+    return !data;
+
+}
+
 registerForm.addEventListener(
 
     "submit",
@@ -668,9 +690,23 @@ registerForm.addEventListener(
 
             }
 
+            const studentIdAvailable=
+
+                await checkStudentId();
+
+            if(!studentIdAvailable){
+
+                throw new Error(
+
+                    "이미 가입된 학번입니다. 본인 계정이 맞다면 로그인해주세요."
+
+                );
+
+            }
+
             const {
 
-                data,
+            data,
 
                 error
 
