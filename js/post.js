@@ -32,6 +32,7 @@ const el={
     commentSubmitBtn:document.getElementById("commentSubmitBtn"),
     commentList:document.getElementById("commentList"),
 
+    deletePostBtn:document.getElementById("deletePostBtn"),
     reportPostBtn:document.getElementById("reportPostBtn"),
     reportModal:document.getElementById("reportModal"),
     reportModalTarget:document.getElementById("reportModalTarget"),
@@ -197,6 +198,18 @@ async function loadPost(){
     catch(error){
 
         console.warn("좋아요 상태를 불러오지 못했습니다:",error.message || error);
+
+    }
+
+    try{
+
+        await refreshDeletePermission();
+
+    }
+
+    catch(error){
+
+        console.warn("삭제 권한을 확인하지 못했습니다:",error.message || error);
 
     }
 
@@ -369,6 +382,90 @@ el.likeBtn?.addEventListener("click",async()=>{
     finally{
 
         likeBusy=false;
+
+    }
+
+});
+
+/* ---------- DELETE POST ---------- */
+
+async function refreshDeletePermission(){
+
+    if(!el.deletePostBtn) return;
+
+    if(!state.currentUser || !state.post){
+
+        el.deletePostBtn.classList.add("hidden");
+        return;
+
+    }
+
+    const isOwner=state.post.author_id && state.post.author_id===state.currentUser.id;
+
+    let isAdmin=false;
+
+    if(!isOwner && window.Auth?.getProfile){
+
+        try{
+
+            const profile=await window.Auth.getProfile();
+
+            isAdmin=!!profile?.is_admin;
+
+        }
+
+        catch(error){
+
+            console.warn("관리자 여부를 확인하지 못했습니다:",error.message || error);
+
+        }
+
+    }
+
+    el.deletePostBtn.classList.toggle("hidden",!(isOwner || isAdmin));
+
+}
+
+let deleteBusy=false;
+
+el.deletePostBtn?.addEventListener("click",async()=>{
+
+    if(deleteBusy || !postId) return;
+
+    const confirmDelete=confirm("게시글을 삭제하시겠습니까? 삭제하면 복구할 수 없습니다.");
+
+    if(!confirmDelete) return;
+
+    const client=getClient();
+
+    if(!client) return;
+
+    deleteBusy=true;
+    el.deletePostBtn.disabled=true;
+
+    try{
+
+        const {error}=await client
+            .from("posts")
+            .delete()
+            .eq("id",postId);
+
+        if(error) throw error;
+
+        window.Taecker?.toast?.("게시글이 삭제되었습니다.");
+
+        setTimeout(()=>{ location.href="board.html"; },500);
+
+    }
+
+    catch(error){
+
+        console.error("게시글 삭제 실패:",error.message || error);
+
+        window.Taecker?.toast?.("게시글 삭제에 실패했습니다.");
+
+        deleteBusy=false;
+        el.deletePostBtn.disabled=false;
 
     }
 

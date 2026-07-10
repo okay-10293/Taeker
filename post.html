@@ -158,7 +158,10 @@
                     <span id="likeCount">0</span>
                 </button>
                 <span class="post-detail-view-count" id="commentCountText"></span>
-                <button type="button" class="report-btn" id="reportPostBtn" data-target-type="post" style="margin-left:auto;">🚨 신고</button>
+                <span style="margin-left:auto;display:flex;align-items:center;">
+                    <button type="button" class="report-btn hidden" id="deletePostBtn">🗑 삭제</button>
+                    <button type="button" class="report-btn" id="reportPostBtn" data-target-type="post">🚨 신고</button>
+                </span>
             </div>
 
         </article>
