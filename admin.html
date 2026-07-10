@@ -106,12 +106,24 @@
         display:flex;
         gap:10px;
         margin-bottom:20px;
+        flex-wrap:wrap;
     }
-    .admin-search-row .input{ flex:1; }
+    .admin-search-row .input{ flex:1; min-width:160px; }
     .admin-empty{
         text-align:center;
         color:var(--sub);
         padding:32px 0;
+    }
+    @media (max-width:480px){
+        .admin-item-top{
+            flex-direction:column;
+            align-items:flex-start;
+        }
+        .admin-actions .btn,
+        .admin-actions button{
+            flex:1;
+            min-width:80px;
+        }
     }
 </style>
 </head>

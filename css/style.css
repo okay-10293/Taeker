@@ -13,6 +13,7 @@
 
 html{
     scroll-behavior:smooth;
+    overflow-x:hidden;
 }
 
 body{
@@ -27,6 +28,10 @@ body{
     color:#111827;
 
     line-height:1.6;
+
+    overflow-x:hidden;
+
+    width:100%;
 
 }
 
@@ -123,7 +128,7 @@ img{
 
 .brand h1{
 
-    font-size:22px;
+    font-size:clamp(17px,4.5vw,22px);
 
     font-weight:800;
 
@@ -321,9 +326,11 @@ img{
 
 .hero-card h2{
 
-    font-size:28px;
+    font-size:clamp(20px,5.5vw,28px);
 
     margin-bottom:8px;
+
+    word-break:keep-all;
 
 }
 
@@ -4451,6 +4458,59 @@ textarea.input{
     }
     .brand span{
         display:none;
+    }
+}
+
+/* ---------- SMALL / NARROW PHONES (<=380px) ---------- */
+@media (max-width:380px){
+    .container{
+        padding:14px;
+        padding-bottom:110px;
+    }
+    .hero-card{
+        padding:20px;
+    }
+    .card{
+        padding:16px;
+    }
+    .header{
+        padding:0 10px;
+        gap:8px;
+    }
+    .header-actions{
+        gap:4px;
+    }
+    .icon-btn,
+    .nav-toggle{
+        width:38px;
+        height:38px;
+    }
+    .btn-write{
+        padding:10px;
+    }
+    .secondary-actions{
+        grid-template-columns:1fr;
+    }
+    .quick-grid{
+        gap:10px;
+    }
+}
+
+/* ---------- SHORT / LANDSCAPE VIEWPORTS ---------- */
+@media (max-height:480px) and (orientation:landscape){
+    .bottom-nav{
+        height:56px;
+    }
+    .bottom-nav a svg{
+        width:18px;
+        height:18px;
+    }
+    .container{
+        padding-bottom:70px;
+    }
+    .sidebar{
+        top:64px;
+        height:calc(100vh - 64px);
     }
 }
 
