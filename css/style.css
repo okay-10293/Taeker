@@ -5030,6 +5030,19 @@ body.dark .header-search.header-search-mobile-open{
 
 }
 
+.timetable-item-empty .timetable-subject{
+
+    color:var(--sub);
+    font-style:italic;
+
+}
+
+.timetable-item-empty .timetable-perio{
+
+    color:var(--sub);
+
+}
+
 .schedule-list{
 
     list-style:none;

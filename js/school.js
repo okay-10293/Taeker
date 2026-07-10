@@ -341,16 +341,55 @@ async function loadTimetable(){
 
         }
 
-        const sorted=[...rows].sort((a,b)=>Number(a.PERIO)-Number(b.PERIO));
+        const grouped=new Map();
+
+        for(const row of rows){
+
+            const perio=Number(row.PERIO);
+
+            if(!Number.isFinite(perio)) continue;
+
+            const subject=(row.ITRT_CNTNT || "").trim();
+
+            if(!subject) continue;
+
+            if(!grouped.has(perio)) grouped.set(perio,new Set());
+
+            grouped.get(perio).add(subject);
+
+        }
+
+        if(grouped.size===0){
+
+            el.timetableCard.innerHTML=`<p class="widget-empty">해당 날짜에는 시간표 정보가 없습니다. (주말·방학 등)</p>`;
+
+            return;
+
+        }
+
+        /* NEIS는 실제 수업이 있는 교시만 내려주고 공강(빈 교시)은 아예 응답에서
+           빠지기 때문에, 받은 교시들 중 가장 큰 번호까지 1교시부터 채워서
+           공강도 하나의 교시로 보이도록 한다. */
+
+        const maxPerio=Math.max(...grouped.keys());
+
+        const periods=Array.from({length:maxPerio},(_,i)=>i+1);
 
         el.timetableCard.innerHTML=`
             <ul class="timetable-list">
-                ${sorted.map((row)=>`
-                    <li class="timetable-item">
-                        <span class="timetable-perio">${escapeHtml(row.PERIO)}교시</span>
-                        <span class="timetable-subject">${escapeHtml(row.ITRT_CNTNT || "-")}</span>
-                    </li>
-                `).join("")}
+                ${periods.map((perio)=>{
+
+                    const subjects=grouped.get(perio);
+                    const label=subjects ? Array.from(subjects).join(" / ") : "공강";
+
+                    return `
+                        <li class="timetable-item${subjects ? "" : " timetable-item-empty"}">
+                            <span class="timetable-perio">${perio}교시</span>
+                            <span class="timetable-subject">${escapeHtml(label)}</span>
+                        </li>
+                    `;
+
+                }).join("")}
             </ul>
         `;
 
