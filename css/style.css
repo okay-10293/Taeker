@@ -4435,7 +4435,7 @@ textarea.input{
 }
 
 @media (max-width:640px){
-    .auth-area .btn-ghost{
+    .auth-area .btn:not(.btn-ghost){
         display:none;
     }
     .profile-trigger-name{
