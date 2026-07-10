@@ -27,7 +27,7 @@
 
             <a
                 href="index.html"
-                class="login-back">
+                class="login-back btn btn-ghost">
 
                 ← 홈으로
 
@@ -323,6 +323,22 @@
 
             </div>
                     </form>
+
+        <div class="card register-success hidden" id="registerSuccess">
+
+            <div class="register-success-icon">📩</div>
+
+            <h2>회원가입 신청이 완료되었습니다</h2>
+
+            <p>
+                입력하신 이메일로 인증 메일을 보냈어요.
+                <strong>메일함(스팸함 포함)에서 인증 링크를 눌러야</strong>
+                로그인할 수 있습니다.
+            </p>
+
+            <a href="login.html" class="btn w-100 mt-20">로그인 화면으로 이동</a>
+
+        </div>
 
         <div class="login-footer">
 
@@ -712,13 +728,11 @@ registerForm.addEventListener(
 
             );
 
-            setTimeout(()=>{
+            registerForm.classList.add("hidden");
 
-                location.href=
+            document.getElementById("registerSuccess")
 
-                    "login.html";
-
-            },1200);
+                ?.classList.remove("hidden");
 
         }
 
