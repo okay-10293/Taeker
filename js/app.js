@@ -1007,7 +1007,7 @@ function handleWriteClick(){
 
     }
 
-    toast("글쓰기 페이지는 준비 중입니다.");
+    location.href="write.html";
 
 }
 
