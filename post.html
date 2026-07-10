@@ -158,6 +158,7 @@
                     <span id="likeCount">0</span>
                 </button>
                 <span class="post-detail-view-count" id="commentCountText"></span>
+                <button type="button" class="report-btn" id="reportPostBtn" data-target-type="post" style="margin-left:auto;">🚨 신고</button>
             </div>
 
         </article>
@@ -185,6 +186,40 @@
     </div>
 
 </main>
+
+<!-- =====================================================
+     신고 모달
+===================================================== -->
+<div class="modal" id="reportModal">
+    <div class="modal-content">
+
+        <h3 style="margin-bottom:6px;">신고하기</h3>
+        <p style="color:var(--sub);font-size:13px;margin-bottom:18px;" id="reportModalTarget">이 게시글을 신고합니다.</p>
+
+        <form id="reportForm">
+
+            <div class="form-group">
+                <label for="reportReason">신고 사유</label>
+                <textarea
+                    id="reportReason"
+                    class="input"
+                    rows="4"
+                    maxlength="500"
+                    required
+                    placeholder="신고 사유를 구체적으로 입력해주세요."></textarea>
+            </div>
+
+            <p class="input-message" id="reportFormMessage"></p>
+
+            <div class="write-actions">
+                <button type="button" class="btn btn-outline" id="reportCancelBtn">취소</button>
+                <button type="submit" class="btn" id="reportSubmitBtn">신고 접수</button>
+            </div>
+
+        </form>
+
+    </div>
+</div>
 
 <div id="overlay" class="overlay"></div>
 
