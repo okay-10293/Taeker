@@ -230,8 +230,6 @@ el.form?.addEventListener("submit",async(event)=>{
 
                 nickname,
                 grade:el.grade.value ? Number(el.grade.value) : null,
-                class_number:el.classNumber.value ? Number(el.classNumber.value) : null,
-                student_number:el.studentNumber.value ? Number(el.studentNumber.value) : null,
                 bio:el.bio.value.trim()
 
             })

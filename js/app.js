@@ -455,6 +455,8 @@ console.log("Taecker App Loaded");
 
 const el={
 
+    initLoader:document.getElementById("initLoader"),
+
     themeToggleBtn:document.getElementById("themeToggleBtn"),
 
     searchToggleBtn:document.getElementById("searchToggleBtn"),
@@ -1134,11 +1136,24 @@ el.bottomNavMy?.addEventListener("click",(e)=>{
 
 });
 
+/* ---------- INIT LOADER ---------- */
+
+function hideInitLoader(){
+
+    el.initLoader?.classList.add("is-hidden");
+
+}
+
+/* 만약을 대비한 안전장치: 어떤 이유로든(네트워크 문제 등) 인증 확인이
+   끝나지 않아도 5초 뒤에는 로딩화면을 강제로 치워서 사용자가 화면이
+   멈춘 것처럼 보이지 않게 한다. */
+setTimeout(hideInitLoader,5000);
+
 /* ---------- INIT ---------- */
 
 window.addEventListener("load",()=>{
 
-    renderAuthUI();
+    renderAuthUI().finally(hideInitLoader);
     fetchPosts();
     fetchPopular();
     fetchNotifications();
