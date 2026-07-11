@@ -231,6 +231,7 @@
             <button class="admin-tab active" data-tab="reports">신고 내역</button>
             <button class="admin-tab" data-tab="members">회원 검색 / 정지</button>
             <button class="admin-tab" data-tab="notices">공지사항</button>
+            <button class="admin-tab" data-tab="impersonation">학번 도용 신고</button>
             <button class="admin-tab" data-tab="school">학교설정</button>
         </div>
 
@@ -287,6 +288,22 @@
             </div>
 
             <div id="noticeList">
+                <div class="admin-empty">불러오는 중...</div>
+            </div>
+
+        </section>
+
+        <!-- ================= 학번 도용 신고 ================= -->
+        <section class="admin-panel" id="panelImpersonation">
+
+            <div class="admin-tabs" style="margin-bottom:16px;">
+                <button class="admin-tab active" data-impersonation-status="pending">대기중</button>
+                <button class="admin-tab" data-impersonation-status="resolved">처리완료</button>
+                <button class="admin-tab" data-impersonation-status="rejected">반려됨</button>
+                <button class="admin-tab" data-impersonation-status="all">전체</button>
+            </div>
+
+            <div id="impersonationList">
                 <div class="admin-empty">불러오는 중...</div>
             </div>
 

@@ -19,6 +19,10 @@ const el={
     panelMembers:document.getElementById("panelMembers"),
     panelNotices:document.getElementById("panelNotices"),
     panelSchool:document.getElementById("panelSchool"),
+    panelImpersonation:document.getElementById("panelImpersonation"),
+
+    impersonationStatusTabs:document.querySelectorAll("#panelImpersonation .admin-tab"),
+    impersonationList:document.getElementById("impersonationList"),
 
     schoolApiKeyInput:document.getElementById("schoolApiKeyInput"),
     schoolNameInput:document.getElementById("schoolNameInput"),
@@ -55,6 +59,7 @@ const TARGET_LABEL={
 const GRADE_LABEL={1:"1학년",2:"2학년",3:"3학년"};
 
 let statusFilter="pending";
+let impersonationStatusFilter="pending";
 
 /* ---------- UTIL ---------- */
 
@@ -368,6 +373,168 @@ async function updateReportStatus(reportId,status,adminId){
     catch(error){
 
         console.warn("신고 상태 변경에 실패했습니다:",error.message || error);
+
+        window.Taecker?.toast?.("처리에 실패했습니다. 잠시 후 다시 시도해주세요.");
+
+    }
+
+}
+
+/* ---------- 학번 도용 신고 ---------- */
+
+function impersonationItemHTML(report){
+
+    const statusClass=
+        report.status==="resolved" ? "status-resolved" :
+        report.status==="rejected" ? "status-rejected" : "status-pending";
+
+    const statusText=
+        report.status==="resolved" ? "확정(처리완료)" :
+        report.status==="rejected" ? "반려됨" : "대기중";
+
+    const victimMeta=`${GRADE_LABEL[report.victim_grade] || report.victim_grade+"학년"} ${report.victim_class}반 ${report.victim_number}번`;
+
+    const accused=report.accused_profile;
+
+    const accusedInfo=accused
+        ? `${escapeHtml(accused.nickname || "닉네임 없음")} (${escapeHtml(accused.email || "이메일 없음")})${accused.banned ? " · 이미 영구정지됨" : ""}`
+        : "일치하는 계정을 찾지 못했습니다. 회원 검색 탭에서 직접 확인해주세요.";
+
+    const actionButtons = report.status==="pending" ? `
+        <button class="btn-danger" data-action="confirm-impersonation" data-report="${report.id}" ${accused ? "" : "disabled"}>도용 확정 (계정 영구정지)</button>
+        <button data-action="reject-impersonation" data-report="${report.id}">반려</button>
+    ` : "";
+
+    return `
+        <div class="admin-item" data-impersonation-id="${report.id}">
+            <div class="admin-item-top">
+                <div>
+                    <div class="admin-item-title">피해 학번: ${escapeHtml(victimMeta)}</div>
+                    <div class="admin-item-sub">
+                        신고자 연락처: ${escapeHtml(report.reporter_contact_email)} · ${timeAgo(report.created_at)}
+                    </div>
+                </div>
+                <span class="status-pill ${statusClass}">${statusText}</span>
+            </div>
+            <div class="admin-item-sub" style="margin-bottom:6px;">현재 이 학번을 쓰는 계정: ${accusedInfo}</div>
+            ${report.message ? `<div class="admin-item-sub" style="margin-bottom:6px;">신고 내용: ${escapeHtml(report.message)}</div>` : ""}
+            <div class="admin-actions">
+                ${actionButtons}
+            </div>
+        </div>
+    `;
+
+}
+
+async function loadImpersonationReports(){
+
+    const client=getClient();
+
+    if(!client || !el.impersonationList) return;
+
+    el.impersonationList.innerHTML=`<div class="admin-empty">불러오는 중...</div>`;
+
+    try{
+
+        let query=client
+            .from("impersonation_reports")
+            .select(`
+                id,reporter_contact_email,victim_grade,victim_class,victim_number,message,
+                accused_profile_id,status,created_at,
+                accused_profile:accused_profile_id(nickname,email,banned)
+            `)
+            .order("created_at",{ascending:false});
+
+        if(impersonationStatusFilter!=="all"){
+
+            query=query.eq("status",impersonationStatusFilter);
+
+        }
+
+        const {data,error}=await query;
+
+        if(error) throw error;
+
+        if(!data || data.length===0){
+
+            el.impersonationList.innerHTML=`<div class="admin-empty">해당 조건의 도용 신고가 없습니다.</div>`;
+
+            return;
+
+        }
+
+        el.impersonationList.innerHTML=data.map(impersonationItemHTML).join("");
+
+    }
+
+    catch(error){
+
+        console.warn("도용 신고 목록을 불러오지 못했습니다:",error.message || error);
+
+        el.impersonationList.innerHTML=`<div class="admin-empty">도용 신고 목록을 불러오지 못했습니다.</div>`;
+
+    }
+
+}
+
+async function confirmImpersonation(reportId){
+
+    const client=getClient();
+
+    if(!client || !reportId) return;
+
+    try{
+
+        const {error}=await client.rpc("confirm_impersonation",{p_report_id:Number(reportId)});
+
+        if(error) throw error;
+
+        window.Taecker?.toast?.("도용을 확정 처리했습니다. 해당 계정은 영구 정지되고 이메일은 재가입이 차단됩니다.");
+
+        await loadImpersonationReports();
+
+    }
+
+    catch(error){
+
+        console.warn("도용 확정 처리에 실패했습니다:",error.message || error);
+
+        window.Taecker?.toast?.("처리에 실패했습니다. 잠시 후 다시 시도해주세요.");
+
+    }
+
+}
+
+async function rejectImpersonation(reportId){
+
+    const client=getClient();
+
+    if(!client || !reportId) return;
+
+    try{
+
+        const {error}=await client
+            .from("impersonation_reports")
+            .update({
+
+                status:"rejected",
+                resolved_at:new Date().toISOString(),
+                resolved_by:adminId
+
+            })
+            .eq("id",reportId);
+
+        if(error) throw error;
+
+        window.Taecker?.toast?.("반려 처리했습니다.");
+
+        await loadImpersonationReports();
+
+    }
+
+    catch(error){
+
+        console.warn("반려 처리에 실패했습니다:",error.message || error);
 
         window.Taecker?.toast?.("처리에 실패했습니다. 잠시 후 다시 시도해주세요.");
 
@@ -890,6 +1057,7 @@ function setupMainTabs(){
             el.panelMembers.classList.toggle("active",target==="members");
             el.panelNotices.classList.toggle("active",target==="notices");
             el.panelSchool?.classList.toggle("active",target==="school");
+            el.panelImpersonation?.classList.toggle("active",target==="impersonation");
 
             if(target==="notices"){
 
@@ -902,6 +1070,31 @@ function setupMainTabs(){
                 loadSchoolConfig();
 
             }
+
+            if(target==="impersonation"){
+
+                loadImpersonationReports();
+
+            }
+
+        });
+
+    });
+
+}
+
+function setupImpersonationStatusTabs(){
+
+    el.impersonationStatusTabs?.forEach((tab)=>{
+
+        tab.addEventListener("click",()=>{
+
+            el.impersonationStatusTabs.forEach((t)=>t.classList.remove("active"));
+            tab.classList.add("active");
+
+            impersonationStatusFilter=tab.dataset.impersonationStatus;
+
+            loadImpersonationReports();
 
         });
 
@@ -994,6 +1187,38 @@ function setupActionDelegation(){
 
         }
 
+        if(action==="confirm-impersonation"){
+
+            const reportId=btn.dataset.report;
+
+            if(!reportId) return;
+
+            if(confirm("이 신고를 도용으로 확정할까요?\n해당 계정은 즉시 영구 정지되고, 이메일은 다시는 가입할 수 없게 됩니다. 되돌릴 수 없습니다.")){
+
+                confirmImpersonation(reportId);
+
+            }
+
+            return;
+
+        }
+
+        if(action==="reject-impersonation"){
+
+            const reportId=btn.dataset.report;
+
+            if(!reportId) return;
+
+            if(confirm("이 신고를 반려할까요?")){
+
+                rejectImpersonation(reportId);
+
+            }
+
+            return;
+
+        }
+
         if(action==="publish-notice" || action==="unpublish-notice"){
 
             const noticeId=btn.dataset.notice;
@@ -1076,6 +1301,7 @@ window.addEventListener("load",async()=>{
     setupActionDelegation();
     setupNoticeForm();
     setupSchoolForm();
+    setupImpersonationStatusTabs();
 
     await loadReports();
 
