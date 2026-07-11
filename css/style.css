@@ -4570,6 +4570,13 @@ textarea.input{
     .auth-area .btn:not(.btn-ghost){
         display:none;
     }
+    .auth-area .btn-ghost{
+        padding:10px 14px;
+        font-size:13px;
+    }
+    .btn-write{
+        display:none;
+    }
     .profile-trigger-name{
         display:none;
     }
@@ -4578,6 +4585,9 @@ textarea.input{
     }
     .dropdown-menu-right{
         right:-8px;
+    }
+    .header-actions{
+        gap:6px;
     }
 }
 
@@ -4610,15 +4620,16 @@ textarea.input{
         gap:8px;
     }
     .header-actions{
-        gap:4px;
+        gap:2px;
     }
     .icon-btn,
     .nav-toggle{
         width:38px;
         height:38px;
     }
-    .btn-write{
-        padding:10px;
+    .auth-area .btn-ghost{
+        padding:9px 12px;
+        font-size:12.5px;
     }
     .secondary-actions{
         grid-template-columns:1fr;
