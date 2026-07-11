@@ -794,21 +794,27 @@ function postCardHTML(post){
 
     const nickname=escapeHtml(post.profiles?.nickname || post.author_name || "익명");
     const categoryLabel=CATEGORY_LABEL[post.category] || "일반";
-    const excerpt=stripAndTruncate(post.content,90);
+    const commentBadge=post.comment_count
+        ? `<span class="post-comment-count">[${post.comment_count}]</span>`
+        : "";
 
     return `
         <a class="post-card post-card-link fade-in" href="board.html">
-            <div class="post-header">
-                <span class="post-title">
-                    <span class="badge post-category-badge">${categoryLabel}</span>${escapeHtml(post.title)}
-                </span>
-            </div>
-            <p class="post-excerpt">${escapeHtml(excerpt)}</p>
-            <div class="post-meta" style="margin-bottom:10px;">${nickname} · ${timeAgo(post.created_at)}</div>
-            <div class="post-footer">
-                <span class="post-footer-item">👁 ${post.view_count ?? 0}</span>
-                <span class="post-footer-item">❤ ${post.like_count ?? 0}</span>
-                <span class="post-footer-item">💬 ${post.comment_count ?? 0}</span>
+            <div class="post-row">
+                <div class="post-row-main">
+                    <span class="badge post-category-badge">${categoryLabel}</span>
+                    <span class="post-title">${escapeHtml(post.title)}</span>
+                    ${commentBadge}
+                </div>
+                <div class="post-row-meta">
+                    <span>${nickname}</span>
+                    <span>·</span>
+                    <span>${timeAgo(post.created_at)}</span>
+                    <span class="post-row-stats">
+                        <span class="post-footer-item">👁 ${post.view_count ?? 0}</span>
+                        <span class="post-footer-item">❤ ${post.like_count ?? 0}</span>
+                    </span>
+                </div>
             </div>
         </a>
     `;

@@ -600,20 +600,26 @@ img{
 }
 
 /* =====================================================
-   POST CARD
+   POST CARD (컴팩트 리스트형)
 ===================================================== */
+
+.post-list{
+    display:flex;
+    flex-direction:column;
+    gap:0;
+}
 
 .post-card{
 
-    background:#FFFFFF;
+    background:transparent;
 
-    border-radius:18px;
+    border-radius:10px;
 
-    padding:20px;
+    padding:0;
 
-    margin-bottom:18px;
+    margin-bottom:0;
 
-    box-shadow:var(--shadow);
+    box-shadow:none;
 
     transition:var(--transition);
 
@@ -621,7 +627,45 @@ img{
 
 .post-card:hover{
 
-    transform:translateY(-3px);
+    transform:none;
+
+    background:#F9FAFB;
+
+}
+
+.post-card:hover .post-title{
+
+    color:var(--primary);
+
+}
+
+.post-row{
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:space-between;
+
+    gap:14px;
+
+    padding:12px 10px;
+
+    border-bottom:1px solid var(--border);
+
+}
+
+.post-row-main{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:8px;
+
+    min-width:0;
+
+    flex:1 1 auto;
 
 }
 
@@ -639,9 +683,31 @@ img{
 
 .post-title{
 
-    font-size:18px;
+    font-size:14.5px;
+
+    font-weight:600;
+
+    color:var(--text);
+
+    overflow:hidden;
+
+    text-overflow:ellipsis;
+
+    white-space:nowrap;
+
+    min-width:0;
+
+}
+
+.post-comment-count{
+
+    flex:0 0 auto;
+
+    font-size:12.5px;
 
     font-weight:700;
+
+    color:var(--primary);
 
 }
 
@@ -4322,7 +4388,7 @@ textarea.input{
 .post-list{
     display:flex;
     flex-direction:column;
-    gap:16px;
+    gap:0;
 }
 
 .post-card-link{
@@ -4330,18 +4396,25 @@ textarea.input{
 }
 
 .post-category-badge{
-    margin-right:8px;
+    padding:2px 8px;
+    font-size:11px;
+    flex:0 0 auto;
 }
 
-.post-excerpt{
+.post-row-meta{
+    flex:0 0 auto;
+    display:flex;
+    align-items:center;
+    gap:6px;
+    font-size:12px;
     color:var(--sub);
-    font-size:14px;
-    line-height:1.7;
-    margin-bottom:16px;
-    display:-webkit-box;
-    -webkit-line-clamp:2;
-    -webkit-box-orient:vertical;
-    overflow:hidden;
+    white-space:nowrap;
+}
+
+.post-row-stats{
+    display:flex;
+    align-items:center;
+    gap:8px;
 }
 
 .post-footer-item{
@@ -4352,6 +4425,25 @@ textarea.input{
 
 .post-footer-item svg{
     opacity:.7;
+}
+
+@media (max-width:560px){
+
+    .post-row{
+        flex-wrap:wrap;
+        row-gap:4px;
+        padding:10px 8px;
+    }
+
+    .post-row-main{
+        width:100%;
+    }
+
+    .post-row-meta{
+        width:100%;
+        justify-content:space-between;
+    }
+
 }
 
 .widget-empty{

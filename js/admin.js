@@ -325,9 +325,13 @@ async function applySuspension(userId,mode){
 
         await loadReports();
 
-        if(el.panelMembers.classList.contains("active") && el.memberSearchInput.value.trim()){
+        if(el.panelMembers.classList.contains("active")){
 
-            await searchMembers(el.memberSearchInput.value.trim());
+            const member=allMembers.find((m)=>m.id===userId);
+
+            if(member) Object.assign(member,payload);
+
+            renderMemberList();
 
         }
 
@@ -542,7 +546,9 @@ async function rejectImpersonation(reportId){
 
 }
 
-/* ---------- 회원 검색 ---------- */
+/* ---------- 회원 목록 (전체 목록 + 클라이언트 필터링) ---------- */
+
+let allMembers=[];
 
 function memberItemHTML(profile){
 
@@ -550,19 +556,59 @@ function memberItemHTML(profile){
         <div class="admin-item" data-user-id="${profile.id}">
             <div class="admin-item-top">
                 <div>
-                    <div class="admin-item-title">${escapeHtml(profile.nickname || "닉네임 없음")}</div>
+                    <div class="admin-item-title" data-role="nickname-display">${escapeHtml(profile.nickname || "닉네임 없음")}</div>
                     <div class="admin-item-sub">${escapeHtml(memberMetaText(profile)) || "학년/반/번호 미입력"} · ${escapeHtml(profile.email || "")}</div>
                 </div>
                 ${statusPillHTML(profile)}
+            </div>
+            <div class="admin-rename-row hidden" data-role="rename-row">
+                <input type="text" class="input" data-role="rename-input" value="${escapeHtml(profile.nickname || "")}" maxlength="20">
+                <button class="btn-ok" data-action="rename-save" data-user="${profile.id}">저장</button>
+                <button data-action="rename-cancel" data-user="${profile.id}">취소</button>
             </div>
             <div class="admin-actions">
                 <button class="btn-warn" data-action="suspend1" data-user="${profile.id}">1일 정지</button>
                 <button class="btn-danger" data-action="ban" data-user="${profile.id}">영구 정지</button>
                 <button data-action="unsuspend" data-user="${profile.id}">정지 해제</button>
-                <button data-action="rename" data-user="${profile.id}" data-current-nickname="${escapeHtml(profile.nickname || "")}">닉네임 변경</button>
+                <button data-action="rename-toggle" data-user="${profile.id}">닉네임 변경</button>
             </div>
         </div>
     `;
+
+}
+
+function memberMatchesKeyword(profile,keyword){
+
+    if(!keyword) return true;
+
+    const haystack=[
+        profile.nickname,
+        profile.email,
+        profile.student_number,
+        memberMetaText(profile)
+    ].filter(Boolean).join(" ").toLowerCase();
+
+    return haystack.includes(keyword.toLowerCase());
+
+}
+
+function renderMemberList(){
+
+    if(!el.memberList) return;
+
+    const keyword=el.memberSearchInput?.value.trim() || "";
+
+    const filtered=allMembers.filter((profile)=>memberMatchesKeyword(profile,keyword));
+
+    if(filtered.length===0){
+
+        el.memberList.innerHTML=`<div class="admin-empty">${keyword ? "일치하는 회원이 없습니다." : "가입된 회원이 없습니다."}</div>`;
+
+        return;
+
+    }
+
+    el.memberList.innerHTML=filtered.map(memberItemHTML).join("");
 
 }
 
@@ -570,7 +616,7 @@ async function renameMember(userId,newNickname){
 
     const client=getClient();
 
-    if(!client || !userId) return;
+    if(!client || !userId) return false;
 
     const trimmed=(newNickname || "").trim();
 
@@ -578,7 +624,7 @@ async function renameMember(userId,newNickname){
 
         window.Taecker?.toast?.("닉네임을 입력해주세요.");
 
-        return;
+        return false;
 
     }
 
@@ -593,11 +639,13 @@ async function renameMember(userId,newNickname){
 
         window.Taecker?.toast?.("닉네임을 변경했습니다.");
 
-        if(el.memberSearchInput.value.trim()){
+        const member=allMembers.find((m)=>m.id===userId);
 
-            await searchMembers(el.memberSearchInput.value.trim());
+        if(member) member.nickname=trimmed;
 
-        }
+        renderMemberList();
+
+        return true;
 
     }
 
@@ -607,45 +655,43 @@ async function renameMember(userId,newNickname){
 
         window.Taecker?.toast?.("닉네임 변경에 실패했습니다. 잠시 후 다시 시도해주세요.");
 
+        return false;
+
     }
 
 }
 
-async function searchMembers(keyword){
+async function loadAllMembers(){
 
     const client=getClient();
 
     if(!client || !el.memberList) return;
 
-    el.memberList.innerHTML=`<div class="admin-empty">검색 중...</div>`;
+    el.memberList.innerHTML=`<div class="admin-empty">불러오는 중...</div>`;
 
     try{
 
         const {data,error}=await client
             .from("profiles")
             .select("id,nickname,email,grade,class_number,student_number,banned,suspended_until")
-            .ilike("nickname",`%${keyword}%`)
-            .limit(20);
+            .order("grade",{ascending:true,nullsFirst:false})
+            .order("class_number",{ascending:true,nullsFirst:false})
+            .order("student_number",{ascending:true,nullsFirst:false})
+            .limit(1000);
 
         if(error) throw error;
 
-        if(!data || data.length===0){
+        allMembers=data || [];
 
-            el.memberList.innerHTML=`<div class="admin-empty">검색 결과가 없습니다.</div>`;
-
-            return;
-
-        }
-
-        el.memberList.innerHTML=data.map(memberItemHTML).join("");
+        renderMemberList();
 
     }
 
     catch(error){
 
-        console.warn("회원 검색에 실패했습니다:",error.message || error);
+        console.warn("회원 목록을 불러오지 못했습니다:",error.message || error);
 
-        el.memberList.innerHTML=`<div class="admin-empty">검색에 실패했습니다. 잠시 후 다시 시도해주세요.</div>`;
+        el.memberList.innerHTML=`<div class="admin-empty">회원 목록을 불러오지 못했습니다. 잠시 후 다시 시도해주세요.</div>`;
 
     }
 
@@ -1065,6 +1111,12 @@ function setupMainTabs(){
 
             }
 
+            if(target==="members"){
+
+                loadAllMembers();
+
+            }
+
             if(target==="school"){
 
                 loadSchoolConfig();
@@ -1157,19 +1209,67 @@ function setupActionDelegation(){
 
         }
 
-        if(action==="rename"){
+        if(action==="rename-toggle"){
 
             const userId=btn.dataset.user;
 
             if(!userId) return;
 
-            const current=btn.dataset.currentNickname || "";
+            const item=btn.closest(".admin-item");
+            const row=item?.querySelector('[data-role="rename-row"]');
 
-            const next=prompt("새 닉네임을 입력하세요.",current);
+            if(!row) return;
 
-            if(next===null) return;
+            row.classList.toggle("hidden");
 
-            renameMember(userId,next);
+            if(!row.classList.contains("hidden")){
+
+                const input=row.querySelector('[data-role="rename-input"]');
+                input?.focus();
+                input?.select();
+
+            }
+
+            return;
+
+        }
+
+        if(action==="rename-cancel"){
+
+            const item=btn.closest(".admin-item");
+            const row=item?.querySelector('[data-role="rename-row"]');
+            const input=row?.querySelector('[data-role="rename-input"]');
+            const display=item?.querySelector('[data-role="nickname-display"]');
+
+            if(input && display) input.value=display.textContent;
+
+            row?.classList.add("hidden");
+
+            return;
+
+        }
+
+        if(action==="rename-save"){
+
+            const userId=btn.dataset.user;
+
+            if(!userId) return;
+
+            const item=btn.closest(".admin-item");
+            const row=item?.querySelector('[data-role="rename-row"]');
+            const input=row?.querySelector('[data-role="rename-input"]');
+
+            if(!input) return;
+
+            btn.disabled=true;
+
+            renameMember(userId,input.value).then((success)=>{
+
+                btn.disabled=false;
+
+                if(success) row?.classList.add("hidden");
+
+            });
 
             return;
 
@@ -1253,17 +1353,13 @@ function setupActionDelegation(){
 
 el.memberSearchBtn?.addEventListener("click",()=>{
 
-    const keyword=el.memberSearchInput.value.trim();
+    loadAllMembers();
 
-    if(!keyword){
+});
 
-        el.memberList.innerHTML=`<div class="admin-empty">닉네임을 입력해주세요.</div>`;
+el.memberSearchInput?.addEventListener("input",()=>{
 
-        return;
-
-    }
-
-    searchMembers(keyword);
+    renderMemberList();
 
 });
 
@@ -1272,7 +1368,6 @@ el.memberSearchInput?.addEventListener("keydown",(e)=>{
     if(e.key==="Enter"){
 
         e.preventDefault();
-        el.memberSearchBtn?.click();
 
     }
 
