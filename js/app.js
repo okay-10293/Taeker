@@ -1,5 +1,5 @@
 /* =====================================================
-   Taecker Community
+   Taeker Community
    app.js Rev.2
 ===================================================== */
 
@@ -286,7 +286,7 @@ window.addEventListener("load",()=>{
 
     hideLoader();
 
-    console.log("Taecker Ready");
+    console.log("Taeker Ready");
 
 });
 /* =====================================================
@@ -439,7 +439,7 @@ window.Taecker={
    READY
 ===================================================== */
 
-console.log("Taecker App Loaded");
+console.log("Taeker App Loaded");
 
 /* =====================================================
    HOME FEED
@@ -508,9 +508,9 @@ const CATEGORY_LABEL={
     free:"자유",
     question:"질문",
     info:"정보",
-    grade1:"1학년",
-    grade2:"2학년",
-    grade3:"3학년"
+    grade1:"학년게시판",
+    grade2:"학년게시판",
+    grade3:"학년게시판"
 
 };
 
