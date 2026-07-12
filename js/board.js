@@ -47,7 +47,10 @@ const CATEGORY_LABEL={
     notice:"공지사항",
     free:"자유게시판",
     question:"질문게시판",
-    info:"정보게시판"
+    info:"정보게시판",
+    grade1:"1학년 게시판",
+    grade2:"2학년 게시판",
+    grade3:"3학년 게시판"
 
 };
 
@@ -172,6 +175,48 @@ function syncCategoryChips(){
         );
 
     });
+
+}
+
+/* 로그인한 학생 본인 학년의 게시판 칩만 추가한다. (다른 학년 칩은 아예 만들지도 않음) */
+
+async function injectGradeChip(){
+
+    if(!el.categoryBar || !window.Auth) return;
+
+    try{
+
+        const user=await window.Auth.getCurrentUser();
+
+        if(!user) return;
+
+        const profile=await window.Auth.getProfile();
+
+        const grade=profile?.grade;
+
+        if(!grade || grade<1 || grade>3) return;
+
+        const category=`grade${grade}`;
+
+        if(el.categoryBar.querySelector(`[data-category="${category}"]`)) return;
+
+        const chip=document.createElement("button");
+
+        chip.className="chip";
+        chip.dataset.category=category;
+        chip.textContent=CATEGORY_LABEL[category];
+
+        el.categoryBar.appendChild(chip);
+
+        syncCategoryChips();
+
+    }
+
+    catch(error){
+
+        console.warn("학년 게시판 칩을 추가하지 못했습니다:",error.message || error);
+
+    }
 
 }
 
@@ -444,6 +489,7 @@ updateHeaderText();
 
 window.addEventListener("load",()=>{
 
+    injectGradeChip();
     resetAndFetch();
 
 });

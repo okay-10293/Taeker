@@ -507,7 +507,10 @@ const CATEGORY_LABEL={
     notice:"공지",
     free:"자유",
     question:"질문",
-    info:"정보"
+    info:"정보",
+    grade1:"1학년",
+    grade2:"2학년",
+    grade3:"3학년"
 
 };
 
@@ -749,6 +752,44 @@ el.searchInput?.addEventListener("input",debounce((e)=>{
 },350));
 
 /* ---------- CATEGORY CHIPS ---------- */
+
+async function injectGradeChip(){
+
+    if(!el.categoryBar || !window.Auth) return;
+
+    try{
+
+        const user=await window.Auth.getCurrentUser();
+
+        if(!user) return;
+
+        const profile=await window.Auth.getProfile();
+
+        const grade=profile?.grade;
+
+        if(!grade || grade<1 || grade>3) return;
+
+        const category=`grade${grade}`;
+
+        if(el.categoryBar.querySelector(`[data-category="${category}"]`)) return;
+
+        const chip=document.createElement("button");
+
+        chip.className="chip";
+        chip.dataset.category=category;
+        chip.textContent=CATEGORY_LABEL[category];
+
+        el.categoryBar.appendChild(chip);
+
+    }
+
+    catch(error){
+
+        console.warn("학년 게시판 칩을 추가하지 못했습니다:",error.message || error);
+
+    }
+
+}
 
 el.categoryBar?.addEventListener("click",(e)=>{
 
@@ -1156,6 +1197,7 @@ setTimeout(hideInitLoader,5000);
 window.addEventListener("load",()=>{
 
     renderAuthUI().finally(hideInitLoader);
+    injectGradeChip();
     fetchPosts();
     fetchPopular();
     fetchNotifications();
