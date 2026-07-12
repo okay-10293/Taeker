@@ -20,9 +20,13 @@ const el={
     panelNotices:document.getElementById("panelNotices"),
     panelSchool:document.getElementById("panelSchool"),
     panelImpersonation:document.getElementById("panelImpersonation"),
+    panelInquiries:document.getElementById("panelInquiries"),
 
     impersonationStatusTabs:document.querySelectorAll("#panelImpersonation .admin-tab"),
     impersonationList:document.getElementById("impersonationList"),
+
+    inquiryStatusTabs:document.querySelectorAll("#panelInquiries .admin-tab"),
+    inquiryList:document.getElementById("inquiryList"),
 
     schoolApiKeyInput:document.getElementById("schoolApiKeyInput"),
     schoolNameInput:document.getElementById("schoolNameInput"),
@@ -60,6 +64,7 @@ const GRADE_LABEL={1:"1학년",2:"2학년",3:"3학년"};
 
 let statusFilter="pending";
 let impersonationStatusFilter="pending";
+let inquiryStatusFilter="pending";
 
 /* ---------- UTIL ---------- */
 
@@ -452,7 +457,7 @@ function impersonationItemHTML(report){
         : "일치하는 계정을 찾지 못했습니다. 회원 검색 탭에서 직접 확인해주세요.";
 
     const actionButtons = report.status==="pending" ? `
-        <button class="btn-danger" data-action="confirm-impersonation" data-report="${report.id}" ${accused ? "" : "disabled"}>도용 확정 (계정 영구정지)</button>
+        <button class="btn-danger" data-action="confirm-impersonation" data-report="${report.id}" ${accused ? "" : "disabled"}>도용 확정 (계정 삭제)</button>
         <button data-action="reject-impersonation" data-report="${report.id}">반려</button>
     ` : "";
 
@@ -523,6 +528,138 @@ async function loadImpersonationReports(){
         console.warn("도용 신고 목록을 불러오지 못했습니다:",error.message || error);
 
         el.impersonationList.innerHTML=`<div class="admin-empty">도용 신고 목록을 불러오지 못했습니다.</div>`;
+
+    }
+
+}
+
+/* ---------- 문의하기 ---------- */
+
+function inquiryItemHTML(inquiry){
+
+    const answered=inquiry.status==="answered";
+    const author=inquiry.author;
+
+    const authorInfo=author
+        ? `${escapeHtml(author.nickname || "닉네임 없음")} (${escapeHtml(author.email || "이메일 없음")})`
+        : "탈퇴했거나 알 수 없는 회원";
+
+    return `
+        <div class="admin-item" data-inquiry-id="${inquiry.id}">
+            <div class="admin-item-top">
+                <div>
+                    <div class="admin-item-title">${authorInfo}</div>
+                    <div class="admin-item-sub">${timeAgo(inquiry.created_at)}</div>
+                </div>
+                <span class="status-pill ${answered ? "status-resolved" : "status-pending"}">${answered ? "답변완료" : "답변대기"}</span>
+            </div>
+            <div class="admin-item-sub" style="white-space:pre-wrap;margin-bottom:10px;color:var(--text);">${escapeHtml(inquiry.content)}</div>
+            ${answered ? `
+                <div class="admin-memo-row" style="margin-bottom:6px;">
+                    <div style="flex:1;min-width:160px;padding:9px 12px;border-radius:10px;background:var(--background);font-size:13px;white-space:pre-wrap;">${escapeHtml(inquiry.admin_reply || "")}</div>
+                </div>
+                <div class="admin-actions">
+                    <button data-action="inquiry-reply-toggle" data-inquiry="${inquiry.id}">답변 수정</button>
+                </div>
+                <div class="admin-memo-row hidden" data-role="inquiry-reply-row">
+                    <textarea class="input" data-role="inquiry-reply-input" rows="3" maxlength="1000" placeholder="답변을 입력하세요">${escapeHtml(inquiry.admin_reply || "")}</textarea>
+                    <button class="btn-ok" data-action="inquiry-reply-save" data-inquiry="${inquiry.id}">저장</button>
+                </div>
+            ` : `
+                <div class="admin-memo-row" data-role="inquiry-reply-row">
+                    <textarea class="input" data-role="inquiry-reply-input" rows="3" maxlength="1000" placeholder="답변을 입력하세요"></textarea>
+                    <button class="btn-ok" data-action="inquiry-reply-save" data-inquiry="${inquiry.id}">답변 등록</button>
+                </div>
+            `}
+        </div>
+    `;
+
+}
+
+async function loadInquiries(){
+
+    const client=getClient();
+
+    if(!client || !el.inquiryList) return;
+
+    el.inquiryList.innerHTML=`<div class="admin-empty">불러오는 중...</div>`;
+
+    try{
+
+        let query=client
+            .from("inquiries")
+            .select("id,content,status,admin_reply,created_at,author:user_id(nickname,email)")
+            .order("created_at",{ascending:false});
+
+        if(inquiryStatusFilter!=="all"){
+
+            query=query.eq("status",inquiryStatusFilter);
+
+        }
+
+        const {data,error}=await query;
+
+        if(error) throw error;
+
+        if(!data || data.length===0){
+
+            el.inquiryList.innerHTML=`<div class="admin-empty">해당 조건의 문의가 없습니다.</div>`;
+
+            return;
+
+        }
+
+        el.inquiryList.innerHTML=data.map(inquiryItemHTML).join("");
+
+    }
+
+    catch(error){
+
+        console.warn("문의 목록을 불러오지 못했습니다:",error.message || error);
+
+        el.inquiryList.innerHTML=`<div class="admin-empty">문의 목록을 불러오지 못했습니다.</div>`;
+
+    }
+
+}
+
+async function replyToInquiry(inquiryId,replyText){
+
+    const client=getClient();
+
+    if(!client) return false;
+
+    try{
+
+        const {error}=await client
+            .from("inquiries")
+            .update({
+
+                admin_reply:replyText,
+                status:"answered",
+                replied_at:new Date().toISOString(),
+                replied_by:adminId
+
+            })
+            .eq("id",inquiryId);
+
+        if(error) throw error;
+
+        window.Taecker?.toast?.("답변이 등록되었습니다.");
+
+        await loadInquiries();
+
+        return true;
+
+    }
+
+    catch(error){
+
+        console.error("답변 등록 실패:",error.message || error);
+
+        window.Taecker?.toast?.("답변 등록에 실패했습니다.");
+
+        return false;
 
     }
 
@@ -600,34 +737,39 @@ let allMembers=[];
 function memberItemHTML(profile){
 
     return `
-        <div class="admin-item" data-user-id="${profile.id}">
-            <div class="admin-item-top">
+        <div class="admin-item admin-member-item" data-user-id="${profile.id}">
+            <button type="button" class="admin-member-summary" data-action="member-toggle">
                 <div>
                     <div class="admin-item-title" data-role="nickname-display">${escapeHtml(profile.nickname || "닉네임 없음")}</div>
                     <div class="admin-item-sub">${escapeHtml(memberMetaText(profile)) || "학년/반/번호 미입력"} · ${escapeHtml(profile.email || "")}</div>
                 </div>
-                ${statusPillHTML(profile)}
-            </div>
-            <div class="admin-rename-row hidden" data-role="rename-row">
-                <input type="text" class="input" data-role="rename-input" value="${escapeHtml(profile.nickname || "")}" maxlength="20">
-                <button class="btn-ok" data-action="rename-save" data-user="${profile.id}">저장</button>
-                <button data-action="rename-cancel" data-user="${profile.id}">취소</button>
-            </div>
-            <div class="admin-suspend-row hidden" data-role="suspend-row">
-                <input type="number" class="input" data-role="suspend-days-input" min="1" step="1" value="1">
-                <span class="admin-suspend-unit">일 정지</span>
-                <button class="btn-warn" data-action="suspend-save" data-user="${profile.id}">적용</button>
-                <button data-action="suspend-cancel" data-user="${profile.id}">취소</button>
-            </div>
-            <div class="admin-memo-row">
-                <textarea class="input" data-role="memo-input" rows="2" maxlength="200" placeholder="메모 (예: 수학 선생님 · 관리자만 볼 수 있음)">${escapeHtml(profile.admin_memo || "")}</textarea>
-                <button class="btn-ok" data-action="memo-save" data-user="${profile.id}">메모 저장</button>
-            </div>
-            <div class="admin-actions">
-                <button data-action="suspend-toggle" data-user="${profile.id}">기간 정지</button>
-                <button class="btn-danger" data-action="ban" data-user="${profile.id}">영구 정지</button>
-                <button data-action="unsuspend" data-user="${profile.id}">정지 해제</button>
-                <button data-action="rename-toggle" data-user="${profile.id}">닉네임 변경</button>
+                <div class="admin-member-summary-right">
+                    ${statusPillHTML(profile)}
+                    <span class="admin-member-chevron" data-role="chevron">▾</span>
+                </div>
+            </button>
+            <div class="admin-member-detail hidden" data-role="member-detail">
+                <div class="admin-rename-row hidden" data-role="rename-row">
+                    <input type="text" class="input" data-role="rename-input" value="${escapeHtml(profile.nickname || "")}" maxlength="20">
+                    <button class="btn-ok" data-action="rename-save" data-user="${profile.id}">저장</button>
+                    <button data-action="rename-cancel" data-user="${profile.id}">취소</button>
+                </div>
+                <div class="admin-suspend-row hidden" data-role="suspend-row">
+                    <input type="number" class="input" data-role="suspend-days-input" min="1" step="1" value="1">
+                    <span class="admin-suspend-unit">일 정지</span>
+                    <button class="btn-warn" data-action="suspend-save" data-user="${profile.id}">적용</button>
+                    <button data-action="suspend-cancel" data-user="${profile.id}">취소</button>
+                </div>
+                <div class="admin-memo-row">
+                    <textarea class="input" data-role="memo-input" rows="2" maxlength="200" placeholder="메모 (예: 수학 선생님 · 관리자만 볼 수 있음)">${escapeHtml(profile.admin_memo || "")}</textarea>
+                    <button class="btn-ok" data-action="memo-save" data-user="${profile.id}">메모 저장</button>
+                </div>
+                <div class="admin-actions">
+                    <button data-action="suspend-toggle" data-user="${profile.id}">기간 정지</button>
+                    <button class="btn-danger" data-action="ban" data-user="${profile.id}">영구 정지</button>
+                    <button data-action="unsuspend" data-user="${profile.id}">정지 해제</button>
+                    <button data-action="rename-toggle" data-user="${profile.id}">닉네임 변경</button>
+                </div>
             </div>
         </div>
     `;
@@ -1201,6 +1343,7 @@ function setupMainTabs(){
             el.panelNotices.classList.toggle("active",target==="notices");
             el.panelSchool?.classList.toggle("active",target==="school");
             el.panelImpersonation?.classList.toggle("active",target==="impersonation");
+            el.panelInquiries?.classList.toggle("active",target==="inquiries");
 
             if(target==="notices"){
 
@@ -1225,6 +1368,31 @@ function setupMainTabs(){
                 loadImpersonationReports();
 
             }
+
+            if(target==="inquiries"){
+
+                loadInquiries();
+
+            }
+
+        });
+
+    });
+
+}
+
+function setupInquiryStatusTabs(){
+
+    el.inquiryStatusTabs?.forEach((tab)=>{
+
+        tab.addEventListener("click",()=>{
+
+            el.inquiryStatusTabs.forEach((t)=>t.classList.remove("active"));
+            tab.classList.add("active");
+
+            inquiryStatusFilter=tab.dataset.inquiryStatus;
+
+            loadInquiries();
 
         });
 
@@ -1283,6 +1451,73 @@ function setupActionDelegation(){
         if(!btn) return;
 
         const action=btn.dataset.action;
+
+        if(action==="inquiry-reply-toggle"){
+
+            const item=btn.closest(".admin-item");
+            const row=item?.querySelector('[data-role="inquiry-reply-row"]');
+
+            row?.classList.toggle("hidden");
+
+            if(row && !row.classList.contains("hidden")){
+
+                row.querySelector('[data-role="inquiry-reply-input"]')?.focus();
+
+            }
+
+            return;
+
+        }
+
+        if(action==="inquiry-reply-save"){
+
+            const inquiryId=btn.dataset.inquiry;
+
+            if(!inquiryId) return;
+
+            const item=btn.closest(".admin-item");
+            const row=item?.querySelector('[data-role="inquiry-reply-row"]');
+            const input=row?.querySelector('[data-role="inquiry-reply-input"]');
+
+            if(!input) return;
+
+            const replyText=input.value.trim();
+
+            if(!replyText){
+
+                window.Taecker?.toast?.("답변 내용을 입력해주세요.");
+                return;
+
+            }
+
+            btn.disabled=true;
+
+            replyToInquiry(inquiryId,replyText).then(()=>{
+
+                btn.disabled=false;
+
+            });
+
+            return;
+
+        }
+
+        if(action==="member-toggle"){
+
+            const item=btn.closest(".admin-item");
+            const detail=item?.querySelector('[data-role="member-detail"]');
+            const chevron=btn.querySelector('[data-role="chevron"]');
+
+            if(!detail) return;
+
+            const nowOpen=detail.classList.toggle("hidden")===false;
+
+            item?.classList.toggle("admin-member-item-open",nowOpen);
+            if(chevron) chevron.textContent=nowOpen ? "▴" : "▾";
+
+            return;
+
+        }
 
         if(action==="ban" || action==="unsuspend"){
 
@@ -1485,7 +1720,7 @@ function setupActionDelegation(){
 
             if(!reportId) return;
 
-            if(confirm("이 신고를 도용으로 확정할까요?\n해당 계정은 즉시 영구 정지되고, 이메일은 다시는 가입할 수 없게 됩니다. 되돌릴 수 없습니다.")){
+            if(confirm("이 신고를 도용으로 확정할까요?\n해당 계정과 작성한 글·댓글이 모두 즉시 삭제되고, 이메일은 다시는 가입할 수 없게 됩니다. 되돌릴 수 없습니다.")){
 
                 confirmImpersonation(reportId);
 
@@ -1589,6 +1824,7 @@ window.addEventListener("load",async()=>{
     setupNoticeForm();
     setupSchoolForm();
     setupImpersonationStatusTabs();
+    setupInquiryStatusTabs();
 
     await loadReports();
 

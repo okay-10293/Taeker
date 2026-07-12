@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>마이페이지 | 태커</title>
-<meta name="description" content="태커 내 프로필을 확인하고 수정하세요.">
+<title>문의하기 | 태커</title>
+<meta name="description" content="태커 운영진에게 문의사항을 남겨주세요.">
 <meta name="theme-color" content="#2563EB">
 <link rel="stylesheet" href="css/style.css">
 </head>
@@ -114,8 +114,8 @@
             <li><a href="school.html?tab=timetable">시간표</a></li>
             <li><a href="school.html?tab=meal">급식</a></li>
             <li><a href="school.html?tab=schedule">학사일정</a></li>
-            <li><a href="mypage.html" class="active">마이페이지</a></li>
-            <li><a href="inquiry.html">문의하기</a></li>
+            <li><a href="mypage.html">마이페이지</a></li>
+            <li><a href="inquiry.html" class="active">문의하기</a></li>
         </ul>
     </nav>
 </aside>
@@ -126,120 +126,41 @@
 <main class="container">
 
     <section class="board-title">
-        <h2>마이페이지</h2>
-        <p>내 프로필을 확인하고 수정할 수 있습니다.</p>
+        <h2>문의하기</h2>
+        <p>태커 이용 중 궁금한 점이나 건의사항을 운영진에게 남겨주세요.</p>
     </section>
 
-    <!-- 로그인하지 않은 경우 -->
-    <div class="card" id="mypageLoginRequired" style="text-align:center;">
-        <p style="margin-bottom:14px;">로그인 후 이용할 수 있습니다.</p>
-        <a href="login.html" class="btn">로그인하러 가기</a>
-    </div>
+    <form class="card write-card" id="inquiryForm">
 
-    <div id="mypageWrap" class="hidden">
-
-        <!-- 프로필 요약 카드 -->
-        <div class="profile-card">
-            <div class="avatar" id="mypageAvatar">
-                <img src="" alt="" id="mypageAvatarImg" class="hidden">
-                <span id="mypageAvatarInitial" style="display:flex;align-items:center;justify-content:center;width:100%;height:100%;font-size:28px;font-weight:700;color:var(--sub);">태</span>
-            </div>
-            <p class="profile-name" id="mypageNickname">회원</p>
-            <span class="teacher-badge hidden" id="mypageTeacherBadge">선생님</span>
-            <p class="profile-info" id="mypageMeta">-</p>
-            <p class="profile-info" id="mypageEmail">-</p>
-        </div>
-
-        <!-- 간단 통계 -->
-        <div class="stats">
-            <div class="stat-card">
-                <h3 id="mypagePostCount">0</h3>
-                <p>작성한 글</p>
-            </div>
-            <div class="stat-card">
-                <h3 id="mypageJoinedAt">-</h3>
-                <p>가입일</p>
-            </div>
-        </div>
-
-        <!-- 프로필 수정 -->
-        <form class="card" id="mypageForm" style="margin-top:24px;">
-
-            <h3 style="margin-bottom:18px;">프로필 수정</h3>
-
-            <div class="form-group">
-                <label for="mypageNicknameInput">닉네임</label>
-                <input
-                    id="mypageNicknameInput"
-                    class="input"
-                    type="text"
-                    maxlength="20"
-                    required
-                    autocomplete="off">
-            </div>
-
-            <div class="form-row">
-
-                <div class="form-group">
-                    <label for="mypageGrade">학년</label>
-                    <select id="mypageGrade" class="input">
-                        <option value="">선택</option>
-                        <option value="1">1학년</option>
-                        <option value="2">2학년</option>
-                        <option value="3">3학년</option>
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label for="mypageClassNumber">반</label>
-                    <input id="mypageClassNumber" class="input" type="number" min="1" max="20" placeholder="반" disabled title="반은 가입 후 수정할 수 없습니다. 변경이 필요하면 관리자에게 문의해주세요.">
-                </div>
-
-                <div class="form-group">
-                    <label for="mypageStudentNumber">번호</label>
-                    <input id="mypageStudentNumber" class="input" type="number" min="1" max="50" placeholder="번호" disabled title="번호는 가입 후 수정할 수 없습니다. 변경이 필요하면 관리자에게 문의해주세요.">
-                </div>
-
-            </div>
-
-            <p class="form-hint">반·번호는 가입 시 등록한 정보로 고정되며 본인이 직접 수정할 수 없어요. 변경이 필요하면 관리자에게 문의해주세요.</p>
-
-            <div class="form-group">
-                <label for="mypageBio">자기소개</label>
+        <div class="form-group">
+            <label for="inquiryContent">문의 내용</label>
+            <div class="input-box">
                 <textarea
-                    id="mypageBio"
+                    id="inquiryContent"
                     class="input"
-                    rows="4"
-                    maxlength="100"
-                    placeholder="간단한 자기소개를 입력하세요."></textarea>
-                <small id="mypageBioCount" class="form-message">0 / 100</small>
+                    rows="8"
+                    maxlength="2000"
+                    placeholder="문의하실 내용을 자세히 적어주세요."
+                    required></textarea>
             </div>
+            <p class="input-message" id="inquiryContentCount">0 / 2000</p>
+        </div>
 
-            <p class="input-message" id="mypageFormMessage"></p>
+        <div class="write-actions">
+            <button type="submit" class="btn" id="inquirySubmitBtn">
+                <span class="button-text">문의 등록하기</span>
+                <span class="button-loader hidden"></span>
+            </button>
+        </div>
 
-            <div class="write-actions">
-                <button type="button" class="btn btn-outline" id="mypageLogoutBtn">로그아웃</button>
-                <button type="submit" class="btn" id="mypageSaveBtn">
-                    <span class="button-text">저장하기</span>
-                    <span class="button-loader hidden"></span>
-                </button>
-            </div>
+    </form>
 
-        </form>
-
-        <!-- 내가 쓴 글 -->
-        <section style="margin-top:32px;">
-            <h3 style="margin-bottom:14px;">내가 쓴 글</h3>
-            <div class="post-list" id="mypagePostList">
-                <div class="skeleton-post" aria-hidden="true">
-                    <div class="skeleton-line skeleton-line-sm"></div>
-                    <div class="skeleton-line skeleton-line-lg"></div>
-                    <div class="skeleton-line skeleton-line-md"></div>
-                </div>
-            </div>
-        </section>
-
-    </div>
+    <section style="margin-top:28px;">
+        <h3 style="font-size:16px;font-weight:800;margin-bottom:12px;">내 문의 내역</h3>
+        <div id="myInquiryList">
+            <p class="widget-empty">로그인하면 내가 남긴 문의 내역을 볼 수 있어요.</p>
+        </div>
+    </section>
 
 </main>
 
@@ -268,7 +189,7 @@
         <span>시간표</span>
     </a>
 
-    <a href="#" id="bottomNavMy" class="active">
+    <a href="#" id="bottomNavMy">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
             <circle cx="12" cy="8" r="4" stroke="currentColor" stroke-width="2"/>
             <path d="M4 20C4 16.7 7.6 14 12 14C16.4 14 20 16.7 20 20" stroke="currentColor" stroke-width="2"/>
@@ -280,7 +201,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="js/app.js"></script>
 <script src="js/auth.js"></script>
-<script src="js/mypage.js"></script>
+<script src="js/inquiry.js"></script>
 
 </body>
 </html>
