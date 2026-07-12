@@ -1833,6 +1833,40 @@ body.dark{
 
 }
 
+.suspension-notice{
+
+    background:#FEF2F2;
+    border:1px solid #FECACA;
+    border-radius:14px;
+    padding:16px 18px;
+    margin-bottom:20px;
+
+}
+
+.suspension-notice.hidden{
+
+    display:none;
+
+}
+
+.suspension-notice-title{
+
+    font-size:14px;
+    font-weight:800;
+    color:#B91C1C;
+    margin-bottom:6px;
+
+}
+
+.suspension-notice-reason,
+.suspension-notice-period{
+
+    font-size:13px;
+    color:#991B1B;
+    line-height:1.6;
+
+}
+
 .login-form{
 
     display:flex;
@@ -4283,6 +4317,10 @@ textarea.input{
     color:#FFFFFF;
     font-size:11px;
     font-weight:700;
+}
+
+.notif-item-badge-personal{
+    background:#7C3AED;
 }
 
 .notif-item-content{

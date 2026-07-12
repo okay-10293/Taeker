@@ -635,13 +635,15 @@ let latestNoticeAt=null;
 
 function notifItemHTML(notice){
 
+    const isPersonal=!!notice.target_user_id;
+
     return `
         <div class="notif-item">
             <span class="notif-item-dot"></span>
             <div class="notif-item-body">
                 <div class="notif-item-title">
                     <span>${escapeHtml(notice.title)}</span>
-                    <span class="notif-item-badge">공지</span>
+                    <span class="notif-item-badge${isPersonal ? " notif-item-badge-personal" : ""}">${isPersonal ? "개인" : "공지"}</span>
                 </div>
                 <div class="notif-item-content">${escapeHtml(notice.content)}</div>
                 <div class="notif-item-time">${timeAgo(notice.published_at)}</div>
@@ -675,7 +677,7 @@ async function fetchNotifications(){
 
         const {data,error}=await client
             .from("notices")
-            .select("id,title,content,published_at")
+            .select("id,title,content,published_at,target_user_id")
             .eq("is_published",true)
             .order("published_at",{ascending:false})
             .limit(10);
