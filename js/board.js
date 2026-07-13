@@ -182,21 +182,40 @@ function syncCategoryChips(){
 
 async function injectGradeChip(){
 
-    if(!el.categoryBar || !window.Auth) return;
+    if(!window.Auth) return;
 
     try{
 
         const user=await window.Auth.getCurrentUser();
 
-        if(!user) return;
+        if(!user){
+
+            /* 로그인 전 상태로 "학년별 게시판" 링크를 탔다면 전체보기로 되돌린다 */
+            if(state.category==="grade") state.category="";
+
+            return;
+
+        }
 
         const profile=await window.Auth.getProfile();
 
         const grade=profile?.grade;
 
-        if(!grade || grade<1 || grade>3) return;
+        if(!grade || grade<1 || grade>3){
+
+            /* 학년 정보가 없는 계정(선생님 등)이면 학년별 게시판이 없으므로 전체보기로 되돌린다 */
+            if(state.category==="grade") state.category="";
+
+            return;
+
+        }
 
         const category=`grade${grade}`;
+
+        /* 사이드바 "학년별 게시판" 링크(category=grade)로 들어온 경우, 내 학년 카테고리로 치환 */
+        if(state.category==="grade") state.category=category;
+
+        if(!el.categoryBar) return;
 
         if(el.categoryBar.querySelector(`[data-category="${category}"]`)) return;
 
@@ -487,9 +506,13 @@ el.loadMoreBtn?.addEventListener("click",fetchPage);
 syncCategoryChips();
 updateHeaderText();
 
-window.addEventListener("load",()=>{
+window.addEventListener("load",async()=>{
 
-    injectGradeChip();
+    await injectGradeChip();
+
+    syncCategoryChips();
+    updateHeaderText();
+
     resetAndFetch();
 
 });
