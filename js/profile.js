@@ -103,8 +103,8 @@ function postCardHTML(post){
                 <div class="post-row-meta">
                     <span>${timeAgo(post.created_at)}</span>
                     <span class="post-row-stats">
-                        <span class="post-footer-item">👁 ${post.view_count ?? 0}</span>
-                        <span class="post-footer-item">❤ ${post.like_count ?? 0}</span>
+                        <span class="post-footer-item"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M2 12C3.5 7 7.5 4 12 4C16.5 4 20.5 7 22 12C20.5 17 16.5 20 12 20C7.5 20 3.5 17 2 12Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2"/></svg>${post.view_count ?? 0}</span>
+                        <span class="post-footer-item"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 20.5C12 20.5 3 15 3 8.8C3 5.9 5.3 3.5 8.2 3.5C9.9 3.5 11.3 4.3 12 5.6C12.7 4.3 14.1 3.5 15.8 3.5C18.7 3.5 21 5.9 21 8.8C21 15 12 20.5 12 20.5Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>${post.like_count ?? 0}</span>
                     </span>
                 </div>
             </div>
