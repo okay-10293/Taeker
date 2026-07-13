@@ -3796,6 +3796,48 @@ textarea.input{
 
 }
 
+.student-badge{
+
+    display:inline-flex;
+    align-items:center;
+    padding:3px 10px;
+    margin-top:2px;
+    border-radius:999px;
+    background:#EFF6FF;
+    color:#1D4ED8;
+    font-size:12px;
+    font-weight:700;
+
+}
+
+.teacher-badge-sm{
+
+    display:inline-flex;
+    align-items:center;
+    padding:1px 6px;
+    border-radius:999px;
+    background:#DCFCE7;
+    color:#15803D;
+    font-size:10px;
+    font-weight:800;
+    line-height:1.5;
+    vertical-align:middle;
+
+}
+
+.post-row-author{
+
+    cursor:pointer;
+
+}
+
+.post-row-author:hover{
+
+    color:var(--primary);
+    text-decoration:underline;
+
+}
+
 .register-card textarea{
 
     font-family:inherit;
@@ -5229,6 +5271,16 @@ body.dark .header-search.header-search-mobile-open{
     color:var(--text);
 }
 
+.post-detail-author-link{
+    color:inherit;
+    font-weight:700;
+}
+
+.post-detail-author-link:hover{
+    color:var(--primary);
+    text-decoration:underline;
+}
+
 .post-detail-view-count{
     color:var(--sub);
     font-size:13px;
@@ -5350,6 +5402,11 @@ body.dark .header-search.header-search-mobile-open{
     font-weight:700;
     font-size:13px;
     color:var(--text);
+}
+
+a.comment-item-author:hover{
+    color:var(--primary);
+    text-decoration:underline;
 }
 
 .comment-item-time{

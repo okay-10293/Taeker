@@ -250,6 +250,23 @@ async function injectGradeChip(){
 
 }
 
+el.postList?.addEventListener("click",(e)=>{
+
+    const authorEl=e.target.closest(".post-row-author");
+
+    if(!authorEl) return;
+
+    const authorId=authorEl.dataset.authorId;
+
+    if(!authorId) return;
+
+    e.preventDefault();
+    e.stopPropagation();
+
+    location.href=`profile.html?id=${encodeURIComponent(authorId)}`;
+
+});
+
 el.categoryBar?.addEventListener("click",(e)=>{
 
     const chip=e.target.closest(".chip");
@@ -321,6 +338,12 @@ function postCardHTML(post){
     const commentBadge=post.comment_count
         ? `<span class="post-comment-count">[${post.comment_count}]</span>`
         : "";
+    const teacherBadge=post.profiles?.is_teacher
+        ? `<span class="teacher-badge-sm">선생님</span>`
+        : "";
+    const authorHTML=post.author_id
+        ? `<span class="post-row-author" data-author-id="${post.author_id}">${nickname}</span>${teacherBadge}`
+        : `<span>${nickname}</span>${teacherBadge}`;
 
     return `
         <a class="post-card post-card-link fade-in" href="post.html?id=${encodeURIComponent(post.id)}">
@@ -331,7 +354,7 @@ function postCardHTML(post){
                     ${commentBadge}
                 </div>
                 <div class="post-row-meta">
-                    <span>${nickname}</span>
+                    ${authorHTML}
                     <span>·</span>
                     <span>${timeAgo(post.created_at)}</span>
                     <span class="post-row-stats">
@@ -434,7 +457,7 @@ async function fetchPage(page){
 
         let query=client
             .from("posts")
-            .select("id,title,content,category,view_count,like_count,comment_count,created_at,profiles(nickname)",{count:"exact"})
+            .select("id,title,content,category,view_count,like_count,comment_count,created_at,author_id,profiles(nickname,is_teacher)",{count:"exact"})
             .range(from,to);
 
         if(state.category){

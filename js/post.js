@@ -149,7 +149,7 @@ async function loadPost(){
 
         const {data,error}=await client
             .from("posts")
-            .select("id,title,content,category,view_count,like_count,comment_count,created_at,author_id,profiles(nickname)")
+            .select("id,title,content,category,view_count,like_count,comment_count,created_at,author_id,profiles(nickname,is_teacher)")
             .eq("id",postId)
             .single();
 
@@ -243,7 +243,19 @@ function renderPost(post){
 
     if(el.categoryBadge) el.categoryBadge.textContent=CATEGORY_LABEL[post.category] || "일반";
     if(el.title) el.title.textContent=post.title;
-    if(el.author) el.author.textContent=nickname;
+
+    if(el.author){
+
+        const teacherBadge=post.profiles?.is_teacher
+            ? ` <span class="teacher-badge-sm">선생님</span>`
+            : "";
+
+        el.author.innerHTML=post.author_id
+            ? `<a href="profile.html?id=${encodeURIComponent(post.author_id)}" class="post-detail-author-link">${escapeHtml(nickname)}</a>${teacherBadge}`
+            : `${escapeHtml(nickname)}${teacherBadge}`;
+
+    }
+
     if(el.date) el.date.textContent=timeAgo(post.created_at);
     if(el.viewCount) el.viewCount.textContent=`조회 ${post.view_count ?? 0}`;
     if(el.content) el.content.textContent=post.content;
@@ -483,11 +495,17 @@ function commentItemHTML(comment,currentUserId){
 
     const nickname=escapeHtml(comment.profiles?.nickname || "익명");
     const isOwn=currentUserId && comment.author_id===currentUserId;
+    const teacherBadge=comment.profiles?.is_teacher
+        ? `<span class="teacher-badge-sm">선생님</span>`
+        : "";
+    const authorHTML=comment.author_id
+        ? `<a href="profile.html?id=${encodeURIComponent(comment.author_id)}" class="comment-item-author">${nickname}</a>${teacherBadge}`
+        : `<span class="comment-item-author">${nickname}</span>${teacherBadge}`;
 
     return `
         <div class="comment-item" data-comment-id="${comment.id}">
             <div class="comment-item-head">
-                <span class="comment-item-author">${nickname}</span>
+                ${authorHTML}
                 <span class="comment-item-time">${timeAgo(comment.created_at)}</span>
                 ${isOwn
                     ? `<button type="button" class="comment-item-delete" data-delete-id="${comment.id}">삭제</button>`
@@ -509,7 +527,7 @@ async function loadComments(){
 
         const {data,error}=await client
             .from("comments")
-            .select("id,content,created_at,author_id,profiles(nickname)")
+            .select("id,content,created_at,author_id,profiles(nickname,is_teacher)")
             .eq("post_id",postId)
             .order("created_at",{ascending:true});
 

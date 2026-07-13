@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>프로필 | 태커</title>
+<meta name="description" content="태커 회원 프로필을 확인하세요.">
+<meta name="theme-color" content="#2563EB">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="init-loader" id="initLoader" aria-hidden="true">
+        <span class="init-loader-mark">태커</span>
+        <span class="init-loader-spinner"></span>
+    </div>
+
+
+<!-- =====================================================
+     HEADER
+===================================================== -->
+<header class="header">
+
+    <div class="header-left">
+        <button class="nav-toggle" id="menuBtn" aria-label="메뉴 열기">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                <path d="M3 6H21M3 12H21M3 18H21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+        </button>
+
+        <a href="index.html" class="brand">
+            <h1>태커</h1>
+            <span>태성고등학교 커뮤니티</span>
+        </a>
+    </div>
+
+    <div class="header-actions">
+
+        <button class="icon-btn" id="themeToggleBtn" aria-label="다크모드 전환">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                <circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="2"/>
+                <path d="M12 2V4M12 20V22M4 12H2M22 12H20M5 5L6.5 6.5M18 18L19.5 19.5M19.5 5L18 6.5M6.5 18L5 19.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+        </button>
+
+        <div class="dropdown" id="notifDropdown">
+            <button class="icon-btn dropdown-trigger" id="notifBtn" aria-haspopup="true" aria-expanded="false" aria-label="알림">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                    <path d="M15 17H20L18.5 15.5V10C18.5 6.96 16.54 4.36 13.75 3.45V3C13.75 2.03 12.97 1.25 12 1.25C11.03 1.25 10.25 2.03 10.25 3V3.45C7.46 4.36 5.5 6.96 5.5 10V15.5L4 17H9" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+                    <path d="M9 17C9 18.66 10.34 20 12 20C13.66 20 15 18.66 15 17" stroke="currentColor" stroke-width="2"/>
+                </svg>
+                <span class="badge-dot hidden" id="notifBadge"></span>
+            </button>
+
+            <div class="dropdown-menu dropdown-menu-right" id="notifMenu">
+                <div class="dropdown-header">알림</div>
+                <div class="dropdown-empty" id="notifEmpty">
+                    <p>새로운 알림이 없습니다.</p>
+                </div>
+                <div class="dropdown-list hidden" id="notifList"></div>
+            </div>
+        </div>
+
+        <div class="auth-area" id="authArea">
+            <a href="login.html" class="btn btn-ghost">로그인</a>
+            <a href="register.html" class="btn">회원가입</a>
+        </div>
+
+        <div class="dropdown hidden" id="profileDropdown">
+            <button class="profile-trigger" id="profileBtn" aria-haspopup="true" aria-expanded="false">
+                <span class="avatar-sm" id="headerAvatar">
+                    <img src="" alt="" id="headerAvatarImg" class="hidden">
+                    <span id="headerAvatarInitial">태</span>
+                </span>
+                <span class="profile-trigger-name" id="headerNickname">회원</span>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                    <path d="M6 9L12 15L18 9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </button>
+
+            <div class="dropdown-menu dropdown-menu-right" id="profileMenu">
+                <div class="dropdown-profile-summary">
+                    <span class="avatar-sm avatar-sm-lg">
+                        <img src="" alt="" id="menuAvatarImg" class="hidden">
+                        <span id="menuAvatarInitial">태</span>
+                    </span>
+                    <div>
+                        <p class="dropdown-profile-name" id="menuNickname">회원</p>
+                        <p class="dropdown-profile-email" id="menuEmail">-</p>
+                    </div>
+                </div>
+                <div class="dropdown-divider"></div>
+                <a href="mypage.html" class="dropdown-item">마이페이지</a>
+                <a href="#" class="dropdown-item" data-soon="설정 기능은 준비 중입니다.">설정</a>
+                <div class="dropdown-divider"></div>
+                <button class="dropdown-item dropdown-item-danger" id="logoutBtn">로그아웃</button>
+            </div>
+        </div>
+
+    </div>
+
+</header>
+
+<!-- =====================================================
+     SIDEBAR
+===================================================== -->
+<aside class="sidebar" id="sidebar">
+    <nav>
+        <ul>
+            <li><a href="index.html">홈</a></li>
+            <li class="sidebar-group">
+                <button type="button" class="sidebar-group-toggle" aria-expanded="false">
+                    <span>게시판</span>
+                    <svg class="sidebar-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                </button>
+                <ul class="sidebar-submenu hidden">
+                    <li><a href="board.html">전체보기</a></li>
+                    <li><a href="board.html?category=notice">공지사항</a></li>
+                    <li><a href="board.html?category=free">자유게시판</a></li>
+                    <li><a href="board.html?category=question">질문게시판</a></li>
+                    <li><a href="board.html?category=info">정보게시판</a></li>
+                    <li><a href="board.html?category=grade">학년별 게시판</a></li>
+                </ul>
+            </li>
+            <li><a href="school.html?tab=timetable">시간표</a></li>
+            <li><a href="school.html?tab=meal">급식</a></li>
+            <li><a href="school.html?tab=schedule">학사일정</a></li>
+            <li><a href="mypage.html">마이페이지</a></li>
+            <li><a href="inquiry.html">문의하기</a></li>
+        </ul>
+    </nav>
+</aside>
+
+<!-- =====================================================
+     MAIN
+===================================================== -->
+<main class="container">
+
+    <section class="board-title">
+        <h2>프로필</h2>
+        <p>닉네임과 작성한 글만 볼 수 있어요. 학년/반/번호는 본인만 볼 수 있습니다.</p>
+    </section>
+
+    <!-- 존재하지 않는 회원 -->
+    <div class="card hidden" id="profileNotFound" style="text-align:center;">
+        <p style="margin-bottom:14px;">존재하지 않거나 탈퇴한 회원입니다.</p>
+        <a href="index.html" class="btn">홈으로 돌아가기</a>
+    </div>
+
+    <div id="profileWrap" class="hidden">
+
+        <!-- 프로필 요약 카드 -->
+        <div class="profile-card">
+            <div class="avatar" id="profileAvatar">
+                <span id="profileAvatarInitial" style="display:flex;align-items:center;justify-content:center;width:100%;height:100%;font-size:28px;font-weight:700;color:var(--sub);">태</span>
+            </div>
+            <p class="profile-name" id="profileNickname">회원</p>
+            <span class="teacher-badge hidden" id="profileTeacherBadge">선생님</span>
+            <span class="student-badge hidden" id="profileStudentBadge">학생</span>
+            <p class="profile-info hidden" id="profileBio"></p>
+        </div>
+
+        <!-- 간단 통계 -->
+        <div class="stats">
+            <div class="stat-card">
+                <h3 id="profilePostCount">0</h3>
+                <p>작성한 글</p>
+            </div>
+            <div class="stat-card">
+                <h3 id="profileJoinedAt">-</h3>
+                <p>가입일</p>
+            </div>
+        </div>
+
+        <!-- 작성한 글 -->
+        <section style="margin-top:32px;">
+            <h3 style="margin-bottom:14px;">작성한 글</h3>
+            <div class="post-list" id="profilePostList">
+                <div class="skeleton-post" aria-hidden="true">
+                    <div class="skeleton-line skeleton-line-sm"></div>
+                    <div class="skeleton-line skeleton-line-lg"></div>
+                    <div class="skeleton-line skeleton-line-md"></div>
+                </div>
+            </div>
+        </section>
+
+    </div>
+
+</main>
+
+<div id="overlay" class="overlay"></div>
+
+<nav class="bottom-nav">
+    <a href="index.html">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+            <path d="M3 10L12 3L21 10V20H15V14H9V20H3Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+        </svg>
+        <span>홈</span>
+    </a>
+
+    <a href="board.html">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+            <path d="M4 5H20V15H7L4 18V5Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+        </svg>
+        <span>게시판</span>
+    </a>
+
+    <a href="school.html?tab=timetable">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+            <rect x="4" y="4" width="16" height="16" rx="2" stroke="currentColor" stroke-width="2"/>
+            <path d="M8 8H16M8 12H16M8 16H13" stroke="currentColor" stroke-width="2"/>
+        </svg>
+        <span>시간표</span>
+    </a>
+
+    <a href="mypage.html">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+            <circle cx="12" cy="8" r="4" stroke="currentColor" stroke-width="2"/>
+            <path d="M4 20C4 16.7 7.6 14 12 14C16.4 14 20 16.7 20 20" stroke="currentColor" stroke-width="2"/>
+        </svg>
+        <span>마이</span>
+    </a>
+</nav>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/app.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/profile.js"></script>
+
+</body>
+</html>
