@@ -9,8 +9,8 @@
 -- 마이페이지에서 수정할 수 없도록 DB 레벨에서 강제.
 -- 프론트 UI만 막으면 API를 직접 호출해서 우회할 수 있고, 학번 중복 체크
 -- (profiles_grade_class_student_key)도 의미가 없어지므로 trigger로 방어.
--- 관리자(is_admin_user())는 계속 수정 가능. 학년(grade)은 매년 진급하므로
--- 본인이 계속 수정 가능하게 그대로 둔다.
+-- 관리자(is_admin_user())는 계속 수정 가능.
+-- (참고) 학년(grade) 잠금은 이후 sql/lock_grade_self_edit.sql에서 추가됨.
 
 create or replace function public.prevent_student_id_self_edit()
 returns trigger
