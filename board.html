@@ -129,10 +129,18 @@
     <nav>
         <ul>
             <li><a href="index.html">홈</a></li>
-            <li><a href="board.html" class="active">게시판</a></li>
-            <li><a href="board.html?category=free">자유게시판</a></li>
-            <li><a href="board.html?category=question">질문게시판</a></li>
-            <li><a href="board.html?category=info">정보게시판</a></li>
+            <li class="sidebar-group">
+                <button type="button" class="sidebar-group-toggle active" aria-expanded="true">
+                    <span>게시판</span>
+                    <svg class="sidebar-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                </button>
+                <ul class="sidebar-submenu">
+                    <li><a href="board.html">전체보기</a></li>
+                    <li><a href="board.html?category=free">자유게시판</a></li>
+                    <li><a href="board.html?category=question">질문게시판</a></li>
+                    <li><a href="board.html?category=info">정보게시판</a></li>
+                </ul>
+            </li>
             <li><a href="school.html?tab=timetable">시간표</a></li>
             <li><a href="school.html?tab=meal">급식</a></li>
             <li><a href="school.html?tab=schedule">학사일정</a></li>

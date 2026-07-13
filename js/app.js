@@ -78,6 +78,27 @@ document.addEventListener("keydown",(e)=>{
 });
 
 /* =====================================================
+   SIDEBAR GROUP (게시판 하위 메뉴 아코디언)
+===================================================== */
+
+document.querySelectorAll(".sidebar-group-toggle").forEach((toggleBtn)=>{
+
+    toggleBtn.addEventListener("click",()=>{
+
+        const submenu=toggleBtn.parentElement?.querySelector(".sidebar-submenu");
+
+        if(!submenu) return;
+
+        const isOpen=!submenu.classList.contains("hidden");
+
+        submenu.classList.toggle("hidden",isOpen);
+        toggleBtn.setAttribute("aria-expanded",String(!isOpen));
+
+    });
+
+});
+
+/* =====================================================
    FAB
    (auth-aware handler attached in HOME FEED section below)
 ===================================================== */

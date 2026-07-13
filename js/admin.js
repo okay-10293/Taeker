@@ -181,6 +181,20 @@ async function guard(){
 
 /* ---------- 신고 내역 ---------- */
 
+function suspendControlsHTML(userId){
+
+    return `
+        <span class="admin-suspend-inline">
+            <input type="number" class="input" data-role="suspend-days" min="1" max="365" value="1">
+            <span>일</span>
+            <button class="btn-warn" data-action="suspend-custom" data-user="${userId}">정지</button>
+        </span>
+        <button class="btn-danger" data-action="ban" data-user="${userId}">영구 정지</button>
+        <button data-action="unsuspend" data-user="${userId}">정지 해제</button>
+    `;
+
+}
+
 function reportItemHTML(report){
 
     const targetLabel=TARGET_LABEL[report.target_type] || report.target_type;
@@ -200,15 +214,13 @@ function reportItemHTML(report){
     const canAct = !!report.target_user_id;
 
     const suspendButtons = canAct ? `
-        <button class="btn-warn" data-action="suspend1" data-user="${report.target_user_id}">1일 정지</button>
-        <button class="btn-danger" data-action="ban" data-user="${report.target_user_id}">영구 정지</button>
-        <button data-action="unsuspend" data-user="${report.target_user_id}">정지 해제</button>
+        ${suspendControlsHTML(report.target_user_id)}
     ` : `<span class="admin-item-sub">신고 대상 계정 정보가 없어 정지 처리를 할 수 없습니다.</span>`;
 
     const resolveButtons = report.status==="pending" ? `
         <button class="btn-ok" data-action="resolve" data-report="${report.id}">처리완료로 표시</button>
         <button data-action="reject" data-report="${report.id}">반려</button>
-    ` : "";
+    ` : `<button class="btn-danger" data-action="delete-report" data-report="${report.id}">이 신고 삭제</button>`;
 
     return `
         <div class="admin-item" data-report-id="${report.id}">
@@ -284,7 +296,7 @@ async function loadReports(){
 
 /* ---------- 계정 정지 처리 ---------- */
 
-async function applySuspension(userId,mode){
+async function applySuspension(userId,mode,days){
 
     const client=getClient();
 
@@ -292,9 +304,11 @@ async function applySuspension(userId,mode){
 
     let payload;
 
-    if(mode==="suspend1"){
+    if(mode==="suspend"){
 
-        const until=new Date(Date.now()+24*60*60*1000).toISOString();
+        const safeDays=Math.min(Math.max(Number(days) || 1,1),365);
+
+        const until=new Date(Date.now()+safeDays*24*60*60*1000).toISOString();
 
         payload={suspended_until:until,banned:false};
 
@@ -318,7 +332,7 @@ async function applySuspension(userId,mode){
         if(error) throw error;
 
         window.Taecker?.toast?.(
-            mode==="suspend1" ? "1일 정지 처리했습니다." :
+            mode==="suspend" ? `${Math.min(Math.max(Number(days) || 1,1),365)}일 정지 처리했습니다.` :
             mode==="ban" ? "영구 정지 처리했습니다." :
             "정지를 해제했습니다."
         );
@@ -379,6 +393,37 @@ async function updateReportStatus(reportId,status,adminId){
         console.warn("신고 상태 변경에 실패했습니다:",error.message || error);
 
         window.Taecker?.toast?.("처리에 실패했습니다. 잠시 후 다시 시도해주세요.");
+
+    }
+
+}
+
+async function deleteReport(reportId){
+
+    const client=getClient();
+
+    if(!client || !reportId) return;
+
+    try{
+
+        const {error}=await client
+            .from("reports")
+            .delete()
+            .eq("id",reportId);
+
+        if(error) throw error;
+
+        window.Taecker?.toast?.("신고 내역을 삭제했습니다.");
+
+        await loadReports();
+
+    }
+
+    catch(error){
+
+        console.warn("신고 삭제에 실패했습니다:",error.message || error);
+
+        window.Taecker?.toast?.("삭제에 실패했습니다. 잠시 후 다시 시도해주세요.");
 
     }
 
@@ -552,12 +597,16 @@ let allMembers=[];
 
 function memberItemHTML(profile){
 
+    const metaLabel=profile.is_teacher
+        ? "선생님"
+        : (memberMetaText(profile) || "학년/반/번호 미입력");
+
     return `
         <div class="admin-item" data-user-id="${profile.id}">
             <div class="admin-item-top">
                 <div>
                     <div class="admin-item-title" data-role="nickname-display">${escapeHtml(profile.nickname || "닉네임 없음")}</div>
-                    <div class="admin-item-sub">${escapeHtml(memberMetaText(profile)) || "학년/반/번호 미입력"} · ${escapeHtml(profile.email || "")}</div>
+                    <div class="admin-item-sub">${escapeHtml(metaLabel)} · ${escapeHtml(profile.email || "")}</div>
                 </div>
                 ${statusPillHTML(profile)}
             </div>
@@ -566,10 +615,12 @@ function memberItemHTML(profile){
                 <button class="btn-ok" data-action="rename-save" data-user="${profile.id}">저장</button>
                 <button data-action="rename-cancel" data-user="${profile.id}">취소</button>
             </div>
+            <div class="admin-note-row">
+                <input type="text" class="input" data-role="note-input" value="${escapeHtml(profile.admin_note || "")}" maxlength="100" placeholder="메모 (예: 수학 선생님)">
+                <button data-action="note-save" data-user="${profile.id}">메모 저장</button>
+            </div>
             <div class="admin-actions">
-                <button class="btn-warn" data-action="suspend1" data-user="${profile.id}">1일 정지</button>
-                <button class="btn-danger" data-action="ban" data-user="${profile.id}">영구 정지</button>
-                <button data-action="unsuspend" data-user="${profile.id}">정지 해제</button>
+                ${suspendControlsHTML(profile.id)}
                 <button data-action="rename-toggle" data-user="${profile.id}">닉네임 변경</button>
             </div>
         </div>
@@ -661,6 +712,45 @@ async function renameMember(userId,newNickname){
 
 }
 
+async function saveMemberNote(userId,note){
+
+    const client=getClient();
+
+    if(!client || !userId) return false;
+
+    const trimmed=(note || "").trim();
+
+    try{
+
+        const {error}=await client
+            .from("profiles")
+            .update({admin_note:trimmed || null})
+            .eq("id",userId);
+
+        if(error) throw error;
+
+        window.Taecker?.toast?.("메모를 저장했습니다.");
+
+        const member=allMembers.find((m)=>m.id===userId);
+
+        if(member) member.admin_note=trimmed;
+
+        return true;
+
+    }
+
+    catch(error){
+
+        console.warn("메모 저장에 실패했습니다:",error.message || error);
+
+        window.Taecker?.toast?.("메모 저장에 실패했습니다. 잠시 후 다시 시도해주세요.");
+
+        return false;
+
+    }
+
+}
+
 async function loadAllMembers(){
 
     const client=getClient();
@@ -673,7 +763,7 @@ async function loadAllMembers(){
 
         const {data,error}=await client
             .from("profiles")
-            .select("id,nickname,email,grade,class_number,student_number,banned,suspended_until")
+            .select("id,nickname,email,grade,class_number,student_number,banned,suspended_until,is_teacher,admin_note")
             .order("grade",{ascending:true,nullsFirst:false})
             .order("class_number",{ascending:true,nullsFirst:false})
             .order("student_number",{ascending:true,nullsFirst:false})
@@ -1187,7 +1277,7 @@ function setupActionDelegation(){
 
         const action=btn.dataset.action;
 
-        if(action==="suspend1" || action==="ban" || action==="unsuspend"){
+        if(action==="ban" || action==="unsuspend"){
 
             const userId=btn.dataset.user;
 
@@ -1195,13 +1285,31 @@ function setupActionDelegation(){
 
             const confirmText=
 
-                action==="suspend1" ? "이 계정을 1일 정지할까요?" :
                 action==="ban" ? "이 계정을 영구 정지할까요?" :
                 "정지를 해제할까요?";
 
             if(confirm(confirmText)){
 
                 applySuspension(userId,action);
+
+            }
+
+            return;
+
+        }
+
+        if(action==="suspend-custom"){
+
+            const userId=btn.dataset.user;
+
+            if(!userId) return;
+
+            const daysInput=btn.closest(".admin-suspend-inline")?.querySelector('[data-role="suspend-days"]');
+            const days=Math.min(Math.max(Number(daysInput?.value) || 1,1),365);
+
+            if(confirm(`이 계정을 ${days}일 정지할까요?`)){
+
+                applySuspension(userId,"suspend",days);
 
             }
 
@@ -1275,6 +1383,29 @@ function setupActionDelegation(){
 
         }
 
+        if(action==="note-save"){
+
+            const userId=btn.dataset.user;
+
+            if(!userId) return;
+
+            const item=btn.closest(".admin-item");
+            const input=item?.querySelector('[data-role="note-input"]');
+
+            if(!input) return;
+
+            btn.disabled=true;
+
+            saveMemberNote(userId,input.value).then(()=>{
+
+                btn.disabled=false;
+
+            });
+
+            return;
+
+        }
+
         if(action==="resolve" || action==="reject"){
 
             const reportId=btn.dataset.report;
@@ -1282,6 +1413,22 @@ function setupActionDelegation(){
             if(!reportId) return;
 
             updateReportStatus(reportId,action==="resolve" ? "resolved" : "rejected",adminId);
+
+            return;
+
+        }
+
+        if(action==="delete-report"){
+
+            const reportId=btn.dataset.report;
+
+            if(!reportId) return;
+
+            if(confirm("이 신고 내역을 삭제할까요? 삭제하면 되돌릴 수 없습니다.")){
+
+                deleteReport(reportId);
+
+            }
 
             return;
 

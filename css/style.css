@@ -258,6 +258,92 @@ img{
 
 }
 
+.sidebar a.active{
+
+    background:#EFF6FF;
+
+    color:var(--primary);
+
+}
+
+/* ---------- SIDEBAR GROUP (게시판 하위 메뉴 아코디언) ---------- */
+
+.sidebar-group{
+    display:flex;
+    flex-direction:column;
+}
+
+.sidebar-group-toggle{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    width:100%;
+    padding:14px 16px;
+    border-radius:14px;
+    transition:var(--transition);
+    font-weight:600;
+    font-size:15px;
+    font-family:inherit;
+    background:none;
+    border:none;
+    color:var(--text);
+    cursor:pointer;
+    text-align:left;
+}
+
+.sidebar-group-toggle:hover{
+    background:#EFF6FF;
+    color:var(--primary);
+}
+
+.sidebar-group-toggle.active{
+    background:#EFF6FF;
+    color:var(--primary);
+}
+
+.sidebar-chevron{
+    flex:0 0 auto;
+    transition:transform .2s;
+}
+
+.sidebar-group-toggle[aria-expanded="true"] .sidebar-chevron{
+    transform:rotate(180deg);
+}
+
+.sidebar-submenu{
+    display:flex;
+    flex-direction:column;
+    gap:2px;
+    margin:2px 0 4px 28px;
+    padding-left:12px;
+    border-left:2px solid var(--border);
+}
+
+.sidebar-submenu.hidden{
+    display:none;
+}
+
+.sidebar-submenu a{
+    padding:10px 14px;
+    font-size:14px;
+    font-weight:500;
+    border-radius:12px;
+}
+
+body.dark .sidebar-group-toggle{
+    color:var(--text);
+}
+
+body.dark .sidebar-group-toggle:hover,
+body.dark .sidebar-group-toggle.active{
+    background:#1E293B;
+    color:#60A5FA;
+}
+
+body.dark .sidebar-submenu{
+    border-left-color:#1F2937;
+}
+
 /* ---------- OVERLAY ---------- */
 
 .overlay{
