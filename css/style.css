@@ -4611,6 +4611,76 @@ textarea.input{
 }
 
 /* =====================================================
+   PAGINATION (게시글 번호 페이지네이션)
+===================================================== */
+
+.pagination{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:6px;
+    flex-wrap:wrap;
+    margin-top:24px;
+}
+
+.pagination.hidden{
+    display:none;
+}
+
+.page-btn{
+    min-width:36px;
+    height:36px;
+    padding:0 10px;
+    border-radius:10px;
+    border:1px solid var(--border);
+    background:var(--card);
+    color:var(--text);
+    font-size:14px;
+    font-weight:600;
+    cursor:pointer;
+    transition:var(--transition);
+}
+
+.page-btn:hover:not(:disabled){
+    background:#EFF6FF;
+    color:var(--primary);
+    border-color:var(--primary);
+}
+
+.page-btn.active{
+    background:var(--primary);
+    border-color:var(--primary);
+    color:#FFFFFF;
+}
+
+.page-btn:disabled{
+    opacity:.35;
+    cursor:default;
+}
+
+.page-nav{
+    font-weight:700;
+}
+
+body.dark .page-btn{
+    background:var(--card);
+    border-color:#1F2937;
+    color:var(--text);
+}
+
+body.dark .page-btn:hover:not(:disabled){
+    background:#1E293B;
+    color:#60A5FA;
+    border-color:#60A5FA;
+}
+
+body.dark .page-btn.active{
+    background:var(--primary);
+    border-color:var(--primary);
+    color:#FFFFFF;
+}
+
+/* =====================================================
    POST LIST
 ===================================================== */
 

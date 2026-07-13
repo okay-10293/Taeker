@@ -1,7 +1,7 @@
 /* =====================================================
    TAECKER BOARD
    board.html 전용 게시글 목록 로직
-   (카테고리 / 정렬 / 검색 / 더보기 페이지네이션)
+   (카테고리 / 정렬 / 검색 / 페이지 번호 페이지네이션, 20개씩)
 ===================================================== */
 
 "use strict";
@@ -21,8 +21,7 @@ const el={
     boardTitle:document.getElementById("boardTitle"),
     boardSubtitle:document.getElementById("boardSubtitle"),
 
-    loadMoreWrap:document.getElementById("loadMoreWrap"),
-    loadMoreBtn:document.getElementById("loadMoreBtn"),
+    pagination:document.getElementById("boardPagination"),
 
     searchInput:document.getElementById("searchInput")
 
@@ -40,7 +39,8 @@ if(!el.postList){
    CONSTANT
 ===================================================== */
 
-const PAGE_SIZE=10;
+const PAGE_SIZE=20;
+const PAGE_GROUP_SIZE=10;
 
 const CATEGORY_LABEL={
 
@@ -65,8 +65,7 @@ const state={
     category:params.get("category") || "",
     sort:"latest",
     keyword:"",
-    page:0,
-    hasMore:true,
+    page:1,
     loading:false
 
 };
@@ -356,11 +355,38 @@ function renderEmpty(message){
 
 }
 
-function setLoadMoreVisible(visible){
+function renderPagination(currentPage,totalPages){
 
-    if(!el.loadMoreWrap) return;
+    if(!el.pagination) return;
 
-    el.loadMoreWrap.classList.toggle("hidden",!visible);
+    if(!totalPages || totalPages<=1){
+
+        el.pagination.innerHTML="";
+        el.pagination.classList.add("hidden");
+
+        return;
+
+    }
+
+    el.pagination.classList.remove("hidden");
+
+    const groupIndex=Math.floor((currentPage-1)/PAGE_GROUP_SIZE);
+    const groupStart=groupIndex*PAGE_GROUP_SIZE+1;
+    const groupEnd=Math.min(groupStart+PAGE_GROUP_SIZE-1,totalPages);
+
+    let html="";
+
+    html+=`<button type="button" class="page-btn page-nav" data-page="${Math.max(1,groupStart-1)}" ${groupStart===1 ? "disabled" : ""} aria-label="이전">‹</button>`;
+
+    for(let p=groupStart;p<=groupEnd;p++){
+
+        html+=`<button type="button" class="page-btn${p===currentPage ? " active" : ""}" data-page="${p}"${p===currentPage ? ' aria-current="page"' : ""}>${p}</button>`;
+
+    }
+
+    html+=`<button type="button" class="page-btn page-nav" data-page="${Math.min(totalPages,groupEnd+1)}" ${groupEnd===totalPages ? "disabled" : ""} aria-label="다음">›</button>`;
+
+    el.pagination.innerHTML=html;
 
 }
 
@@ -368,7 +394,7 @@ function setLoadMoreVisible(visible){
    FETCH
 ===================================================== */
 
-async function fetchPage(){
+async function fetchPage(page){
 
     const client=getClient();
 
@@ -376,28 +402,27 @@ async function fetchPage(){
 
         renderEmpty("게시글을 불러올 수 없습니다. 잠시 후 다시 시도해주세요.");
 
-        setLoadMoreVisible(false);
+        renderPagination(0,0);
 
         return;
 
     }
 
-    if(state.loading || !state.hasMore) return;
+    if(state.loading) return;
 
     state.loading=true;
+    state.page=page;
 
-    const isFirstPage=state.page===0;
-
-    if(isFirstPage) renderSkeleton();
+    renderSkeleton();
 
     try{
 
-        const from=state.page*PAGE_SIZE;
+        const from=(page-1)*PAGE_SIZE;
         const to=from+PAGE_SIZE-1;
 
         let query=client
             .from("posts")
-            .select("id,title,content,category,view_count,like_count,comment_count,created_at,profiles(nickname)")
+            .select("id,title,content,category,view_count,like_count,comment_count,created_at,profiles(nickname)",{count:"exact"})
             .range(from,to);
 
         if(state.category){
@@ -416,11 +441,11 @@ async function fetchPage(){
             ? query.order("view_count",{ascending:false})
             : query.order("created_at",{ascending:false});
 
-        const {data,error}=await query;
+        const {data,error,count}=await query;
 
         if(error) throw error;
 
-        if(isFirstPage && (!data || data.length===0)){
+        if(!data || data.length===0){
 
             renderEmpty(
 
@@ -432,35 +457,24 @@ async function fetchPage(){
 
             if(el.feedCount) el.feedCount.textContent="";
 
-            setLoadMoreVisible(false);
+            renderPagination(0,0);
 
             return;
 
         }
 
-        if(isFirstPage){
+        el.postList.innerHTML=data.map(postCardHTML).join("");
 
-            el.postList.innerHTML=(data || []).map(postCardHTML).join("");
-
-        }else{
-
-            el.postList.insertAdjacentHTML("beforeend",(data || []).map(postCardHTML).join(""));
-
-        }
-
-        state.hasMore=(data || []).length===PAGE_SIZE;
-
-        state.page+=1;
-
-        setLoadMoreVisible(state.hasMore);
+        const totalCount=count ?? data.length;
+        const totalPages=Math.max(1,Math.ceil(totalCount/PAGE_SIZE));
 
         if(el.feedCount){
 
-            const countEl=document.querySelectorAll("#boardPostList .post-card").length;
-
-            el.feedCount.textContent=`${countEl}개 표시 중`;
+            el.feedCount.textContent=`총 ${totalCount}개`;
 
         }
+
+        renderPagination(page,totalPages);
 
     }
 
@@ -468,15 +482,11 @@ async function fetchPage(){
 
         console.warn("게시글을 불러오지 못했습니다:",error.message || error);
 
-        if(isFirstPage){
+        renderEmpty("게시글을 불러오지 못했습니다. 잠시 후 다시 시도해주세요.");
 
-            renderEmpty("아직 등록된 게시글이 없습니다. 첫 글을 작성해보세요!");
+        if(el.feedCount) el.feedCount.textContent="";
 
-            if(el.feedCount) el.feedCount.textContent="";
-
-        }
-
-        setLoadMoreVisible(false);
+        renderPagination(0,0);
 
     }
 
@@ -488,16 +498,33 @@ async function fetchPage(){
 
 }
 
-function resetAndFetch(){
+function goToPage(page){
 
-    state.page=0;
-    state.hasMore=true;
+    fetchPage(page);
 
-    fetchPage();
+    el.postList?.scrollIntoView({behavior:"smooth",block:"start"});
 
 }
 
-el.loadMoreBtn?.addEventListener("click",fetchPage);
+function resetAndFetch(){
+
+    goToPage(1);
+
+}
+
+el.pagination?.addEventListener("click",(e)=>{
+
+    const btn=e.target.closest(".page-btn");
+
+    if(!btn || btn.disabled) return;
+
+    const page=Number(btn.dataset.page);
+
+    if(!page || page===state.page) return;
+
+    goToPage(page);
+
+});
 
 /* =====================================================
    INIT
