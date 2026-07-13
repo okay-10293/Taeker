@@ -1986,6 +1986,15 @@ body.dark{
 
 }
 
+select.input:disabled{
+
+    appearance:none;
+    -webkit-appearance:none;
+    -moz-appearance:none;
+    background-image:none;
+
+}
+
 .form-group label{
 
     font-size:14px;
