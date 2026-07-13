@@ -4299,6 +4299,35 @@ textarea.input{
     min-width:0;
 }
 
+.notif-item-dismiss{
+    flex:0 0 auto;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    width:24px;
+    height:24px;
+    border-radius:8px;
+    color:var(--sub);
+    background:transparent;
+    opacity:0;
+    transition:var(--transition);
+}
+
+.notif-item:hover .notif-item-dismiss{
+    opacity:1;
+}
+
+.notif-item-dismiss:hover{
+    background:#FEE2E2;
+    color:#DC2626;
+}
+
+@media (hover:none){
+    .notif-item-dismiss{
+        opacity:1;
+    }
+}
+
 .notif-item-title{
     display:flex;
     align-items:center;

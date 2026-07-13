@@ -632,16 +632,41 @@ setupDropdown(el.profileBtn,el.profileMenu);
 
 /* ---------- 알림 (공지사항) ---------- */
 
-const NOTIF_SEEN_KEY="taecker_notif_seen_at";
+const NOTIF_SEEN_KEY="taeker_notif_seen_at";
+const NOTIF_DISMISSED_KEY="taeker_notif_dismissed_ids";
 
 let latestNoticeAt=null;
+
+function getDismissedNoticeIds(){
+
+    const raw=Storage.get(NOTIF_DISMISSED_KEY,[]);
+
+    return Array.isArray(raw) ? raw : [];
+
+}
+
+function dismissNoticeId(noticeId){
+
+    const dismissed=getDismissedNoticeIds();
+
+    if(!dismissed.includes(noticeId)){
+
+        dismissed.push(noticeId);
+
+        /* 목록이 무한정 커지지 않도록 최근 200개까지만 보관 */
+
+        Storage.set(NOTIF_DISMISSED_KEY,dismissed.slice(-200));
+
+    }
+
+}
 
 function notifItemHTML(notice){
 
     const isPersonal=!!notice.target_user_id;
 
     return `
-        <div class="notif-item">
+        <div class="notif-item" data-notice-id="${notice.id}">
             <span class="notif-item-dot"></span>
             <div class="notif-item-body">
                 <div class="notif-item-title">
@@ -651,6 +676,9 @@ function notifItemHTML(notice){
                 <div class="notif-item-content">${escapeHtml(notice.content)}</div>
                 <div class="notif-item-time">${timeAgo(notice.published_at)}</div>
             </div>
+            <button type="button" class="notif-item-dismiss" data-notice-id="${notice.id}" aria-label="알림 지우기" title="알림 지우기">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M6 6L18 18M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            </button>
         </div>
     `;
 
@@ -697,11 +725,23 @@ async function fetchNotifications(){
 
         }
 
-        el.notifEmpty.classList.add("hidden");
-        el.notifList.classList.remove("hidden");
-        el.notifList.innerHTML=data.map(notifItemHTML).join("");
-
         latestNoticeAt=data[0].published_at;
+
+        const dismissed=getDismissedNoticeIds();
+        const visible=data.filter((notice)=>!dismissed.includes(notice.id));
+
+        if(visible.length===0){
+
+            el.notifEmpty.classList.remove("hidden");
+            el.notifList.classList.add("hidden");
+
+        }else{
+
+            el.notifEmpty.classList.add("hidden");
+            el.notifList.classList.remove("hidden");
+            el.notifList.innerHTML=visible.map(notifItemHTML).join("");
+
+        }
 
         refreshNotifBadge();
 
@@ -714,6 +754,31 @@ async function fetchNotifications(){
     }
 
 }
+
+el.notifList?.addEventListener("click",(e)=>{
+
+    const dismissBtn=e.target.closest(".notif-item-dismiss");
+
+    if(!dismissBtn) return;
+
+    const noticeId=dismissBtn.dataset.noticeId;
+
+    if(!noticeId) return;
+
+    dismissNoticeId(noticeId);
+
+    const item=dismissBtn.closest(".notif-item");
+
+    item?.remove();
+
+    if(!el.notifList.querySelector(".notif-item")){
+
+        el.notifEmpty?.classList.remove("hidden");
+        el.notifList.classList.add("hidden");
+
+    }
+
+});
 
 el.notifBtn?.addEventListener("click",()=>{
 
