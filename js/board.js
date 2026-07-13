@@ -54,6 +54,18 @@ const CATEGORY_LABEL={
 
 };
 
+const CATEGORY_DESC={
+
+    notice:"학교와 태커의 새로운 소식을 가장 먼저 확인해보세요.",
+    free:"친구들과 편하게 일상 이야기를 나눠보세요.",
+    question:"익명으로 다른 사람들에게 무엇이든 물어보세요.",
+    info:"알아두면 쓸모있는 정보와 꿀팁을 나눠보세요.",
+    grade1:"같은 학년 친구들끼리만 편하게 이야기해보세요.",
+    grade2:"같은 학년 친구들끼리만 편하게 이야기해보세요.",
+    grade3:"같은 학년 친구들끼리만 편하게 이야기해보세요."
+
+};
+
 /* =====================================================
    STATE
 ===================================================== */
@@ -109,7 +121,7 @@ function timeAgo(dateStr){
     if(diff<86400) return Math.floor(diff/3600)+"시간 전";
     if(diff<604800) return Math.floor(diff/86400)+"일 전";
 
-    return date.toLocaleDateString("ko-KR",{month:"numeric",day:"numeric"});
+    return date.toLocaleDateString("ko-KR",{year:"numeric",month:"numeric",day:"numeric"});
 
 }
 
@@ -153,7 +165,7 @@ function updateHeaderText(){
     const label=CATEGORY_LABEL[state.category] || "게시판";
 
     el.boardTitle.textContent=label;
-    el.boardSubtitle.textContent=`${label}의 게시글을 확인해보세요.`;
+    el.boardSubtitle.textContent=CATEGORY_DESC[state.category] || `${label}의 게시글을 확인해보세요.`;
 
 }
 
@@ -222,7 +234,7 @@ async function injectGradeChip(){
 
         chip.className="chip";
         chip.dataset.category=category;
-        chip.textContent=CATEGORY_LABEL[category];
+        chip.innerHTML='<svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M2 9L12 4L22 9L12 14L2 9Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M6 11V16C6 17.5 8.5 19 12 19C15.5 19 18 17.5 18 16V11" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>'+CATEGORY_LABEL[category];
 
         el.categoryBar.appendChild(chip);
 

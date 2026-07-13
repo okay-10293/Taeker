@@ -581,7 +581,7 @@ function timeAgo(dateStr){
     if(diff<86400) return Math.floor(diff/3600)+"시간 전";
     if(diff<604800) return Math.floor(diff/86400)+"일 전";
 
-    return date.toLocaleDateString("ko-KR",{month:"numeric",day:"numeric"});
+    return date.toLocaleDateString("ko-KR",{year:"numeric",month:"numeric",day:"numeric"});
 
 }
 
@@ -863,7 +863,7 @@ async function injectGradeChip(){
 
         chip.className="chip";
         chip.dataset.category=category;
-        chip.textContent=CATEGORY_LABEL[category];
+        chip.innerHTML='<svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M2 9L12 4L22 9L12 14L2 9Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M6 11V16C6 17.5 8.5 19 12 19C15.5 19 18 17.5 18 16V11" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>'+CATEGORY_LABEL[category];
 
         el.categoryBar.appendChild(chip);
 

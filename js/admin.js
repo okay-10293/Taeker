@@ -95,7 +95,7 @@ function timeAgo(dateStr){
     if(diff<86400) return Math.floor(diff/3600)+"시간 전";
     if(diff<604800) return Math.floor(diff/86400)+"일 전";
 
-    return date.toLocaleDateString("ko-KR",{month:"numeric",day:"numeric"});
+    return date.toLocaleDateString("ko-KR",{year:"numeric",month:"numeric",day:"numeric"});
 
 }
 
