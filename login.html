@@ -15,7 +15,7 @@
 
     <title>
 
-        로그인 | Taecker
+        로그인 | Taeker
 
     </title>
 
@@ -26,6 +26,11 @@
 </head>
 
 <body>
+
+<div class="init-loader" id="initLoader" aria-hidden="true">
+    <span class="init-loader-mark">태커</span>
+    <span class="init-loader-spinner"></span>
+</div>
 
 <div class="login-page">
 
@@ -51,7 +56,7 @@
 
             <h1>
 
-                Taecker
+                Taeker
 
             </h1>
 
@@ -174,10 +179,16 @@
                     <p>
 
                         학교 계정으로 로그인하여
-                        Taecker를 이용하세요.
+                        Taeker를 이용하세요.
 
                     </p>
 
+                </div>
+
+                <div id="suspensionNotice" class="suspension-notice hidden">
+                    <p class="suspension-notice-title" id="suspensionNoticeTitle"></p>
+                    <p class="suspension-notice-reason" id="suspensionNoticeReason"></p>
+                    <p class="suspension-notice-period" id="suspensionNoticePeriod"></p>
                 </div>
 
                 <form
@@ -411,7 +422,7 @@
 
                     <h3>
 
-                        Taecker에서 가능한 것
+                        Taeker에서 가능한 것
 
                     </h3>
 
@@ -533,7 +544,7 @@
 
                     <p>
 
-                        © 2026 Taecker
+                        © 2026 Taeker
 
                     </p>
 

@@ -927,11 +927,19 @@ function isSuspended(profile){
 
     if(profile.banned===true){
 
+        const reason=(profile.suspended_reason || "").trim();
+
         return {
 
             blocked:true,
 
-            message:"영구 정지된 계정입니다. 문의가 필요하면 관리자에게 연락해주세요."
+            type:"banned",
+
+            reason,
+
+            message:reason
+                ? `영구 정지된 계정입니다. (사유: ${reason})`
+                : "영구 정지된 계정입니다. 문의가 필요하면 관리자에게 연락해주세요."
 
         };
 
@@ -955,11 +963,21 @@ function isSuspended(profile){
 
             });
 
+            const reason=(profile.suspended_reason || "").trim();
+
             return {
 
                 blocked:true,
 
-                message:`이용이 정지된 계정입니다. (해제 예정: ${untilText})`
+                type:"suspended",
+
+                reason,
+
+                until:profile.suspended_until,
+
+                message:reason
+                    ? `이용이 정지된 계정입니다. (사유: ${reason} / 해제 예정: ${untilText})`
+                    : `이용이 정지된 계정입니다. (해제 예정: ${untilText})`
 
             };
 
@@ -1027,6 +1045,74 @@ function translateError(message){
    LOGIN SUBMIT
 ===================================================== */
 
+function showSuspensionNotice(suspension){
+
+    const box=document.getElementById("suspensionNotice");
+
+    if(!box){
+
+        toast(suspension.message);
+
+        return;
+
+    }
+
+    const titleEl=document.getElementById("suspensionNoticeTitle");
+    const reasonEl=document.getElementById("suspensionNoticeReason");
+    const periodEl=document.getElementById("suspensionNoticePeriod");
+
+    if(titleEl){
+
+        titleEl.textContent=
+            suspension.type==="banned"
+                ? "영구 정지된 계정입니다."
+                : "이용이 정지된 계정입니다.";
+
+    }
+
+    if(reasonEl){
+
+        reasonEl.textContent=
+            suspension.reason
+                ? `사유: ${suspension.reason}`
+                : "사유가 등록되지 않았습니다. 관리자에게 문의해주세요.";
+
+    }
+
+    if(periodEl){
+
+        if(suspension.type==="banned"){
+
+            periodEl.textContent="기간: 영구 정지 (해제되지 않습니다)";
+
+        }else if(suspension.until){
+
+            const untilText=new Date(suspension.until).toLocaleString("ko-KR",{
+
+                year:"numeric",
+                month:"numeric",
+                day:"numeric",
+                hour:"2-digit",
+                minute:"2-digit"
+
+            });
+
+            periodEl.textContent=`해제 예정: ${untilText}`;
+
+        }else{
+
+            periodEl.textContent="";
+
+        }
+
+    }
+
+    box.classList.remove("hidden");
+
+    box.scrollIntoView({behavior:"smooth",block:"center"});
+
+}
+
 if(form){
 
     form.addEventListener(
@@ -1036,6 +1122,8 @@ if(form){
         async(event)=>{
 
             event.preventDefault();
+
+            document.getElementById("suspensionNotice")?.classList.add("hidden");
 
             const ready=
 
@@ -1065,7 +1153,7 @@ if(form){
 
                     .from("profiles")
 
-                    .select("banned,suspended_until")
+                    .select("banned,suspended_until,suspended_reason")
 
                     .eq("id",result.user.id)
 
@@ -1079,7 +1167,9 @@ if(form){
 
                     await sb.auth.signOut();
 
-                    throw new Error(suspension.message);
+                    showSuspensionNotice(suspension);
+
+                    return;
 
                 }
 
@@ -1723,6 +1813,6 @@ window.TaeckerAuth={
 
 console.log(
 
-    "Taecker Auth Loaded"
+    "Taeker Auth Loaded"
 
 );

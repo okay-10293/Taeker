@@ -51,7 +51,11 @@ const CATEGORY_LABEL={
     notice:"공지사항",
     free:"자유게시판",
     question:"질문게시판",
-    info:"정보게시판"
+    info:"정보게시판",
+
+    grade1:"학년별 게시판",
+    grade2:"학년별 게시판",
+    grade3:"학년별 게시판"
 
 };
 

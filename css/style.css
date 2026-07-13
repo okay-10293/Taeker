@@ -1,5 +1,5 @@
 /* =====================================================
-   Taecker Community Rev.2
+   Taeker Community Rev.2
    Apple + Discord + Notion
 ===================================================== */
 
@@ -59,6 +59,67 @@ body{
     0 12px 35px rgba(15,23,42,.06);
 
     --transition:.25s ease;
+
+}
+
+/* ---------- INITIAL LOAD SCREEN (auth 상태 확인 동안 표시) ---------- */
+
+.init-loader{
+
+    position:fixed;
+    inset:0;
+    z-index:9999;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    gap:14px;
+    background:var(--background);
+    transition:opacity .25s ease,visibility .25s ease;
+
+}
+
+.init-loader-mark{
+
+    font-size:22px;
+    font-weight:800;
+    color:var(--primary);
+    letter-spacing:-.02em;
+
+}
+
+.init-loader-spinner{
+
+    width:28px;
+    height:28px;
+    border-radius:50%;
+    border:3px solid var(--border);
+    border-top-color:var(--primary);
+    animation:init-loader-spin .7s linear infinite;
+
+}
+
+@keyframes init-loader-spin{
+
+    to{
+        transform:rotate(360deg);
+    }
+
+}
+
+.init-loader.is-hidden{
+
+    opacity:0;
+    visibility:hidden;
+    pointer-events:none;
+
+}
+
+@media (prefers-reduced-motion:reduce){
+
+    .init-loader-spinner{
+        animation-duration:1.4s;
+    }
 
 }
 
@@ -1858,6 +1919,40 @@ body.dark{
 
 }
 
+.suspension-notice{
+
+    background:#FEF2F2;
+    border:1px solid #FECACA;
+    border-radius:14px;
+    padding:16px 18px;
+    margin-bottom:20px;
+
+}
+
+.suspension-notice.hidden{
+
+    display:none;
+
+}
+
+.suspension-notice-title{
+
+    font-size:14px;
+    font-weight:800;
+    color:#B91C1C;
+    margin-bottom:6px;
+
+}
+
+.suspension-notice-reason,
+.suspension-notice-period{
+
+    font-size:13px;
+    color:#991B1B;
+    line-height:1.6;
+
+}
+
 .login-form{
 
     display:flex;
@@ -1873,6 +1968,21 @@ body.dark{
     display:flex;
 
     flex-direction:column;
+
+}
+
+.form-hint{
+
+    font-size:12.5px;
+    color:var(--sub);
+
+}
+
+.input:disabled{
+
+    background:#F3F4F6;
+    color:var(--sub);
+    cursor:not-allowed;
 
 }
 
@@ -4275,6 +4385,35 @@ textarea.input{
     min-width:0;
 }
 
+.notif-item-dismiss{
+    flex:0 0 auto;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    width:24px;
+    height:24px;
+    border-radius:8px;
+    color:var(--sub);
+    background:transparent;
+    opacity:0;
+    transition:var(--transition);
+}
+
+.notif-item:hover .notif-item-dismiss{
+    opacity:1;
+}
+
+.notif-item-dismiss:hover{
+    background:#FEE2E2;
+    color:#DC2626;
+}
+
+@media (hover:none){
+    .notif-item-dismiss{
+        opacity:1;
+    }
+}
+
 .notif-item-title{
     display:flex;
     align-items:center;
@@ -4293,6 +4432,10 @@ textarea.input{
     color:#FFFFFF;
     font-size:11px;
     font-weight:700;
+}
+
+.notif-item-badge-personal{
+    background:#7C3AED;
 }
 
 .notif-item-content{
@@ -4656,6 +4799,13 @@ textarea.input{
     .auth-area .btn:not(.btn-ghost){
         display:none;
     }
+    .auth-area .btn-ghost{
+        padding:10px 14px;
+        font-size:13px;
+    }
+    .btn-write{
+        display:none;
+    }
     .profile-trigger-name{
         display:none;
     }
@@ -4664,6 +4814,9 @@ textarea.input{
     }
     .dropdown-menu-right{
         right:-8px;
+    }
+    .header-actions{
+        gap:6px;
     }
 }
 
@@ -4696,15 +4849,16 @@ textarea.input{
         gap:8px;
     }
     .header-actions{
-        gap:4px;
+        gap:2px;
     }
     .icon-btn,
     .nav-toggle{
         width:38px;
         height:38px;
     }
-    .btn-write{
-        padding:10px;
+    .auth-area .btn-ghost{
+        padding:9px 12px;
+        font-size:12.5px;
     }
     .secondary-actions{
         grid-template-columns:1fr;

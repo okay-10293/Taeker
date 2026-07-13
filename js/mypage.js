@@ -45,7 +45,10 @@ const CATEGORY_LABEL={
     notice:"공지사항",
     free:"자유게시판",
     question:"질문게시판",
-    info:"정보게시판"
+    info:"정보게시판",
+    grade1:"학년별 게시판",
+    grade2:"학년별 게시판",
+    grade3:"학년별 게시판"
 };
 
 let currentUser=null;
@@ -230,8 +233,6 @@ el.form?.addEventListener("submit",async(event)=>{
 
                 nickname,
                 grade:el.grade.value ? Number(el.grade.value) : null,
-                class_number:el.classNumber.value ? Number(el.classNumber.value) : null,
-                student_number:el.studentNumber.value ? Number(el.studentNumber.value) : null,
                 bio:el.bio.value.trim()
 
             })

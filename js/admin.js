@@ -20,9 +20,13 @@ const el={
     panelNotices:document.getElementById("panelNotices"),
     panelSchool:document.getElementById("panelSchool"),
     panelImpersonation:document.getElementById("panelImpersonation"),
+    panelInquiries:document.getElementById("panelInquiries"),
 
     impersonationStatusTabs:document.querySelectorAll("#panelImpersonation .admin-tab"),
     impersonationList:document.getElementById("impersonationList"),
+
+    inquiryStatusTabs:document.querySelectorAll("#panelInquiries .admin-tab"),
+    inquiryList:document.getElementById("inquiryList"),
 
     schoolApiKeyInput:document.getElementById("schoolApiKeyInput"),
     schoolNameInput:document.getElementById("schoolNameInput"),
@@ -60,6 +64,7 @@ const GRADE_LABEL={1:"1학년",2:"2학년",3:"3학년"};
 
 let statusFilter="pending";
 let impersonationStatusFilter="pending";
+let inquiryStatusFilter="pending";
 
 /* ---------- UTIL ---------- */
 
@@ -97,6 +102,8 @@ function timeAgo(dateStr){
 function memberMetaText(profile){
 
     if(!profile) return "";
+
+    if(profile.is_teacher) return "선생님";
 
     const parts=[];
 
@@ -181,20 +188,6 @@ async function guard(){
 
 /* ---------- 신고 내역 ---------- */
 
-function suspendControlsHTML(userId){
-
-    return `
-        <span class="admin-suspend-inline">
-            <input type="number" class="input" data-role="suspend-days" min="1" max="365" value="1">
-            <span>일</span>
-            <button class="btn-warn" data-action="suspend-custom" data-user="${userId}">정지</button>
-        </span>
-        <button class="btn-danger" data-action="ban" data-user="${userId}">영구 정지</button>
-        <button data-action="unsuspend" data-user="${userId}">정지 해제</button>
-    `;
-
-}
-
 function reportItemHTML(report){
 
     const targetLabel=TARGET_LABEL[report.target_type] || report.target_type;
@@ -213,14 +206,28 @@ function reportItemHTML(report){
 
     const canAct = !!report.target_user_id;
 
+    const suspendRow = canAct ? `
+        <div class="admin-suspend-row hidden" data-role="suspend-row">
+            <input type="number" class="input" data-role="suspend-days-input" min="1" step="1" value="1">
+            <span class="admin-suspend-unit">일 정지</span>
+            <textarea class="input" data-role="suspend-reason-input" rows="2" maxlength="200" placeholder="정지 사유 (정지당한 사람에게 그대로 보여요)"></textarea>
+            <div class="admin-suspend-row-buttons">
+                <button class="btn-warn" data-action="suspend-save" data-user="${report.target_user_id}">기간 정지 적용</button>
+                <button class="btn-danger" data-action="ban-save" data-user="${report.target_user_id}">영구 정지 적용</button>
+                <button data-action="suspend-cancel" data-user="${report.target_user_id}">취소</button>
+            </div>
+        </div>
+    ` : "";
+
     const suspendButtons = canAct ? `
-        ${suspendControlsHTML(report.target_user_id)}
+        <button data-action="suspend-toggle" data-user="${report.target_user_id}">정지</button>
+        <button data-action="unsuspend" data-user="${report.target_user_id}">정지 해제</button>
     ` : `<span class="admin-item-sub">신고 대상 계정 정보가 없어 정지 처리를 할 수 없습니다.</span>`;
 
     const resolveButtons = report.status==="pending" ? `
         <button class="btn-ok" data-action="resolve" data-report="${report.id}">처리완료로 표시</button>
         <button data-action="reject" data-report="${report.id}">반려</button>
-    ` : `<button class="btn-danger" data-action="delete-report" data-report="${report.id}">이 신고 삭제</button>`;
+    ` : `<button class="btn-danger" data-action="delete-report" data-report="${report.id}">신고 삭제</button>`;
 
     return `
         <div class="admin-item" data-report-id="${report.id}">
@@ -234,6 +241,7 @@ function reportItemHTML(report){
                 <span class="status-pill ${statusClass}">${statusText}</span>
             </div>
             ${targetProfile ? `<div style="margin-bottom:6px;">${statusPillHTML(targetProfile)}</div>` : ""}
+            ${suspendRow}
             <div class="admin-actions">
                 ${suspendButtons}
                 ${resolveButtons}
@@ -258,7 +266,7 @@ async function loadReports(){
             .select(`
                 id,target_type,target_id,target_user_id,reason,status,created_at,
                 reporter:reporter_id(nickname),
-                target_profile:target_user_id(nickname,grade,class_number,student_number,banned,suspended_until)
+                target_profile:target_user_id(nickname,grade,class_number,student_number,is_teacher,banned,suspended_until)
             `)
             .order("created_at",{ascending:false});
 
@@ -294,9 +302,85 @@ async function loadReports(){
 
 }
 
+/* ---------- 신고 삭제 (처리완료/반려된 신고만) ---------- */
+
+async function deleteReport(reportId){
+
+    const client=getClient();
+
+    if(!client) return;
+
+    try{
+
+        const {error}=await client
+            .from("reports")
+            .delete()
+            .eq("id",reportId);
+
+        if(error) throw error;
+
+        window.Taecker?.toast?.("신고 내역을 삭제했습니다.");
+
+        await loadReports();
+
+    }
+
+    catch(error){
+
+        console.warn("신고 삭제에 실패했습니다:",error.message || error);
+
+        window.Taecker?.toast?.("삭제에 실패했습니다. 잠시 후 다시 시도해주세요.");
+
+    }
+
+}
+
+/* ---------- 개인 공지 보내기 ---------- */
+
+async function sendPersonalNotice(userId,title,content){
+
+    const client=getClient();
+
+    if(!client || !userId) return false;
+
+    try{
+
+        const {error}=await client
+            .from("notices")
+            .insert({
+
+                title,
+                content,
+                target_user_id:userId,
+                is_published:true,
+                published_at:new Date().toISOString(),
+                created_by:adminId
+
+            });
+
+        if(error) throw error;
+
+        window.Taecker?.toast?.("개인 공지를 보냈습니다.");
+
+        return true;
+
+    }
+
+    catch(error){
+
+        console.error("개인 공지 전송 실패:",error.message || error);
+
+        window.Taecker?.toast?.("전송에 실패했습니다. 잠시 후 다시 시도해주세요.");
+
+        return false;
+
+    }
+
+}
+
 /* ---------- 계정 정지 처리 ---------- */
 
-async function applySuspension(userId,mode,days){
+async function applySuspension(userId,mode,days,reason){
 
     const client=getClient();
 
@@ -304,21 +388,21 @@ async function applySuspension(userId,mode,days){
 
     let payload;
 
-    if(mode==="suspend"){
+    if(mode==="suspendCustom"){
 
-        const safeDays=Math.min(Math.max(Number(days) || 1,1),365);
+        const safeDays=Math.max(1,Math.floor(Number(days)||1));
 
         const until=new Date(Date.now()+safeDays*24*60*60*1000).toISOString();
 
-        payload={suspended_until:until,banned:false};
+        payload={suspended_until:until,banned:false,suspended_reason:(reason || "").trim() || null};
 
     }else if(mode==="ban"){
 
-        payload={banned:true,suspended_until:null};
+        payload={banned:true,suspended_until:null,suspended_reason:(reason || "").trim() || null};
 
     }else{
 
-        payload={banned:false,suspended_until:null};
+        payload={banned:false,suspended_until:null,suspended_reason:null};
 
     }
 
@@ -332,7 +416,7 @@ async function applySuspension(userId,mode,days){
         if(error) throw error;
 
         window.Taecker?.toast?.(
-            mode==="suspend" ? `${Math.min(Math.max(Number(days) || 1,1),365)}일 정지 처리했습니다.` :
+            mode==="suspendCustom" ? `${Math.max(1,Math.floor(Number(days)||1))}일 정지 처리했습니다.` :
             mode==="ban" ? "영구 정지 처리했습니다." :
             "정지를 해제했습니다."
         );
@@ -398,37 +482,6 @@ async function updateReportStatus(reportId,status,adminId){
 
 }
 
-async function deleteReport(reportId){
-
-    const client=getClient();
-
-    if(!client || !reportId) return;
-
-    try{
-
-        const {error}=await client
-            .from("reports")
-            .delete()
-            .eq("id",reportId);
-
-        if(error) throw error;
-
-        window.Taecker?.toast?.("신고 내역을 삭제했습니다.");
-
-        await loadReports();
-
-    }
-
-    catch(error){
-
-        console.warn("신고 삭제에 실패했습니다:",error.message || error);
-
-        window.Taecker?.toast?.("삭제에 실패했습니다. 잠시 후 다시 시도해주세요.");
-
-    }
-
-}
-
 /* ---------- 학번 도용 신고 ---------- */
 
 function impersonationItemHTML(report){
@@ -450,7 +503,7 @@ function impersonationItemHTML(report){
         : "일치하는 계정을 찾지 못했습니다. 회원 검색 탭에서 직접 확인해주세요.";
 
     const actionButtons = report.status==="pending" ? `
-        <button class="btn-danger" data-action="confirm-impersonation" data-report="${report.id}" ${accused ? "" : "disabled"}>도용 확정 (계정 영구정지)</button>
+        <button class="btn-danger" data-action="confirm-impersonation" data-report="${report.id}" ${accused ? "" : "disabled"}>도용 확정 (계정 삭제)</button>
         <button data-action="reject-impersonation" data-report="${report.id}">반려</button>
     ` : "";
 
@@ -521,6 +574,138 @@ async function loadImpersonationReports(){
         console.warn("도용 신고 목록을 불러오지 못했습니다:",error.message || error);
 
         el.impersonationList.innerHTML=`<div class="admin-empty">도용 신고 목록을 불러오지 못했습니다.</div>`;
+
+    }
+
+}
+
+/* ---------- 문의하기 ---------- */
+
+function inquiryItemHTML(inquiry){
+
+    const answered=inquiry.status==="answered";
+    const author=inquiry.author;
+
+    const authorInfo=author
+        ? `${escapeHtml(author.nickname || "닉네임 없음")} (${escapeHtml(author.email || "이메일 없음")})`
+        : "탈퇴했거나 알 수 없는 회원";
+
+    return `
+        <div class="admin-item" data-inquiry-id="${inquiry.id}">
+            <div class="admin-item-top">
+                <div>
+                    <div class="admin-item-title">${authorInfo}</div>
+                    <div class="admin-item-sub">${timeAgo(inquiry.created_at)}</div>
+                </div>
+                <span class="status-pill ${answered ? "status-resolved" : "status-pending"}">${answered ? "답변완료" : "답변대기"}</span>
+            </div>
+            <div class="admin-item-sub" style="white-space:pre-wrap;margin-bottom:10px;color:var(--text);">${escapeHtml(inquiry.content)}</div>
+            ${answered ? `
+                <div class="admin-memo-row" style="margin-bottom:6px;">
+                    <div style="flex:1;min-width:160px;padding:9px 12px;border-radius:10px;background:var(--background);font-size:13px;white-space:pre-wrap;">${escapeHtml(inquiry.admin_reply || "")}</div>
+                </div>
+                <div class="admin-actions">
+                    <button data-action="inquiry-reply-toggle" data-inquiry="${inquiry.id}">답변 수정</button>
+                </div>
+                <div class="admin-memo-row hidden" data-role="inquiry-reply-row">
+                    <textarea class="input" data-role="inquiry-reply-input" rows="3" maxlength="1000" placeholder="답변을 입력하세요">${escapeHtml(inquiry.admin_reply || "")}</textarea>
+                    <button class="btn-ok" data-action="inquiry-reply-save" data-inquiry="${inquiry.id}">저장</button>
+                </div>
+            ` : `
+                <div class="admin-memo-row" data-role="inquiry-reply-row">
+                    <textarea class="input" data-role="inquiry-reply-input" rows="3" maxlength="1000" placeholder="답변을 입력하세요"></textarea>
+                    <button class="btn-ok" data-action="inquiry-reply-save" data-inquiry="${inquiry.id}">답변 등록</button>
+                </div>
+            `}
+        </div>
+    `;
+
+}
+
+async function loadInquiries(){
+
+    const client=getClient();
+
+    if(!client || !el.inquiryList) return;
+
+    el.inquiryList.innerHTML=`<div class="admin-empty">불러오는 중...</div>`;
+
+    try{
+
+        let query=client
+            .from("inquiries")
+            .select("id,content,status,admin_reply,created_at,author:user_id(nickname,email)")
+            .order("created_at",{ascending:false});
+
+        if(inquiryStatusFilter!=="all"){
+
+            query=query.eq("status",inquiryStatusFilter);
+
+        }
+
+        const {data,error}=await query;
+
+        if(error) throw error;
+
+        if(!data || data.length===0){
+
+            el.inquiryList.innerHTML=`<div class="admin-empty">해당 조건의 문의가 없습니다.</div>`;
+
+            return;
+
+        }
+
+        el.inquiryList.innerHTML=data.map(inquiryItemHTML).join("");
+
+    }
+
+    catch(error){
+
+        console.warn("문의 목록을 불러오지 못했습니다:",error.message || error);
+
+        el.inquiryList.innerHTML=`<div class="admin-empty">문의 목록을 불러오지 못했습니다.</div>`;
+
+    }
+
+}
+
+async function replyToInquiry(inquiryId,replyText){
+
+    const client=getClient();
+
+    if(!client) return false;
+
+    try{
+
+        const {error}=await client
+            .from("inquiries")
+            .update({
+
+                admin_reply:replyText,
+                status:"answered",
+                replied_at:new Date().toISOString(),
+                replied_by:adminId
+
+            })
+            .eq("id",inquiryId);
+
+        if(error) throw error;
+
+        window.Taecker?.toast?.("답변이 등록되었습니다.");
+
+        await loadInquiries();
+
+        return true;
+
+    }
+
+    catch(error){
+
+        console.error("답변 등록 실패:",error.message || error);
+
+        window.Taecker?.toast?.("답변 등록에 실패했습니다.");
+
+        return false;
 
     }
 
@@ -597,31 +782,54 @@ let allMembers=[];
 
 function memberItemHTML(profile){
 
-    const metaLabel=profile.is_teacher
-        ? "선생님"
-        : (memberMetaText(profile) || "학년/반/번호 미입력");
-
     return `
-        <div class="admin-item" data-user-id="${profile.id}">
-            <div class="admin-item-top">
+        <div class="admin-item admin-member-item" data-user-id="${profile.id}">
+            <button type="button" class="admin-member-summary" data-action="member-toggle">
                 <div>
                     <div class="admin-item-title" data-role="nickname-display">${escapeHtml(profile.nickname || "닉네임 없음")}</div>
-                    <div class="admin-item-sub">${escapeHtml(metaLabel)} · ${escapeHtml(profile.email || "")}</div>
+                    <div class="admin-item-sub">${escapeHtml(memberMetaText(profile)) || "학년/반/번호 미입력"} · ${escapeHtml(profile.email || "")}</div>
                 </div>
-                ${statusPillHTML(profile)}
-            </div>
-            <div class="admin-rename-row hidden" data-role="rename-row">
-                <input type="text" class="input" data-role="rename-input" value="${escapeHtml(profile.nickname || "")}" maxlength="20">
-                <button class="btn-ok" data-action="rename-save" data-user="${profile.id}">저장</button>
-                <button data-action="rename-cancel" data-user="${profile.id}">취소</button>
-            </div>
-            <div class="admin-note-row">
-                <input type="text" class="input" data-role="note-input" value="${escapeHtml(profile.admin_note || "")}" maxlength="100" placeholder="메모 (예: 수학 선생님)">
-                <button data-action="note-save" data-user="${profile.id}">메모 저장</button>
-            </div>
-            <div class="admin-actions">
-                ${suspendControlsHTML(profile.id)}
-                <button data-action="rename-toggle" data-user="${profile.id}">닉네임 변경</button>
+                <div class="admin-member-summary-right">
+                    ${statusPillHTML(profile)}
+                    <span class="admin-member-chevron" data-role="chevron">▾</span>
+                </div>
+            </button>
+            <div class="admin-member-detail hidden" data-role="member-detail">
+                ${(profile.suspended_reason && (profile.banned || (profile.suspended_until && new Date(profile.suspended_until).getTime()>Date.now()))) ? `
+                    <div class="admin-item-sub" style="margin-bottom:10px;padding:8px 10px;border-radius:10px;background:#FEF2F2;color:#B91C1C;">
+                        현재 정지 사유: ${escapeHtml(profile.suspended_reason)}
+                    </div>
+                ` : ""}
+                <div class="admin-rename-row hidden" data-role="rename-row">
+                    <input type="text" class="input" data-role="rename-input" value="${escapeHtml(profile.nickname || "")}" maxlength="20">
+                    <button class="btn-ok" data-action="rename-save" data-user="${profile.id}">저장</button>
+                    <button data-action="rename-cancel" data-user="${profile.id}">취소</button>
+                </div>
+                <div class="admin-suspend-row hidden" data-role="suspend-row">
+                    <input type="number" class="input" data-role="suspend-days-input" min="1" step="1" value="1">
+                    <span class="admin-suspend-unit">일 정지</span>
+                    <textarea class="input" data-role="suspend-reason-input" rows="2" maxlength="200" placeholder="정지 사유 (정지당한 사람에게 그대로 보여요)"></textarea>
+                    <div class="admin-suspend-row-buttons">
+                        <button class="btn-warn" data-action="suspend-save" data-user="${profile.id}">기간 정지 적용</button>
+                        <button class="btn-danger" data-action="ban-save" data-user="${profile.id}">영구 정지 적용</button>
+                        <button data-action="suspend-cancel" data-user="${profile.id}">취소</button>
+                    </div>
+                </div>
+                <div class="admin-memo-row">
+                    <textarea class="input" data-role="memo-input" rows="2" maxlength="200" placeholder="메모 (예: 수학 선생님 · 관리자만 볼 수 있음)">${escapeHtml(profile.admin_memo || "")}</textarea>
+                    <button class="btn-ok" data-action="memo-save" data-user="${profile.id}">메모 저장</button>
+                </div>
+                <div class="admin-memo-row hidden" data-role="notice-row">
+                    <input type="text" class="input" data-role="notice-title-input" maxlength="60" placeholder="제목">
+                    <textarea class="input" data-role="notice-content-input" rows="3" maxlength="500" placeholder="이 회원에게만 보이는 개인 공지 내용"></textarea>
+                    <button class="btn-ok" data-action="notice-send" data-user="${profile.id}">공지 보내기</button>
+                </div>
+                <div class="admin-actions">
+                    <button data-action="suspend-toggle" data-user="${profile.id}">정지</button>
+                    <button data-action="unsuspend" data-user="${profile.id}">정지 해제</button>
+                    <button data-action="rename-toggle" data-user="${profile.id}">닉네임 변경</button>
+                    <button data-action="notice-toggle" data-user="${profile.id}">개인 공지 보내기</button>
+                </div>
             </div>
         </div>
     `;
@@ -636,6 +844,7 @@ function memberMatchesKeyword(profile,keyword){
         profile.nickname,
         profile.email,
         profile.student_number,
+        profile.admin_memo,
         memberMetaText(profile)
     ].filter(Boolean).join(" ").toLowerCase();
 
@@ -712,19 +921,19 @@ async function renameMember(userId,newNickname){
 
 }
 
-async function saveMemberNote(userId,note){
+async function updateMemberMemo(userId,memo){
 
     const client=getClient();
 
     if(!client || !userId) return false;
 
-    const trimmed=(note || "").trim();
+    const trimmed=(memo || "").trim();
 
     try{
 
         const {error}=await client
             .from("profiles")
-            .update({admin_note:trimmed || null})
+            .update({admin_memo:trimmed})
             .eq("id",userId);
 
         if(error) throw error;
@@ -733,7 +942,7 @@ async function saveMemberNote(userId,note){
 
         const member=allMembers.find((m)=>m.id===userId);
 
-        if(member) member.admin_note=trimmed;
+        if(member) member.admin_memo=trimmed;
 
         return true;
 
@@ -763,7 +972,7 @@ async function loadAllMembers(){
 
         const {data,error}=await client
             .from("profiles")
-            .select("id,nickname,email,grade,class_number,student_number,banned,suspended_until,is_teacher,admin_note")
+            .select("id,nickname,email,grade,class_number,student_number,is_teacher,admin_memo,banned,suspended_until,suspended_reason")
             .order("grade",{ascending:true,nullsFirst:false})
             .order("class_number",{ascending:true,nullsFirst:false})
             .order("student_number",{ascending:true,nullsFirst:false})
@@ -1194,6 +1403,7 @@ function setupMainTabs(){
             el.panelNotices.classList.toggle("active",target==="notices");
             el.panelSchool?.classList.toggle("active",target==="school");
             el.panelImpersonation?.classList.toggle("active",target==="impersonation");
+            el.panelInquiries?.classList.toggle("active",target==="inquiries");
 
             if(target==="notices"){
 
@@ -1218,6 +1428,31 @@ function setupMainTabs(){
                 loadImpersonationReports();
 
             }
+
+            if(target==="inquiries"){
+
+                loadInquiries();
+
+            }
+
+        });
+
+    });
+
+}
+
+function setupInquiryStatusTabs(){
+
+    el.inquiryStatusTabs?.forEach((tab)=>{
+
+        tab.addEventListener("click",()=>{
+
+            el.inquiryStatusTabs.forEach((t)=>t.classList.remove("active"));
+            tab.classList.add("active");
+
+            inquiryStatusFilter=tab.dataset.inquiryStatus;
+
+            loadInquiries();
 
         });
 
@@ -1277,20 +1512,16 @@ function setupActionDelegation(){
 
         const action=btn.dataset.action;
 
-        if(action==="ban" || action==="unsuspend"){
+        if(action==="inquiry-reply-toggle"){
 
-            const userId=btn.dataset.user;
+            const item=btn.closest(".admin-item");
+            const row=item?.querySelector('[data-role="inquiry-reply-row"]');
 
-            if(!userId) return;
+            row?.classList.toggle("hidden");
 
-            const confirmText=
+            if(row && !row.classList.contains("hidden")){
 
-                action==="ban" ? "이 계정을 영구 정지할까요?" :
-                "정지를 해제할까요?";
-
-            if(confirm(confirmText)){
-
-                applySuspension(userId,action);
+                row.querySelector('[data-role="inquiry-reply-input"]')?.focus();
 
             }
 
@@ -1298,20 +1529,264 @@ function setupActionDelegation(){
 
         }
 
-        if(action==="suspend-custom"){
+        if(action==="inquiry-reply-save"){
+
+            const inquiryId=btn.dataset.inquiry;
+
+            if(!inquiryId) return;
+
+            const item=btn.closest(".admin-item");
+            const row=item?.querySelector('[data-role="inquiry-reply-row"]');
+            const input=row?.querySelector('[data-role="inquiry-reply-input"]');
+
+            if(!input) return;
+
+            const replyText=input.value.trim();
+
+            if(!replyText){
+
+                window.Taecker?.toast?.("답변 내용을 입력해주세요.");
+                return;
+
+            }
+
+            btn.disabled=true;
+
+            replyToInquiry(inquiryId,replyText).then(()=>{
+
+                btn.disabled=false;
+
+            });
+
+            return;
+
+        }
+
+        if(action==="member-toggle"){
+
+            const item=btn.closest(".admin-item");
+            const detail=item?.querySelector('[data-role="member-detail"]');
+            const chevron=btn.querySelector('[data-role="chevron"]');
+
+            if(!detail) return;
+
+            const nowOpen=detail.classList.toggle("hidden")===false;
+
+            item?.classList.toggle("admin-member-item-open",nowOpen);
+            if(chevron) chevron.textContent=nowOpen ? "▴" : "▾";
+
+            return;
+
+        }
+
+        if(action==="unsuspend"){
 
             const userId=btn.dataset.user;
 
             if(!userId) return;
 
-            const daysInput=btn.closest(".admin-suspend-inline")?.querySelector('[data-role="suspend-days"]');
-            const days=Math.min(Math.max(Number(daysInput?.value) || 1,1),365);
+            if(confirm("정지를 해제할까요?")){
 
-            if(confirm(`이 계정을 ${days}일 정지할까요?`)){
-
-                applySuspension(userId,"suspend",days);
+                applySuspension(userId,"unsuspend");
 
             }
+
+            return;
+
+        }
+
+        if(action==="suspend-toggle"){
+
+            const item=btn.closest(".admin-item");
+            const row=item?.querySelector('[data-role="suspend-row"]');
+
+            if(!row) return;
+
+            row.classList.toggle("hidden");
+
+            if(!row.classList.contains("hidden")){
+
+                const input=row.querySelector('[data-role="suspend-days-input"]');
+                input?.focus();
+                input?.select();
+
+            }
+
+            return;
+
+        }
+
+        if(action==="suspend-cancel"){
+
+            const item=btn.closest(".admin-item");
+            const row=item?.querySelector('[data-role="suspend-row"]');
+
+            row?.classList.add("hidden");
+
+            return;
+
+        }
+
+        if(action==="suspend-save"){
+
+            const userId=btn.dataset.user;
+
+            if(!userId) return;
+
+            const item=btn.closest(".admin-item");
+            const row=item?.querySelector('[data-role="suspend-row"]');
+            const input=row?.querySelector('[data-role="suspend-days-input"]');
+            const reasonInput=row?.querySelector('[data-role="suspend-reason-input"]');
+
+            if(!input) return;
+
+            const days=Math.max(1,Math.floor(Number(input.value)||1));
+            const reason=reasonInput?.value.trim() || "";
+
+            if(!reason){
+
+                window.Taecker?.toast?.("정지 사유를 입력해주세요.");
+                reasonInput?.focus();
+                return;
+
+            }
+
+            if(confirm(`이 계정을 ${days}일 정지할까요?\n사유: ${reason}`)){
+
+                applySuspension(userId,"suspendCustom",days,reason);
+                row?.classList.add("hidden");
+
+            }
+
+            return;
+
+        }
+
+        if(action==="ban-save"){
+
+            const userId=btn.dataset.user;
+
+            if(!userId) return;
+
+            const item=btn.closest(".admin-item");
+            const row=item?.querySelector('[data-role="suspend-row"]');
+            const reasonInput=row?.querySelector('[data-role="suspend-reason-input"]');
+
+            const reason=reasonInput?.value.trim() || "";
+
+            if(!reason){
+
+                window.Taecker?.toast?.("정지 사유를 입력해주세요.");
+                reasonInput?.focus();
+                return;
+
+            }
+
+            if(confirm(`이 계정을 영구 정지할까요?\n사유: ${reason}`)){
+
+                applySuspension(userId,"ban",null,reason);
+                row?.classList.add("hidden");
+
+            }
+
+            return;
+
+        }
+
+        if(action==="memo-save"){
+
+            const userId=btn.dataset.user;
+
+            if(!userId) return;
+
+            const item=btn.closest(".admin-item");
+            const textarea=item?.querySelector('[data-role="memo-input"]');
+
+            if(!textarea) return;
+
+            btn.disabled=true;
+
+            updateMemberMemo(userId,textarea.value).then(()=>{
+
+                btn.disabled=false;
+
+            });
+
+            return;
+
+        }
+
+        if(action==="delete-report"){
+
+            const reportId=btn.dataset.report;
+
+            if(!reportId) return;
+
+            if(confirm("이 신고 내역을 삭제할까요? 되돌릴 수 없습니다.")){
+
+                deleteReport(reportId);
+
+            }
+
+            return;
+
+        }
+
+        if(action==="notice-toggle"){
+
+            const item=btn.closest(".admin-item");
+            const row=item?.querySelector('[data-role="notice-row"]');
+
+            if(!row) return;
+
+            row.classList.toggle("hidden");
+
+            if(!row.classList.contains("hidden")){
+
+                row.querySelector('[data-role="notice-title-input"]')?.focus();
+
+            }
+
+            return;
+
+        }
+
+        if(action==="notice-send"){
+
+            const userId=btn.dataset.user;
+
+            if(!userId) return;
+
+            const item=btn.closest(".admin-item");
+            const row=item?.querySelector('[data-role="notice-row"]');
+            const titleInput=row?.querySelector('[data-role="notice-title-input"]');
+            const contentInput=row?.querySelector('[data-role="notice-content-input"]');
+
+            const title=titleInput?.value.trim() || "";
+            const content=contentInput?.value.trim() || "";
+
+            if(!title || !content){
+
+                window.Taecker?.toast?.("제목과 내용을 모두 입력해주세요.");
+                return;
+
+            }
+
+            btn.disabled=true;
+
+            sendPersonalNotice(userId,title,content).then((ok)=>{
+
+                btn.disabled=false;
+
+                if(ok){
+
+                    if(titleInput) titleInput.value="";
+                    if(contentInput) contentInput.value="";
+                    row?.classList.add("hidden");
+
+                }
+
+            });
 
             return;
 
@@ -1383,29 +1858,6 @@ function setupActionDelegation(){
 
         }
 
-        if(action==="note-save"){
-
-            const userId=btn.dataset.user;
-
-            if(!userId) return;
-
-            const item=btn.closest(".admin-item");
-            const input=item?.querySelector('[data-role="note-input"]');
-
-            if(!input) return;
-
-            btn.disabled=true;
-
-            saveMemberNote(userId,input.value).then(()=>{
-
-                btn.disabled=false;
-
-            });
-
-            return;
-
-        }
-
         if(action==="resolve" || action==="reject"){
 
             const reportId=btn.dataset.report;
@@ -1418,29 +1870,13 @@ function setupActionDelegation(){
 
         }
 
-        if(action==="delete-report"){
-
-            const reportId=btn.dataset.report;
-
-            if(!reportId) return;
-
-            if(confirm("이 신고 내역을 삭제할까요? 삭제하면 되돌릴 수 없습니다.")){
-
-                deleteReport(reportId);
-
-            }
-
-            return;
-
-        }
-
         if(action==="confirm-impersonation"){
 
             const reportId=btn.dataset.report;
 
             if(!reportId) return;
 
-            if(confirm("이 신고를 도용으로 확정할까요?\n해당 계정은 즉시 영구 정지되고, 이메일은 다시는 가입할 수 없게 됩니다. 되돌릴 수 없습니다.")){
+            if(confirm("이 신고를 도용으로 확정할까요?\n해당 계정과 작성한 글·댓글이 모두 즉시 삭제되고, 이메일은 다시는 가입할 수 없게 됩니다. 되돌릴 수 없습니다.")){
 
                 confirmImpersonation(reportId);
 
@@ -1544,6 +1980,7 @@ window.addEventListener("load",async()=>{
     setupNoticeForm();
     setupSchoolForm();
     setupImpersonationStatusTabs();
+    setupInquiryStatusTabs();
 
     await loadReports();
 

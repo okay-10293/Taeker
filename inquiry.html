@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>글쓰기 | 태커</title>
-<meta name="description" content="태성고등학교 학생들을 위한 익명 커뮤니티 태커에 새 글을 작성하세요.">
+<title>문의하기 | 태커</title>
+<meta name="description" content="태커 운영진에게 문의사항을 남겨주세요.">
 <meta name="theme-color" content="#2563EB">
 <link rel="stylesheet" href="css/style.css">
 </head>
@@ -108,11 +108,11 @@
         <ul>
             <li><a href="index.html">홈</a></li>
             <li class="sidebar-group">
-                <button type="button" class="sidebar-group-toggle active" aria-expanded="true">
+                <button type="button" class="sidebar-group-toggle" aria-expanded="false">
                     <span>게시판</span>
                     <svg class="sidebar-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
                 </button>
-                <ul class="sidebar-submenu">
+                <ul class="sidebar-submenu hidden">
                     <li><a href="board.html">전체보기</a></li>
                     <li><a href="board.html?category=free">자유게시판</a></li>
                     <li><a href="board.html?category=question">질문게시판</a></li>
@@ -123,7 +123,7 @@
             <li><a href="school.html?tab=meal">급식</a></li>
             <li><a href="school.html?tab=schedule">학사일정</a></li>
             <li><a href="mypage.html">마이페이지</a></li>
-            <li><a href="inquiry.html">문의하기</a></li>
+            <li><a href="inquiry.html" class="active">문의하기</a></li>
         </ul>
     </nav>
 </aside>
@@ -134,61 +134,41 @@
 <main class="container">
 
     <section class="board-title">
-        <h2>글쓰기</h2>
-        <p>태성고등학교 학생들에게 하고 싶은 이야기를 자유롭게 남겨보세요.</p>
+        <h2>문의하기</h2>
+        <p>태커 이용 중 궁금한 점이나 건의사항을 운영진에게 남겨주세요.</p>
     </section>
 
-    <form class="card write-card" id="writeForm">
+    <form class="card write-card" id="inquiryForm">
 
         <div class="form-group">
-            <label for="writeCategory">카테고리</label>
-            <div class="input-box">
-                <select id="writeCategory" class="input" required>
-                    <option value="free">자유게시판</option>
-                    <option value="question">질문게시판</option>
-                    <option value="info">정보게시판</option>
-                </select>
-            </div>
-        </div>
-
-        <div class="form-group">
-            <label for="writeTitle">제목</label>
-            <div class="input-box">
-                <input
-                    type="text"
-                    id="writeTitle"
-                    class="input"
-                    maxlength="80"
-                    placeholder="제목을 입력하세요"
-                    required
-                    autocomplete="off">
-            </div>
-            <p class="input-message" id="writeTitleMessage"></p>
-        </div>
-
-        <div class="form-group">
-            <label for="writeContent">내용</label>
+            <label for="inquiryContent">문의 내용</label>
             <div class="input-box">
                 <textarea
-                    id="writeContent"
+                    id="inquiryContent"
                     class="input"
-                    rows="12"
-                    maxlength="4000"
-                    placeholder="내용을 입력하세요"
+                    rows="8"
+                    maxlength="2000"
+                    placeholder="문의하실 내용을 자세히 적어주세요."
                     required></textarea>
             </div>
-            <p class="input-message" id="writeContentCount">0 / 4000</p>
+            <p class="input-message" id="inquiryContentCount">0 / 2000</p>
         </div>
 
         <div class="write-actions">
-            <button type="button" class="btn btn-outline" id="writeCancelBtn">취소</button>
-            <button type="submit" class="btn" id="writeSubmitBtn">
-                <span class="button-text">등록하기</span>
+            <button type="submit" class="btn" id="inquirySubmitBtn">
+                <span class="button-text">문의 등록하기</span>
                 <span class="button-loader hidden"></span>
             </button>
         </div>
 
     </form>
+
+    <section style="margin-top:28px;">
+        <h3 style="font-size:16px;font-weight:800;margin-bottom:12px;">내 문의 내역</h3>
+        <div id="myInquiryList">
+            <p class="widget-empty">로그인하면 내가 남긴 문의 내역을 볼 수 있어요.</p>
+        </div>
+    </section>
 
 </main>
 
@@ -202,7 +182,7 @@
         <span>홈</span>
     </a>
 
-    <a href="board.html" class="active">
+    <a href="board.html">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
             <path d="M4 5H20V15H7L4 18V5Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
         </svg>
@@ -229,7 +209,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="js/app.js"></script>
 <script src="js/auth.js"></script>
-<script src="js/write.js"></script>
+<script src="js/inquiry.js"></script>
 
 </body>
 </html>

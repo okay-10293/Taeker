@@ -1,5 +1,5 @@
 /* =====================================================
-   Taecker Community
+   Taeker Community
    app.js Rev.2
 ===================================================== */
 
@@ -307,7 +307,7 @@ window.addEventListener("load",()=>{
 
     hideLoader();
 
-    console.log("Taecker Ready");
+    console.log("Taeker Ready");
 
 });
 /* =====================================================
@@ -460,7 +460,7 @@ window.Taecker={
    READY
 ===================================================== */
 
-console.log("Taecker App Loaded");
+console.log("Taeker App Loaded");
 
 /* =====================================================
    HOME FEED
@@ -475,6 +475,8 @@ console.log("Taecker App Loaded");
 /* ---------- ELEMENTS ---------- */
 
 const el={
+
+    initLoader:document.getElementById("initLoader"),
 
     themeToggleBtn:document.getElementById("themeToggleBtn"),
 
@@ -526,7 +528,10 @@ const CATEGORY_LABEL={
     notice:"공지",
     free:"자유",
     question:"질문",
-    info:"정보"
+    info:"정보",
+    grade1:"학년게시판",
+    grade2:"학년게시판",
+    grade3:"학년게시판"
 
 };
 
@@ -648,23 +653,53 @@ setupDropdown(el.profileBtn,el.profileMenu);
 
 /* ---------- 알림 (공지사항) ---------- */
 
-const NOTIF_SEEN_KEY="taecker_notif_seen_at";
+const NOTIF_SEEN_KEY="taeker_notif_seen_at";
+const NOTIF_DISMISSED_KEY="taeker_notif_dismissed_ids";
 
 let latestNoticeAt=null;
 
+function getDismissedNoticeIds(){
+
+    const raw=Storage.get(NOTIF_DISMISSED_KEY,[]);
+
+    return Array.isArray(raw) ? raw : [];
+
+}
+
+function dismissNoticeId(noticeId){
+
+    const dismissed=getDismissedNoticeIds();
+
+    if(!dismissed.includes(noticeId)){
+
+        dismissed.push(noticeId);
+
+        /* 목록이 무한정 커지지 않도록 최근 200개까지만 보관 */
+
+        Storage.set(NOTIF_DISMISSED_KEY,dismissed.slice(-200));
+
+    }
+
+}
+
 function notifItemHTML(notice){
 
+    const isPersonal=!!notice.target_user_id;
+
     return `
-        <div class="notif-item">
+        <div class="notif-item" data-notice-id="${notice.id}">
             <span class="notif-item-dot"></span>
             <div class="notif-item-body">
                 <div class="notif-item-title">
                     <span>${escapeHtml(notice.title)}</span>
-                    <span class="notif-item-badge">공지</span>
+                    <span class="notif-item-badge${isPersonal ? " notif-item-badge-personal" : ""}">${isPersonal ? "개인" : "공지"}</span>
                 </div>
                 <div class="notif-item-content">${escapeHtml(notice.content)}</div>
                 <div class="notif-item-time">${timeAgo(notice.published_at)}</div>
             </div>
+            <button type="button" class="notif-item-dismiss" data-notice-id="${notice.id}" aria-label="알림 지우기" title="알림 지우기">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M6 6L18 18M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            </button>
         </div>
     `;
 
@@ -694,7 +729,7 @@ async function fetchNotifications(){
 
         const {data,error}=await client
             .from("notices")
-            .select("id,title,content,published_at")
+            .select("id,title,content,published_at,target_user_id")
             .eq("is_published",true)
             .order("published_at",{ascending:false})
             .limit(10);
@@ -711,11 +746,23 @@ async function fetchNotifications(){
 
         }
 
-        el.notifEmpty.classList.add("hidden");
-        el.notifList.classList.remove("hidden");
-        el.notifList.innerHTML=data.map(notifItemHTML).join("");
-
         latestNoticeAt=data[0].published_at;
+
+        const dismissed=getDismissedNoticeIds();
+        const visible=data.filter((notice)=>!dismissed.includes(notice.id));
+
+        if(visible.length===0){
+
+            el.notifEmpty.classList.remove("hidden");
+            el.notifList.classList.add("hidden");
+
+        }else{
+
+            el.notifEmpty.classList.add("hidden");
+            el.notifList.classList.remove("hidden");
+            el.notifList.innerHTML=visible.map(notifItemHTML).join("");
+
+        }
 
         refreshNotifBadge();
 
@@ -728,6 +775,31 @@ async function fetchNotifications(){
     }
 
 }
+
+el.notifList?.addEventListener("click",(e)=>{
+
+    const dismissBtn=e.target.closest(".notif-item-dismiss");
+
+    if(!dismissBtn) return;
+
+    const noticeId=dismissBtn.dataset.noticeId;
+
+    if(!noticeId) return;
+
+    dismissNoticeId(noticeId);
+
+    const item=dismissBtn.closest(".notif-item");
+
+    item?.remove();
+
+    if(!el.notifList.querySelector(".notif-item")){
+
+        el.notifEmpty?.classList.remove("hidden");
+        el.notifList.classList.add("hidden");
+
+    }
+
+});
 
 el.notifBtn?.addEventListener("click",()=>{
 
@@ -766,6 +838,44 @@ el.searchInput?.addEventListener("input",debounce((e)=>{
 },350));
 
 /* ---------- CATEGORY CHIPS ---------- */
+
+async function injectGradeChip(){
+
+    if(!el.categoryBar || !window.Auth) return;
+
+    try{
+
+        const user=await window.Auth.getCurrentUser();
+
+        if(!user) return;
+
+        const profile=await window.Auth.getProfile();
+
+        const grade=profile?.grade;
+
+        if(!grade || grade<1 || grade>3) return;
+
+        const category=`grade${grade}`;
+
+        if(el.categoryBar.querySelector(`[data-category="${category}"]`)) return;
+
+        const chip=document.createElement("button");
+
+        chip.className="chip";
+        chip.dataset.category=category;
+        chip.textContent=CATEGORY_LABEL[category];
+
+        el.categoryBar.appendChild(chip);
+
+    }
+
+    catch(error){
+
+        console.warn("학년 게시판 칩을 추가하지 못했습니다:",error.message || error);
+
+    }
+
+}
 
 el.categoryBar?.addEventListener("click",(e)=>{
 
@@ -1155,11 +1265,25 @@ el.bottomNavMy?.addEventListener("click",(e)=>{
 
 });
 
+/* ---------- INIT LOADER ---------- */
+
+function hideInitLoader(){
+
+    el.initLoader?.classList.add("is-hidden");
+
+}
+
+/* 만약을 대비한 안전장치: 어떤 이유로든(네트워크 문제 등) 인증 확인이
+   끝나지 않아도 5초 뒤에는 로딩화면을 강제로 치워서 사용자가 화면이
+   멈춘 것처럼 보이지 않게 한다. */
+setTimeout(hideInitLoader,5000);
+
 /* ---------- INIT ---------- */
 
 window.addEventListener("load",()=>{
 
-    renderAuthUI();
+    renderAuthUI().finally(hideInitLoader);
+    injectGradeChip();
     fetchPosts();
     fetchPopular();
     fetchNotifications();

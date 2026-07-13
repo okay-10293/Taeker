@@ -35,7 +35,9 @@ function getClient(){
 const params=new URLSearchParams(location.search);
 const presetCategory=params.get("category");
 
-if(presetCategory && el.category){
+function applyCategoryPrefill(){
+
+    if(!presetCategory || !el.category) return;
 
     const validOption=Array.from(el.category.options)
         .some((opt)=>opt.value===presetCategory);
@@ -47,6 +49,8 @@ if(presetCategory && el.category){
     }
 
 }
+
+applyCategoryPrefill();
 
 /* ---------- CONTENT COUNTER ---------- */
 
@@ -184,6 +188,46 @@ el.form.addEventListener("submit",async(event)=>{
 
 /* ---------- AUTH GUARD ---------- */
 
+const GRADE_CATEGORY_LABEL={
+
+    grade1:"학년별 게시판",
+    grade2:"학년별 게시판",
+    grade3:"학년별 게시판"
+
+};
+
+async function injectGradeOption(){
+
+    if(!el.category || !window.Auth) return;
+
+    try{
+
+        const profile=await window.Auth.getProfile();
+        const grade=profile?.grade;
+
+        if(!grade || grade<1 || grade>3) return;
+
+        const category=`grade${grade}`;
+
+        if(Array.from(el.category.options).some((opt)=>opt.value===category)) return;
+
+        const option=document.createElement("option");
+
+        option.value=category;
+        option.textContent=GRADE_CATEGORY_LABEL[category];
+
+        el.category.appendChild(option);
+
+    }
+
+    catch(error){
+
+        console.warn("학년 게시판 옵션을 추가하지 못했습니다:",error.message || error);
+
+    }
+
+}
+
 window.addEventListener("load",async()=>{
 
     if(!window.Auth) return;
@@ -194,7 +238,13 @@ window.addEventListener("load",async()=>{
 
         el.form.classList.add("hidden");
 
+        return;
+
     }
+
+    await injectGradeOption();
+
+    applyCategoryPrefill();
 
 });
 

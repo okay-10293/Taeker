@@ -9,6 +9,11 @@
 <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
+    <div class="init-loader" id="initLoader" aria-hidden="true">
+        <span class="init-loader-mark">태커</span>
+        <span class="init-loader-spinner"></span>
+    </div>
+
 
 <!-- =====================================================
      HEADER
@@ -118,6 +123,7 @@
             <li><a href="school.html?tab=meal">급식</a></li>
             <li><a href="school.html?tab=schedule">학사일정</a></li>
             <li><a href="mypage.html" class="active">마이페이지</a></li>
+            <li><a href="inquiry.html">문의하기</a></li>
         </ul>
     </nav>
 </aside>
@@ -194,15 +200,17 @@
 
                 <div class="form-group">
                     <label for="mypageClassNumber">반</label>
-                    <input id="mypageClassNumber" class="input" type="number" min="1" max="20" placeholder="반">
+                    <input id="mypageClassNumber" class="input" type="number" min="1" max="20" placeholder="반" disabled title="반은 가입 후 수정할 수 없습니다. 변경이 필요하면 관리자에게 문의해주세요.">
                 </div>
 
                 <div class="form-group">
                     <label for="mypageStudentNumber">번호</label>
-                    <input id="mypageStudentNumber" class="input" type="number" min="1" max="50" placeholder="번호">
+                    <input id="mypageStudentNumber" class="input" type="number" min="1" max="50" placeholder="번호" disabled title="번호는 가입 후 수정할 수 없습니다. 변경이 필요하면 관리자에게 문의해주세요.">
                 </div>
 
             </div>
+
+            <p class="form-hint">반·번호는 가입 시 등록한 정보로 고정되며 본인이 직접 수정할 수 없어요. 변경이 필요하면 관리자에게 문의해주세요.</p>
 
             <div class="form-group">
                 <label for="mypageBio">자기소개</label>
