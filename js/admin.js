@@ -1217,9 +1217,11 @@ async function loadSchoolConfig(){
 
         if(el.schoolConfigStatus){
 
-            el.schoolConfigStatus.textContent=(data?.neis_api_key && data?.atpt_ofcdc_sc_code && data?.sd_schul_code)
-                ? "✅ 현재 학교 정보 연동이 설정되어 있습니다."
-                : "⚠️ 아직 설정이 완료되지 않았습니다.";
+            const ready=(data?.neis_api_key && data?.atpt_ofcdc_sc_code && data?.sd_schul_code);
+
+            el.schoolConfigStatus.innerHTML=ready
+                ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" style="vertical-align:-2px;margin-right:4px;"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/><path d="M8 12L11 15L16 9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>현재 학교 정보 연동이 설정되어 있습니다.'
+                : '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" style="vertical-align:-2px;margin-right:4px;"><path d="M12 3L22 20H2L12 3Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M12 10V14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="17" r="1" fill="currentColor"/></svg>아직 설정이 완료되지 않았습니다.';
 
         }
 

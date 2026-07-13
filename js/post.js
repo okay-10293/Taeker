@@ -295,7 +295,9 @@ function updateLikeButton(){
     el.likeBtn.classList.toggle("active",state.liked);
     el.likeBtn.setAttribute("aria-pressed",String(state.liked));
 
-    if(el.likeIcon) el.likeIcon.textContent=state.liked ? "❤️" : "🤍";
+    if(el.likeIcon) el.likeIcon.innerHTML = state.liked
+        ? '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 20.5C12 20.5 3 15 3 8.8C3 5.9 5.3 3.5 8.2 3.5C9.9 3.5 11.3 4.3 12 5.6C12.7 4.3 14.1 3.5 15.8 3.5C18.7 3.5 21 5.9 21 8.8C21 15 12 20.5 12 20.5Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>'
+        : '<svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 20.5C12 20.5 3 15 3 8.8C3 5.9 5.3 3.5 8.2 3.5C9.9 3.5 11.3 4.3 12 5.6C12.7 4.3 14.1 3.5 15.8 3.5C18.7 3.5 21 5.9 21 8.8C21 15 12 20.5 12 20.5Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>';
 
 }
 
