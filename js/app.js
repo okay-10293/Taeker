@@ -1204,9 +1204,9 @@ async function renderAuthUI(){
         if(el.heroGreeting) el.heroGreeting.textContent=`안녕하세요, ${nickname}님.`;
         if(el.heroSubtext) el.heroSubtext.textContent="오늘도 좋은 하루 보내세요.";
 
-        /* ---- 관리자 전용 메뉴 (is_admin 계정에게만 노출) ---- */
+        /* ---- 관리자/선생님 전용 메뉴 (is_admin 또는 is_teacher 계정에게만 노출) ---- */
 
-        if(profile?.is_admin && el.profileMenu && !document.getElementById("adminMenuLink")){
+        if((profile?.is_admin || profile?.is_teacher) && el.profileMenu && !document.getElementById("adminMenuLink")){
 
             const divider=el.profileMenu.querySelector(".dropdown-divider");
 
@@ -1215,7 +1215,7 @@ async function renderAuthUI(){
             adminLink.href="admin.html";
             adminLink.id="adminMenuLink";
             adminLink.className="dropdown-item";
-            adminLink.textContent="관리자 패널";
+            adminLink.textContent=profile?.is_admin ? "관리자 패널" : "공지사항 관리";
 
             if(divider){
 

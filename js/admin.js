@@ -172,9 +172,9 @@ async function guard(){
 
     const profile=await window.Auth.getProfile();
 
-    if(!profile?.is_admin){
+    if(!profile?.is_admin && !profile?.is_teacher){
 
-        el.deniedText.textContent="관리자만 접근할 수 있는 페이지입니다. 잠시 후 홈으로 이동합니다.";
+        el.deniedText.textContent="관리자 또는 선생님만 접근할 수 있는 페이지입니다. 잠시 후 홈으로 이동합니다.";
 
         setTimeout(()=>{ location.href="index.html"; },1200);
 
@@ -182,7 +182,42 @@ async function guard(){
 
     }
 
-    return {user,profile};
+    return {user,profile,isAdmin:!!profile?.is_admin,isTeacher:!!profile?.is_teacher};
+
+}
+
+/* ---------- 선생님 전용 뷰 (공지사항만 접근 가능) ---------- */
+
+function restrictToTeacherView(){
+
+    el.mainTabs?.forEach((tab)=>{
+
+        if(tab.dataset.tab!=="notices"){
+
+            tab.classList.add("hidden");
+
+        }else{
+
+            tab.classList.add("active");
+
+        }
+
+    });
+
+    el.panelReports?.classList.remove("active");
+    el.panelMembers?.classList.remove("active");
+    el.panelSchool?.classList.remove("active");
+    el.panelImpersonation?.classList.remove("active");
+    el.panelInquiries?.classList.remove("active");
+    el.panelNotices?.classList.add("active");
+
+    const notice=document.createElement("p");
+
+    notice.className="admin-item-sub";
+    notice.style.marginBottom="16px";
+    notice.textContent="선생님 계정으로 접속 중입니다. 공지사항 작성/관리만 가능해요.";
+
+    el.panelNotices?.parentElement?.insertBefore(notice,el.panelNotices);
 
 }
 
@@ -1008,24 +1043,32 @@ function noticeItemHTML(notice){
         ? `배포일시 ${new Date(notice.published_at).toLocaleString("ko-KR",{month:"numeric",day:"numeric",hour:"2-digit",minute:"2-digit"})}`
         : `작성일시 ${new Date(notice.created_at).toLocaleString("ko-KR",{month:"numeric",day:"numeric",hour:"2-digit",minute:"2-digit"})}`;
 
+    const authorName=notice.author?.nickname
+        ? `${escapeHtml(notice.author.nickname)}${notice.author?.is_teacher ? " (선생님)" : ""} · `
+        : "";
+
+    const canManage=isAdminUser || notice.created_by===adminId;
+
     return `
         <div class="admin-item" data-notice-id="${notice.id}">
             <div class="admin-item-top">
                 <div>
                     <div class="admin-item-title">${escapeHtml(notice.title)}</div>
-                    <div class="admin-item-sub">${dateLabel}</div>
+                    <div class="admin-item-sub">${authorName}${dateLabel}</div>
                 </div>
                 ${statusHTML}
             </div>
             <div class="admin-item-sub" style="white-space:pre-wrap;margin-bottom:6px;">${escapeHtml(notice.content)}</div>
-            <div class="admin-actions">
-                ${
-                    notice.is_published
-                        ? `<button data-action="unpublish-notice" data-notice="${notice.id}">배포 취소</button>`
-                        : `<button class="btn-ok" data-action="publish-notice" data-notice="${notice.id}">배포하기</button>`
-                }
-                <button class="btn-danger" data-action="delete-notice" data-notice="${notice.id}">삭제</button>
-            </div>
+            ${canManage ? `
+                <div class="admin-actions">
+                    ${
+                        notice.is_published
+                            ? `<button data-action="unpublish-notice" data-notice="${notice.id}">배포 취소</button>`
+                            : `<button class="btn-ok" data-action="publish-notice" data-notice="${notice.id}">배포하기</button>`
+                    }
+                    <button class="btn-danger" data-action="delete-notice" data-notice="${notice.id}">삭제</button>
+                </div>
+            ` : ""}
         </div>
     `;
 
@@ -1043,7 +1086,7 @@ async function loadNotices(){
 
         const {data,error}=await client
             .from("notices")
-            .select("id,title,content,is_published,created_at,published_at")
+            .select("id,title,content,is_published,created_at,published_at,created_by,author:created_by(nickname,is_teacher)")
             .order("created_at",{ascending:false})
             .limit(50);
 
@@ -1503,6 +1546,7 @@ function setupStatusTabs(){
 /* ---------- 액션 위임 (정지 버튼 클릭) ---------- */
 
 let adminId=null;
+let isAdminUser=false;
 
 function setupActionDelegation(){
 
@@ -1972,9 +2016,16 @@ window.addEventListener("load",async()=>{
     }
 
     adminId=result.user.id;
+    isAdminUser=result.isAdmin;
 
     el.denied.classList.add("hidden");
     el.wrap.classList.remove("hidden");
+
+    if(!result.isAdmin && result.isTeacher){
+
+        restrictToTeacherView();
+
+    }
 
     setupMainTabs();
     setupStatusTabs();
@@ -1984,7 +2035,15 @@ window.addEventListener("load",async()=>{
     setupImpersonationStatusTabs();
     setupInquiryStatusTabs();
 
-    await loadReports();
+    if(!result.isAdmin && result.isTeacher){
+
+        await loadNotices();
+
+    }else{
+
+        await loadReports();
+
+    }
 
 });
 
