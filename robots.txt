@@ -1,0 +1,11 @@
+User-agent: *
+Allow: /
+Disallow: /board.html
+Disallow: /post.html
+Disallow: /write.html
+Disallow: /mypage.html
+Disallow: /profile.html
+Disallow: /admin.html
+Disallow: /school.html
+
+Sitemap: https://taeker.pages.dev/sitemap.xml
