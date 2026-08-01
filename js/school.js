@@ -56,8 +56,8 @@ const state={
 
     mealDate:new Date(),
     ttDate:new Date(),
-    ttGrade:Storage.get("school_grade","1"),
-    ttClass:Storage.get("school_class","1"),
+    ttGrade:Storage.get("school_grade",null),
+    ttClass:Storage.get("school_class",null),
 
     scheduleMonth:new Date()
 
@@ -449,9 +449,6 @@ el.ttClassSelect?.addEventListener("change",()=>{
 
 });
 
-if(el.ttGradeSelect) el.ttGradeSelect.value=state.ttGrade;
-if(el.ttClassSelect) el.ttClassSelect.value=state.ttClass;
-
 /* =====================================================
    학사일정
 ===================================================== */
@@ -606,6 +603,31 @@ window.addEventListener("load",async()=>{
 
     el.loginRequired?.classList.add("hidden");
     el.wrap?.classList.remove("hidden");
+
+    /* 시간표 학년/반을 아직 한 번도 직접 선택한 적이 없다면(localStorage에
+       저장된 값이 없다면) 회원가입 때 입력한 학년/반을 기본값으로 사용한다.
+       이후 사용자가 직접 바꾸면 그 선택이 우선시되어 계속 기억된다. */
+
+    if(state.ttGrade===null || state.ttClass===null){
+
+        const profile=await window.Auth.getProfile?.();
+
+        if(state.ttGrade===null){
+
+            state.ttGrade=profile?.grade!=null ? String(profile.grade) : "1";
+
+        }
+
+        if(state.ttClass===null){
+
+            state.ttClass=profile?.class_number!=null ? String(profile.class_number) : "1";
+
+        }
+
+    }
+
+    if(el.ttGradeSelect) el.ttGradeSelect.value=state.ttGrade;
+    if(el.ttClassSelect) el.ttClassSelect.value=state.ttClass;
 
     state.config=await loadConfig();
 

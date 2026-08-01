@@ -953,7 +953,7 @@ function postCardHTML(post){
         : `<span>${nickname}</span>${teacherBadge}`;
 
     return `
-        <a class="post-card post-card-link fade-in" href="board.html">
+        <a class="post-card post-card-link fade-in" href="post.html?id=${encodeURIComponent(post.id)}">
             <div class="post-row">
                 <div class="post-row-main">
                     <span class="badge post-category-badge">${categoryLabel}</span>
@@ -1107,7 +1107,7 @@ async function fetchPopular(){
         }
 
         el.popularList.innerHTML=data.map((post,index)=>`
-            <a class="popular-item" href="board.html">
+            <a class="popular-item" href="post.html?id=${encodeURIComponent(post.id)}">
                 <span class="popular-rank">${index+1}</span>
                 <span class="popular-info">
                     <span class="popular-title">${escapeHtml(post.title)}</span>
