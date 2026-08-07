@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>문의하기 | 태커</title>
-<meta name="description" content="태커 운영진에게 문의사항을 남겨주세요.">
+<title>1:1 대화 | 태커</title>
+<meta name="description" content="태커 회원과 1:1로 대화하세요.">
 <meta name="theme-color" content="#2563EB">
 <link rel="stylesheet" href="css/style.css">
 </head>
@@ -124,9 +124,9 @@
             <li><a href="school.html?tab=timetable">시간표</a></li>
             <li><a href="school.html?tab=meal">급식</a></li>
             <li><a href="school.html?tab=schedule">학사일정</a></li>
-            <li><a href="chat.html">1:1 대화</a></li>
+            <li><a href="chat.html" class="active">1:1 대화</a></li>
             <li><a href="mypage.html">마이페이지</a></li>
-            <li><a href="inquiry.html" class="active">문의하기</a></li>
+            <li><a href="inquiry.html">문의하기</a></li>
         </ul>
     </nav>
 </aside>
@@ -134,44 +134,80 @@
 <!-- =====================================================
      MAIN
 ===================================================== -->
-<main class="container">
+<main class="container chat-container">
 
     <section class="board-title">
-        <h2>문의하기</h2>
-        <p>태커 이용 중 궁금한 점이나 건의사항을 운영진에게 남겨주세요.</p>
+        <h2>1:1 대화</h2>
+        <p>다른 회원과 개인적으로 대화를 나눠보세요.</p>
     </section>
 
-    <form class="card write-card" id="inquiryForm">
+    <!-- 로그인하지 않은 경우 -->
+    <div class="card hidden" id="chatLoginRequired" style="text-align:center;">
+        <p style="margin-bottom:14px;">로그인 후 이용할 수 있습니다.</p>
+        <a href="login.html" class="btn">로그인하러 가기</a>
+    </div>
 
-        <div class="form-group">
-            <label for="inquiryContent">문의 내용</label>
-            <div class="input-box">
-                <textarea
-                    id="inquiryContent"
-                    class="input"
-                    rows="8"
-                    maxlength="2000"
-                    placeholder="문의하실 내용을 자세히 적어주세요."
-                    required></textarea>
+    <div class="chat-layout hidden" id="chatWrap">
+
+        <!-- 대화 목록 -->
+        <section class="chat-list-panel" id="chatListPanel">
+
+            <div class="chat-list-header">
+                <h3>대화 목록</h3>
             </div>
-            <p class="input-message" id="inquiryContentCount">0 / 2000</p>
-        </div>
 
-        <div class="write-actions">
-            <button type="submit" class="btn" id="inquirySubmitBtn">
-                <span class="button-text">문의 등록하기</span>
-                <span class="button-loader hidden"></span>
-            </button>
-        </div>
+            <div class="chat-list" id="chatList">
+                <div class="skeleton-post" aria-hidden="true">
+                    <div class="skeleton-line skeleton-line-sm"></div>
+                    <div class="skeleton-line skeleton-line-lg"></div>
+                </div>
+            </div>
 
-    </form>
+            <p class="widget-empty hidden" id="chatListEmpty">
+                아직 대화가 없어요. 상대방 프로필에서 '1:1 대화하기'를 눌러 시작해보세요.
+            </p>
 
-    <section style="margin-top:28px;">
-        <h3 style="font-size:16px;font-weight:800;margin-bottom:12px;">내 문의 내역</h3>
-        <div id="myInquiryList">
-            <p class="widget-empty">로그인하면 내가 남긴 문의 내역을 볼 수 있어요.</p>
-        </div>
-    </section>
+        </section>
+
+        <!-- 대화 창 -->
+        <section class="chat-thread-panel" id="chatThreadPanel">
+
+            <div class="chat-thread-empty" id="chatThreadEmpty">
+                <p>왼쪽에서 대화를 선택해주세요.</p>
+            </div>
+
+            <div class="chat-thread hidden" id="chatThread">
+
+                <div class="chat-thread-header">
+                    <button class="chat-thread-back" id="chatBackBtn" aria-label="목록으로">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                            <path d="M15 6L9 12L15 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </button>
+                    <span class="avatar-sm" id="chatPartnerAvatar">
+                        <span id="chatPartnerAvatarInitial">태</span>
+                    </span>
+                    <a href="#" class="chat-thread-name" id="chatPartnerName">회원</a>
+                </div>
+
+                <div class="chat-messages" id="chatMessages"></div>
+
+                <form class="chat-input-bar" id="chatForm">
+                    <textarea
+                        id="chatInput"
+                        class="chat-input"
+                        placeholder="메시지를 입력하세요"
+                        rows="1"
+                        maxlength="2000"
+                    ></textarea>
+                    <button type="submit" class="btn chat-send-btn" id="chatSendBtn">전송</button>
+                </form>
+
+            </div>
+
+        </section>
+
+    </div>
 
 </main>
 
@@ -200,7 +236,7 @@
         <span>시간표</span>
     </a>
 
-    <a href="chat.html">
+    <a href="chat.html" class="active">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
             <path d="M4 5H20V16H8L4 20V5Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
             <path d="M8.5 10H15.5M8.5 13H13" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
@@ -208,7 +244,7 @@
         <span>채팅</span>
     </a>
 
-    <a href="#" id="bottomNavMy">
+    <a href="mypage.html">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
             <circle cx="12" cy="8" r="4" stroke="currentColor" stroke-width="2"/>
             <path d="M4 20C4 16.7 7.6 14 12 14C16.4 14 20 16.7 20 20" stroke="currentColor" stroke-width="2"/>
@@ -220,7 +256,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="js/app.js"></script>
 <script src="js/auth.js"></script>
-<script src="js/inquiry.js"></script>
+<script src="js/chat.js"></script>
 
 </body>
 </html>

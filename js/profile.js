@@ -22,7 +22,9 @@ const el={
     postCount:document.getElementById("profilePostCount"),
     joinedAt:document.getElementById("profileJoinedAt"),
 
-    postList:document.getElementById("profilePostList")
+    postList:document.getElementById("profilePostList"),
+
+    chatBtn:document.getElementById("profileChatBtn")
 
 };
 
@@ -232,6 +234,35 @@ async function loadProfile(userId){
 
 }
 
+async function setupChatButton(userId){
+
+    if(!el.chatBtn) return;
+
+    try{
+
+        const user=await window.Auth?.getCurrentUser();
+
+        if(user && user.id!==userId){
+
+            el.chatBtn.href=`chat.html?with=${encodeURIComponent(userId)}`;
+            el.chatBtn.classList.remove("hidden");
+
+        }else{
+
+            el.chatBtn.classList.add("hidden");
+
+        }
+
+    }
+
+    catch(error){
+
+        el.chatBtn.classList.add("hidden");
+
+    }
+
+}
+
 /* ---------- INIT ---------- */
 
 window.addEventListener("load",()=>{
@@ -249,6 +280,7 @@ window.addEventListener("load",()=>{
     }
 
     loadProfile(userId);
+    setupChatButton(userId);
 
 });
 
