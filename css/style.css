@@ -5730,6 +5730,44 @@ a.comment-item-author:hover{
 
     flex:1;
     overflow-y:auto;
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+    padding:10px;
+
+}
+
+.chat-list-skeleton{
+
+    box-shadow:none;
+    background:var(--background);
+
+}
+
+.chat-list-empty{
+
+    flex:1;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    gap:12px;
+    padding:32px 24px;
+    color:var(--sub);
+    text-align:center;
+
+}
+
+.chat-list-empty svg{
+
+    opacity:.4;
+
+}
+
+.chat-list-empty p{
+
+    font-size:13px;
+    line-height:1.6;
 
 }
 

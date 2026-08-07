@@ -157,15 +157,22 @@
             </div>
 
             <div class="chat-list" id="chatList">
-                <div class="skeleton-post" aria-hidden="true">
+                <div class="skeleton-post chat-list-skeleton" aria-hidden="true">
+                    <div class="skeleton-line skeleton-line-sm"></div>
+                    <div class="skeleton-line skeleton-line-lg"></div>
+                </div>
+                <div class="skeleton-post chat-list-skeleton" aria-hidden="true">
                     <div class="skeleton-line skeleton-line-sm"></div>
                     <div class="skeleton-line skeleton-line-lg"></div>
                 </div>
             </div>
 
-            <p class="widget-empty hidden" id="chatListEmpty">
-                아직 대화가 없어요. 상대방 프로필에서 '1:1 대화하기'를 눌러 시작해보세요.
-            </p>
+            <div class="chat-list-empty hidden" id="chatListEmpty">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none">
+                    <path d="M4 5H20V16H8L4 20V5Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+                </svg>
+                <p id="chatListEmptyText">아직 대화가 없어요.<br>상대방 프로필에서 '1:1 대화하기'를 눌러 시작해보세요.</p>
+            </div>
 
         </section>
 

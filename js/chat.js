@@ -16,6 +16,7 @@ const el={
 
     list:document.getElementById("chatList"),
     listEmpty:document.getElementById("chatListEmpty"),
+    listEmptyText:document.getElementById("chatListEmptyText"),
 
     threadEmpty:document.getElementById("chatThreadEmpty"),
     thread:document.getElementById("chatThread"),
@@ -170,7 +171,24 @@ async function loadConversations(){
 
         console.warn("대화 목록을 불러오지 못했습니다:",error.message || error);
 
+        el.list.innerHTML="";
+        el.list.classList.add("hidden");
+
+        if(el.listEmptyText){
+
+            el.listEmptyText.innerHTML="대화 목록을 불러오지 못했어요.<br>잠시 후 다시 시도해주세요.";
+
+        }
+
+        el.listEmpty?.classList.remove("hidden");
+
         return;
+
+    }
+
+    if(el.listEmptyText){
+
+        el.listEmptyText.innerHTML="아직 대화가 없어요.<br>상대방 프로필에서 '1:1 대화하기'를 눌러 시작해보세요.";
 
     }
 
@@ -181,6 +199,7 @@ async function loadConversations(){
     if(conversations.length===0){
 
         el.list.innerHTML="";
+        el.list.classList.add("hidden");
         el.listEmpty?.classList.remove("hidden");
 
         return;
@@ -188,6 +207,7 @@ async function loadConversations(){
     }
 
     el.listEmpty?.classList.add("hidden");
+    el.list.classList.remove("hidden");
 
     el.list.innerHTML=conversations.map(conversationItemHTML).join("");
 
@@ -467,7 +487,19 @@ el.backBtn?.addEventListener("click",closeThreadOnMobile);
 
 window.addEventListener("load",async ()=>{
 
-    const user=await window.Auth?.getCurrentUser();
+    let user=null;
+
+    try{
+
+        user=await window.Auth?.getCurrentUser();
+
+    }
+
+    catch(error){
+
+        console.warn("로그인 상태를 확인하지 못했습니다:",error.message || error);
+
+    }
 
     if(!user){
 
@@ -483,7 +515,28 @@ window.addEventListener("load",async ()=>{
     el.loginRequired?.classList.add("hidden");
     el.wrap?.classList.remove("hidden");
 
-    await loadConversations();
+    try{
+
+        await loadConversations();
+
+    }
+
+    catch(error){
+
+        console.warn("대화 목록을 불러오는 중 오류가 발생했습니다:",error.message || error);
+
+        el.list.innerHTML="";
+        el.list.classList.add("hidden");
+
+        if(el.listEmptyText){
+
+            el.listEmptyText.innerHTML="대화 목록을 불러오지 못했어요.<br>잠시 후 다시 시도해주세요.";
+
+        }
+
+        el.listEmpty?.classList.remove("hidden");
+
+    }
 
     const params=new URLSearchParams(location.search);
     const withId=params.get("with");
