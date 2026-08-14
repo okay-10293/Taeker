@@ -17,11 +17,13 @@ const el={
     list:document.getElementById("chatList"),
     listEmpty:document.getElementById("chatListEmpty"),
     listEmptyText:document.getElementById("chatListEmptyText"),
+    listCount:document.getElementById("chatListCount"),
 
     threadEmpty:document.getElementById("chatThreadEmpty"),
     thread:document.getElementById("chatThread"),
     backBtn:document.getElementById("chatBackBtn"),
 
+    partnerAvatar:document.getElementById("chatPartnerAvatar"),
     partnerAvatarInitial:document.getElementById("chatPartnerAvatarInitial"),
     partnerName:document.getElementById("chatPartnerName"),
 
@@ -87,6 +89,28 @@ function formatMsgTime(dateStr){
 
 }
 
+function isSameDay(a,b){
+
+    return a.getFullYear()===b.getFullYear()
+        && a.getMonth()===b.getMonth()
+        && a.getDate()===b.getDate();
+
+}
+
+function formatDateDivider(date){
+
+    const today=new Date();
+    const yesterday=new Date();
+
+    yesterday.setDate(today.getDate()-1);
+
+    if(isSameDay(date,today)) return "오늘";
+    if(isSameDay(date,yesterday)) return "어제";
+
+    return date.toLocaleDateString("ko-KR",{year:"numeric",month:"long",day:"numeric"});
+
+}
+
 function getClient(){
 
     return window.sb || null;
@@ -111,7 +135,7 @@ async function ensureProfiles(userIds){
 
     const {data,error}=await client
         .from("profiles")
-        .select("id,nickname,is_teacher")
+        .select("id,nickname,is_teacher,avatar_url")
         .in("id",missing);
 
     if(error){
@@ -136,11 +160,14 @@ function conversationItemHTML(conv){
     const initial=nickname.trim().charAt(0) || "태";
     const preview=conv.last_message ? escapeHtml(conv.last_message) : "대화를 시작해보세요.";
     const isActive=conv.id===currentConversationId ? "chat-list-item-active" : "";
+    const avatarHTML=partner.avatar_url
+        ? `<img src="${escapeHtml(partner.avatar_url)}" alt="">`
+        : `<span>${escapeHtml(initial)}</span>`;
 
     return `
         <button type="button" class="chat-list-item ${isActive}" data-conversation-id="${conv.id}" data-partner-id="${partnerId}">
             <span class="avatar-sm">
-                <span>${escapeHtml(initial)}</span>
+                ${avatarHTML}
             </span>
             <span class="chat-list-item-body">
                 <span class="chat-list-item-top">
@@ -181,6 +208,7 @@ async function loadConversations(){
         }
 
         el.listEmpty?.classList.remove("hidden");
+        el.listCount?.classList.add("hidden");
 
         return;
 
@@ -201,8 +229,16 @@ async function loadConversations(){
         el.list.innerHTML="";
         el.list.classList.add("hidden");
         el.listEmpty?.classList.remove("hidden");
+        el.listCount?.classList.add("hidden");
 
         return;
+
+    }
+
+    if(el.listCount){
+
+        el.listCount.textContent=`${conversations.length}개`;
+        el.listCount.classList.remove("hidden");
 
     }
 
@@ -225,12 +261,12 @@ async function loadConversations(){
 
 /* ---------- MESSAGES ---------- */
 
-function messageBubbleHTML(msg){
+function messageBubbleHTML(msg,grouped){
 
     const mine=msg.sender_id===me;
 
     return `
-        <div class="chat-bubble-row ${mine ? "chat-bubble-row-mine" : ""}">
+        <div class="chat-bubble-row ${mine ? "chat-bubble-row-mine" : ""} ${grouped ? "chat-bubble-row-grouped" : ""}">
             <div class="chat-bubble ${mine ? "chat-bubble-mine" : ""}">
                 <span class="chat-bubble-text">${escapeHtml(msg.content)}</span>
             </div>
@@ -240,9 +276,44 @@ function messageBubbleHTML(msg){
 
 }
 
+function dateDividerHTML(date){
+
+    return `<div class="chat-date-divider"><span>${escapeHtml(formatDateDivider(date))}</span></div>`;
+
+}
+
+/* 연속된 메시지 렌더링 상태 (같은 발신자가 이어서 보낸 메시지는 그룹핑) */
+let lastRenderedSenderId=null;
+let lastRenderedDateKey=null;
+
 function renderMessages(list){
 
-    el.messages.innerHTML=list.map(messageBubbleHTML).join("");
+    lastRenderedSenderId=null;
+    lastRenderedDateKey=null;
+
+    let html="";
+
+    list.forEach((msg)=>{
+
+        const date=new Date(msg.created_at);
+        const dateKey=isNaN(date) ? null : date.toDateString();
+
+        if(dateKey && dateKey!==lastRenderedDateKey){
+
+            html+=dateDividerHTML(date);
+            lastRenderedDateKey=dateKey;
+            lastRenderedSenderId=null;
+
+        }
+
+        const grouped=lastRenderedSenderId===msg.sender_id;
+
+        html+=messageBubbleHTML(msg,grouped);
+        lastRenderedSenderId=msg.sender_id;
+
+    });
+
+    el.messages.innerHTML=html;
     el.messages.scrollTop=el.messages.scrollHeight;
 
 }
@@ -252,7 +323,25 @@ function appendMessage(msg){
     const wasNearBottom=
         el.messages.scrollHeight-el.messages.scrollTop-el.messages.clientHeight<80;
 
-    el.messages.insertAdjacentHTML("beforeend",messageBubbleHTML(msg));
+    const date=new Date(msg.created_at);
+    const dateKey=isNaN(date) ? null : date.toDateString();
+
+    let html="";
+
+    if(dateKey && dateKey!==lastRenderedDateKey){
+
+        html+=dateDividerHTML(date);
+        lastRenderedDateKey=dateKey;
+        lastRenderedSenderId=null;
+
+    }
+
+    const grouped=lastRenderedSenderId===msg.sender_id;
+
+    html+=messageBubbleHTML(msg,grouped);
+    lastRenderedSenderId=msg.sender_id;
+
+    el.messages.insertAdjacentHTML("beforeend",html);
 
     if(wasNearBottom){
 
@@ -345,6 +434,26 @@ async function openConversation(conversationId,partnerId){
     if(el.partnerAvatarInitial){
 
         el.partnerAvatarInitial.textContent=nickname.trim().charAt(0) || "태";
+
+    }
+
+    const partnerAvatarImg=document.getElementById("chatPartnerAvatarImg");
+
+    if(partnerAvatarImg){
+
+        if(partner.avatar_url){
+
+            partnerAvatarImg.src=partner.avatar_url;
+            partnerAvatarImg.classList.remove("hidden");
+            el.partnerAvatarInitial?.classList.add("hidden");
+
+        }else{
+
+            partnerAvatarImg.classList.add("hidden");
+            partnerAvatarImg.removeAttribute("src");
+            el.partnerAvatarInitial?.classList.remove("hidden");
+
+        }
 
     }
 

@@ -770,6 +770,44 @@ body.dark .sidebar-submenu{
 
     transition:var(--transition);
 
+    display:flex;
+
+    align-items:center;
+
+}
+
+.post-card-link{
+
+    display:block;
+
+    flex:1 1 auto;
+
+    min-width:0;
+
+}
+
+.post-select-wrap{
+
+    display:flex;
+
+    align-items:center;
+
+    flex:0 0 auto;
+
+    padding:0 2px 0 10px;
+
+}
+
+.post-select-checkbox{
+
+    width:17px;
+
+    height:17px;
+
+    accent-color:#DC2626;
+
+    cursor:pointer;
+
 }
 
 .post-card:hover{
@@ -1006,6 +1044,130 @@ textarea.input{
 
 }
 
+.btn-danger{
+
+    display:inline-flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+    gap:6px;
+
+    padding:9px 16px;
+
+    border-radius:10px;
+
+    background:#DC2626;
+
+    border:1px solid #DC2626;
+
+    color:#FFFFFF;
+
+    font-weight:700;
+
+    font-size:13.5px;
+
+    transition:var(--transition);
+
+}
+
+.btn-danger:hover{
+
+    background:#B91C1C;
+
+}
+
+.btn-danger:disabled{
+
+    background:#FCA5A5;
+
+    border-color:#FCA5A5;
+
+    cursor:not-allowed;
+
+}
+
+/* =====================================================
+   ADMIN BULK DELETE BAR (board.html)
+===================================================== */
+
+.admin-bulk-bar{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:14px;
+
+    flex-wrap:wrap;
+
+    padding:10px 16px;
+
+    margin-bottom:14px;
+
+    background:#FEF2F2;
+
+    border:1px solid #FECACA;
+
+    border-radius:12px;
+
+}
+
+.admin-bulk-bar.hidden{
+
+    display:none;
+
+}
+
+.admin-bulk-select-all{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:7px;
+
+    font-size:13px;
+
+    font-weight:700;
+
+    color:#991B1B;
+
+    cursor:pointer;
+
+}
+
+.admin-bulk-select-all input{
+
+    width:16px;
+
+    height:16px;
+
+    accent-color:#DC2626;
+
+    cursor:pointer;
+
+}
+
+.admin-bulk-count{
+
+    font-size:12.5px;
+
+    color:#B91C1C;
+
+    margin-right:auto;
+
+}
+
+body.dark .admin-bulk-bar{
+
+    background:rgba(220,38,38,.12);
+
+    border-color:rgba(220,38,38,.35);
+
+}
+
 /* =====================================================
    SCROLLBAR
 ===================================================== */
@@ -1224,6 +1386,12 @@ textarea.input{
     transition:.3s;
 
     z-index:1100;
+
+    max-width:min(420px,88vw);
+
+    text-align:center;
+
+    line-height:1.5;
 
 }
 
@@ -5693,9 +5861,9 @@ a.comment-item-author:hover{
 .chat-layout{
 
     display:flex;
-    gap:20px;
+    gap:16px;
     height:calc(100vh - 260px);
-    min-height:460px;
+    min-height:480px;
     margin-top:20px;
 
 }
@@ -5707,6 +5875,7 @@ a.comment-item-author:hover{
     background:var(--card);
     border-radius:var(--radius);
     box-shadow:var(--shadow);
+    border:1px solid var(--border);
     display:flex;
     flex-direction:column;
     overflow:hidden;
@@ -5715,6 +5884,9 @@ a.comment-item-author:hover{
 
 .chat-list-header{
 
+    display:flex;
+    align-items:baseline;
+    gap:8px;
     padding:18px 20px;
     border-bottom:1px solid var(--border);
 
@@ -5723,6 +5895,15 @@ a.comment-item-author:hover{
 .chat-list-header h3{
 
     font-size:16px;
+    font-weight:800;
+
+}
+
+.chat-list-count{
+
+    font-size:12.5px;
+    color:var(--sub);
+    font-weight:600;
 
 }
 
@@ -5732,8 +5913,8 @@ a.comment-item-author:hover{
     overflow-y:auto;
     display:flex;
     flex-direction:column;
-    gap:10px;
-    padding:10px;
+    gap:2px;
+    padding:8px;
 
 }
 
@@ -5741,6 +5922,7 @@ a.comment-item-author:hover{
 
     box-shadow:none;
     background:var(--background);
+    margin:2px 4px;
 
 }
 
@@ -5760,7 +5942,7 @@ a.comment-item-author:hover{
 
 .chat-list-empty svg{
 
-    opacity:.4;
+    opacity:.35;
 
 }
 
@@ -5777,10 +5959,11 @@ a.comment-item-author:hover{
     display:flex;
     align-items:center;
     gap:12px;
-    padding:14px 18px;
+    padding:12px 14px;
     background:none;
     border:none;
-    border-bottom:1px solid var(--border);
+    border-left:3px solid transparent;
+    border-radius:12px;
     cursor:pointer;
     text-align:left;
     color:var(--text);
@@ -5788,10 +5971,24 @@ a.comment-item-author:hover{
 
 }
 
-.chat-list-item:hover,
+.chat-list-item:hover{
+
+    background:#F3F4F6;
+
+}
+
 .chat-list-item-active{
 
     background:rgba(37,99,235,.08);
+    border-left-color:var(--primary);
+
+}
+
+.chat-list-item .avatar-sm{
+
+    width:42px;
+    height:42px;
+    font-size:15px;
 
 }
 
@@ -5801,7 +5998,7 @@ a.comment-item-author:hover{
     min-width:0;
     display:flex;
     flex-direction:column;
-    gap:2px;
+    gap:3px;
 
 }
 
@@ -5818,6 +6015,15 @@ a.comment-item-author:hover{
 
     font-weight:700;
     font-size:14px;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+
+}
+
+.chat-list-item-active .chat-list-item-name{
+
+    color:var(--primary);
 
 }
 
@@ -5846,6 +6052,7 @@ a.comment-item-author:hover{
     background:var(--card);
     border-radius:var(--radius);
     box-shadow:var(--shadow);
+    border:1px solid var(--border);
     display:flex;
     flex-direction:column;
     overflow:hidden;
@@ -5856,10 +6063,18 @@ a.comment-item-author:hover{
 
     flex:1;
     display:flex;
+    flex-direction:column;
     align-items:center;
     justify-content:center;
+    gap:10px;
     color:var(--sub);
     font-size:14px;
+
+}
+
+.chat-thread-empty svg{
+
+    opacity:.3;
 
 }
 
@@ -5875,9 +6090,11 @@ a.comment-item-author:hover{
 
     display:flex;
     align-items:center;
-    gap:10px;
-    padding:14px 18px;
+    gap:12px;
+    padding:14px 20px;
     border-bottom:1px solid var(--border);
+    background:var(--card);
+    z-index:1;
 
 }
 
@@ -5889,12 +6106,27 @@ a.comment-item-author:hover{
     color:var(--text);
     cursor:pointer;
     padding:4px;
+    border-radius:8px;
+    flex-shrink:0;
+
+}
+
+.chat-thread-back:hover{
+
+    background:#F3F4F6;
+
+}
+
+.chat-thread-header .avatar-sm{
+
+    width:38px;
+    height:38px;
 
 }
 
 .chat-thread-name{
 
-    font-weight:700;
+    font-weight:800;
     font-size:15px;
     color:var(--text);
     text-decoration:none;
@@ -5911,10 +6143,34 @@ a.comment-item-author:hover{
 
     flex:1;
     overflow-y:auto;
-    padding:20px;
+    padding:20px 20px 8px;
     display:flex;
     flex-direction:column;
-    gap:14px;
+    gap:3px;
+    background:
+        radial-gradient(circle at 1px 1px,rgba(37,99,235,.05) 1px,transparent 0) 0 0/22px 22px,
+        var(--background);
+
+}
+
+.chat-date-divider{
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    margin:14px 0 10px;
+
+}
+
+.chat-date-divider span{
+
+    font-size:11.5px;
+    font-weight:700;
+    color:var(--sub);
+    background:var(--card);
+    border:1px solid var(--border);
+    padding:4px 12px;
+    border-radius:999px;
 
 }
 
@@ -5924,6 +6180,13 @@ a.comment-item-author:hover{
     flex-direction:column;
     align-items:flex-start;
     max-width:72%;
+    margin-top:12px;
+
+}
+
+.chat-bubble-row-grouped{
+
+    margin-top:2px;
 
 }
 
@@ -5941,26 +6204,45 @@ a.comment-item-author:hover{
     padding:10px 14px;
     border-radius:16px 16px 16px 4px;
     font-size:14px;
-    line-height:1.5;
+    line-height:1.55;
     word-break:break-word;
     white-space:pre-wrap;
+    box-shadow:0 1px 2px rgba(15,23,42,.05);
+
+}
+
+.chat-bubble-row-grouped .chat-bubble{
+
+    border-radius:16px;
+
+}
+
+.chat-bubble-row-mine .chat-bubble{
+
+    border-radius:16px 16px 4px 16px;
+
+}
+
+.chat-bubble-row-mine.chat-bubble-row-grouped .chat-bubble{
+
+    border-radius:16px;
 
 }
 
 .chat-bubble-mine{
 
-    background:var(--primary);
+    background:linear-gradient(135deg,var(--primary),#3B82F6);
     color:#fff;
-    border-radius:16px 16px 4px 16px;
 
 }
 
 .chat-bubble-time{
 
-    font-size:11px;
+    font-size:10.5px;
     color:var(--sub);
-    margin-top:4px;
+    margin-top:3px;
     padding:0 4px;
+    opacity:.8;
 
 }
 
@@ -5971,6 +6253,7 @@ a.comment-item-author:hover{
     gap:10px;
     padding:14px 18px;
     border-top:1px solid var(--border);
+    background:var(--card);
 
 }
 
@@ -5980,13 +6263,14 @@ a.comment-item-author:hover{
     resize:none;
     max-height:120px;
     border:1px solid var(--border);
-    border-radius:14px;
-    padding:10px 14px;
+    border-radius:20px;
+    padding:11px 16px;
     font-size:14px;
     font-family:inherit;
     background:var(--background);
     color:var(--text);
     line-height:1.5;
+    transition:var(--transition);
 
 }
 
@@ -5994,18 +6278,61 @@ a.comment-item-author:hover{
 
     outline:none;
     border-color:var(--primary);
+    box-shadow:0 0 0 3px rgba(37,99,235,.12);
 
 }
 
 .chat-send-btn{
 
     flex-shrink:0;
+    width:42px;
+    height:42px;
+    padding:0;
+    border-radius:50%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+}
+
+.chat-send-btn:disabled{
+
+    opacity:.5;
+    cursor:default;
+
+}
+
+.chat-send-btn svg{
+
+    transform:translateX(-1px);
 
 }
 
 body.dark .chat-bubble{
 
     background:#2D3748;
+    box-shadow:none;
+
+}
+
+body.dark .chat-messages{
+
+    background:
+        radial-gradient(circle at 1px 1px,rgba(96,165,250,.06) 1px,transparent 0) 0 0/22px 22px,
+        var(--background);
+
+}
+
+body.dark .chat-date-divider span{
+
+    background:var(--card);
+    border-color:#1F2937;
+
+}
+
+body.dark .chat-list-item:hover{
+
+    background:#1E293B;
 
 }
 
@@ -6016,12 +6343,14 @@ body.dark .chat-bubble{
         position:relative;
         height:calc(100vh - 230px);
         min-height:420px;
+        gap:0;
 
     }
 
     .chat-list-panel{
 
         width:100%;
+        border-radius:var(--radius);
 
     }
 
@@ -6057,7 +6386,7 @@ body.dark .chat-bubble{
 
     .chat-bubble-row{
 
-        max-width:82%;
+        max-width:84%;
 
     }
 

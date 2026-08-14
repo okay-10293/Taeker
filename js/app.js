@@ -131,7 +131,7 @@ function toast(message){
 
         toast.classList.remove("show");
 
-    },2500);
+    },3200);
 
 }
 

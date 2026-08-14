@@ -1019,7 +1019,7 @@ function translateError(message){
 
     ){
 
-        return "이메일 인증이 필요합니다.";
+        return "이메일 인증이 필요합니다. 가입하신 이메일함(스팸함도 확인해주세요)에서 인증 메일을 확인해주세요.";
 
     }
 

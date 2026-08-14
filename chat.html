@@ -154,6 +154,7 @@
 
             <div class="chat-list-header">
                 <h3>대화 목록</h3>
+                <span class="chat-list-count hidden" id="chatListCount"></span>
             </div>
 
             <div class="chat-list" id="chatList">
@@ -180,6 +181,9 @@
         <section class="chat-thread-panel" id="chatThreadPanel">
 
             <div class="chat-thread-empty" id="chatThreadEmpty">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none">
+                    <path d="M4 5H20V16H8L4 20V5Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+                </svg>
                 <p>왼쪽에서 대화를 선택해주세요.</p>
             </div>
 
@@ -192,6 +196,7 @@
                         </svg>
                     </button>
                     <span class="avatar-sm" id="chatPartnerAvatar">
+                        <img src="" alt="" id="chatPartnerAvatarImg" class="hidden">
                         <span id="chatPartnerAvatarInitial">태</span>
                     </span>
                     <a href="#" class="chat-thread-name" id="chatPartnerName">회원</a>
@@ -207,7 +212,11 @@
                         rows="1"
                         maxlength="2000"
                     ></textarea>
-                    <button type="submit" class="btn chat-send-btn" id="chatSendBtn">전송</button>
+                    <button type="submit" class="btn chat-send-btn" id="chatSendBtn" aria-label="전송">
+                        <svg width="19" height="19" viewBox="0 0 24 24" fill="none">
+                            <path d="M4 12L20 4L13 20L11 13L4 12Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+                        </svg>
+                    </button>
                 </form>
 
             </div>

@@ -23,7 +23,12 @@ const el={
 
     pagination:document.getElementById("boardPagination"),
 
-    searchInput:document.getElementById("searchInput")
+    searchInput:document.getElementById("searchInput"),
+
+    adminBulkBar:document.getElementById("adminBulkBar"),
+    adminBulkSelectAll:document.getElementById("adminBulkSelectAll"),
+    adminBulkCount:document.getElementById("adminBulkCount"),
+    adminBulkDeleteBtn:document.getElementById("adminBulkDeleteBtn")
 
 };
 
@@ -78,7 +83,9 @@ const state={
     sort:"latest",
     keyword:"",
     page:1,
-    loading:false
+    loading:false,
+    isAdmin:false,
+    selectedIds:new Set()
 
 };
 
@@ -250,6 +257,151 @@ async function injectGradeChip(){
 
 }
 
+/* =====================================================
+   ADMIN 게시글 일괄 삭제
+===================================================== */
+
+async function checkAdmin(){
+
+    if(!window.Auth) return;
+
+    try{
+
+        const user=await window.Auth.getCurrentUser();
+
+        if(!user) return;
+
+        const profile=await window.Auth.getProfile();
+
+        state.isAdmin=!!profile?.is_admin;
+
+        el.adminBulkBar?.classList.toggle("hidden",!state.isAdmin);
+
+    }
+
+    catch(error){
+
+        console.warn("관리자 여부를 확인하지 못했습니다:",error.message || error);
+
+    }
+
+}
+
+function updateAdminBulkBar(){
+
+    if(!state.isAdmin) return;
+
+    const count=state.selectedIds.size;
+
+    if(el.adminBulkCount) el.adminBulkCount.textContent=`${count}개 선택됨`;
+
+    if(el.adminBulkDeleteBtn) el.adminBulkDeleteBtn.disabled=count===0;
+
+    if(el.adminBulkSelectAll){
+
+        const checkboxes=[...el.postList.querySelectorAll(".post-select-checkbox")];
+        const allChecked=checkboxes.length>0 && checkboxes.every((cb)=>cb.checked);
+
+        el.adminBulkSelectAll.checked=allChecked;
+
+    }
+
+}
+
+el.postList?.addEventListener("change",(e)=>{
+
+    const checkbox=e.target.closest(".post-select-checkbox");
+
+    if(!checkbox) return;
+
+    const id=checkbox.dataset.id;
+
+    if(checkbox.checked){
+
+        state.selectedIds.add(id);
+
+    }else{
+
+        state.selectedIds.delete(id);
+
+    }
+
+    updateAdminBulkBar();
+
+});
+
+el.adminBulkSelectAll?.addEventListener("change",()=>{
+
+    const checkboxes=[...el.postList.querySelectorAll(".post-select-checkbox")];
+
+    checkboxes.forEach((cb)=>{
+
+        cb.checked=el.adminBulkSelectAll.checked;
+
+        if(cb.checked){
+
+            state.selectedIds.add(cb.dataset.id);
+
+        }else{
+
+            state.selectedIds.delete(cb.dataset.id);
+
+        }
+
+    });
+
+    updateAdminBulkBar();
+
+});
+
+el.adminBulkDeleteBtn?.addEventListener("click",async()=>{
+
+    const ids=[...state.selectedIds];
+
+    if(ids.length===0) return;
+
+    const confirmDelete=confirm(`선택한 게시글 ${ids.length}개를 삭제하시겠습니까? 삭제하면 복구할 수 없습니다.`);
+
+    if(!confirmDelete) return;
+
+    const client=getClient();
+
+    if(!client) return;
+
+    el.adminBulkDeleteBtn.disabled=true;
+
+    try{
+
+        const {error}=await client
+            .from("posts")
+            .delete()
+            .in("id",ids);
+
+        if(error) throw error;
+
+        window.Taecker?.toast?.(`게시글 ${ids.length}개를 삭제했습니다.`);
+
+        state.selectedIds.clear();
+
+        if(el.adminBulkSelectAll) el.adminBulkSelectAll.checked=false;
+
+        await fetchPage(state.page);
+
+        updateAdminBulkBar();
+
+    }
+
+    catch(error){
+
+        console.warn("게시글 일괄 삭제에 실패했습니다:",error.message || error);
+        window.Taecker?.toast?.("게시글 삭제에 실패했습니다.");
+
+        el.adminBulkDeleteBtn.disabled=false;
+
+    }
+
+});
+
 el.postList?.addEventListener("click",(e)=>{
 
     const authorEl=e.target.closest(".post-row-author");
@@ -345,25 +497,34 @@ function postCardHTML(post){
         ? `<span class="post-row-author" data-author-id="${post.author_id}">${nickname}</span>${teacherBadge}`
         : `<span>${nickname}</span>${teacherBadge}`;
 
+    const checkboxHTML=state.isAdmin
+        ? `<span class="post-select-wrap">
+               <input type="checkbox" class="post-select-checkbox" data-id="${post.id}" ${state.selectedIds.has(post.id) ? "checked" : ""}>
+           </span>`
+        : "";
+
     return `
-        <a class="post-card post-card-link fade-in" href="post.html?id=${encodeURIComponent(post.id)}">
-            <div class="post-row">
-                <div class="post-row-main">
-                    <span class="badge post-category-badge">${categoryLabel}</span>
-                    <span class="post-title">${escapeHtml(post.title)}</span>
-                    ${commentBadge}
+        <div class="post-card fade-in">
+            ${checkboxHTML}
+            <a class="post-card-link" href="post.html?id=${encodeURIComponent(post.id)}">
+                <div class="post-row">
+                    <div class="post-row-main">
+                        <span class="badge post-category-badge">${categoryLabel}</span>
+                        <span class="post-title">${escapeHtml(post.title)}</span>
+                        ${commentBadge}
+                    </div>
+                    <div class="post-row-meta">
+                        ${authorHTML}
+                        <span>·</span>
+                        <span>${timeAgo(post.created_at)}</span>
+                        <span class="post-row-stats">
+                            <span class="post-footer-item"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M2 12C3.5 7 7.5 4 12 4C16.5 4 20.5 7 22 12C20.5 17 16.5 20 12 20C7.5 20 3.5 17 2 12Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2"/></svg>${post.view_count ?? 0}</span>
+                            <span class="post-footer-item"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 20.5C12 20.5 3 15 3 8.8C3 5.9 5.3 3.5 8.2 3.5C9.9 3.5 11.3 4.3 12 5.6C12.7 4.3 14.1 3.5 15.8 3.5C18.7 3.5 21 5.9 21 8.8C21 15 12 20.5 12 20.5Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>${post.like_count ?? 0}</span>
+                        </span>
+                    </div>
                 </div>
-                <div class="post-row-meta">
-                    ${authorHTML}
-                    <span>·</span>
-                    <span>${timeAgo(post.created_at)}</span>
-                    <span class="post-row-stats">
-                        <span class="post-footer-item"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M2 12C3.5 7 7.5 4 12 4C16.5 4 20.5 7 22 12C20.5 17 16.5 20 12 20C7.5 20 3.5 17 2 12Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2"/></svg>${post.view_count ?? 0}</span>
-                        <span class="post-footer-item"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 20.5C12 20.5 3 15 3 8.8C3 5.9 5.3 3.5 8.2 3.5C9.9 3.5 11.3 4.3 12 5.6C12.7 4.3 14.1 3.5 15.8 3.5C18.7 3.5 21 5.9 21 8.8C21 15 12 20.5 12 20.5Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>${post.like_count ?? 0}</span>
-                    </span>
-                </div>
-            </div>
-        </a>
+            </a>
+        </div>
     `;
 
 }
@@ -447,6 +608,7 @@ async function fetchPage(page){
 
     state.loading=true;
     state.page=page;
+    state.selectedIds.clear();
 
     renderSkeleton();
 
@@ -499,6 +661,8 @@ async function fetchPage(page){
         }
 
         el.postList.innerHTML=data.map(postCardHTML).join("");
+
+        updateAdminBulkBar();
 
         const totalCount=count ?? data.length;
         const totalPages=Math.max(1,Math.ceil(totalCount/PAGE_SIZE));
@@ -571,6 +735,7 @@ updateHeaderText();
 window.addEventListener("load",async()=>{
 
     await injectGradeChip();
+    await checkAdmin();
 
     syncCategoryChips();
     updateHeaderText();
