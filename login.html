@@ -326,7 +326,7 @@
 
                             href="#"
 
-                            id="forgotPassword"
+                            id="forgotPasswordOpen"
 
                             class="text-link">
 
@@ -606,6 +606,49 @@
     </div>
 
 </div>
+
+<!-- =====================================================
+     비밀번호 찾기 팝업
+===================================================== -->
+<div class="modal" id="forgotPasswordModal">
+    <div class="modal-content">
+
+        <h3 style="margin-bottom:6px;">비밀번호 찾기</h3>
+        <p style="color:var(--sub);font-size:13px;margin-bottom:18px;">
+            가입할 때 사용한 이메일 주소를 입력하시면,
+            비밀번호를 재설정할 수 있는 링크를 보내드려요.
+        </p>
+
+        <form id="forgotPasswordForm">
+
+            <div class="form-group">
+                <label for="forgotPasswordEmail">이메일</label>
+                <div class="input-box">
+                    <input
+                        type="email"
+                        id="forgotPasswordEmail"
+                        class="input"
+                        placeholder="example@school.kr"
+                        required
+                        autocomplete="email">
+                </div>
+                <small id="forgotPasswordMessage" class="input-message"></small>
+            </div>
+
+            <div class="write-actions">
+                <button type="button" class="btn btn-outline" id="forgotPasswordCancelBtn">취소</button>
+                <button type="submit" class="btn" id="forgotPasswordSubmitBtn">
+                    <span class="button-text">재설정 링크 보내기</span>
+                    <span class="button-loader hidden"></span>
+                </button>
+            </div>
+
+        </form>
+
+    </div>
+</div>
+
+<div id="overlay" class="overlay"></div>
 
 <script
 

@@ -1220,32 +1220,75 @@ if(form){
    FORGOT PASSWORD
 ===================================================== */
 
-const forgotPasswordLink=document.getElementById("forgotPassword");
+/* 로그인 화면 이메일 입력칸을 그대로 재사용하던 예전 방식 대신,
+   전용 팝업으로 이메일을 따로 입력받는다. */
 
-if(forgotPasswordLink){
+const forgotPasswordOpen=document.getElementById("forgotPasswordOpen");
+const forgotPasswordForm=document.getElementById("forgotPasswordForm");
+const forgotPasswordEmail=document.getElementById("forgotPasswordEmail");
+const forgotPasswordCancelBtn=document.getElementById("forgotPasswordCancelBtn");
+const forgotPasswordSubmitBtn=document.getElementById("forgotPasswordSubmitBtn");
+const forgotPasswordMessage=document.getElementById("forgotPasswordMessage");
 
-    forgotPasswordLink.addEventListener(
+if(forgotPasswordOpen){
+
+    forgotPasswordOpen.addEventListener(
         "click",
+        (event)=>{
+
+            event.preventDefault();
+
+            if(forgotPasswordMessage) forgotPasswordMessage.textContent="";
+
+            if(forgotPasswordEmail){
+
+                /* 로그인 칸에 이미 이메일을 입력해뒀다면 편의상 미리 채워준다. */
+                forgotPasswordEmail.value=sanitize(emailInput?.value || "");
+
+            }
+
+            window.Taecker?.openModal?.("forgotPasswordModal");
+
+            setTimeout(()=>forgotPasswordEmail?.focus(),50);
+
+        }
+    );
+
+}
+
+forgotPasswordCancelBtn?.addEventListener("click",()=>{
+
+    window.Taecker?.closeModal?.("forgotPasswordModal");
+
+});
+
+if(forgotPasswordForm){
+
+    forgotPasswordForm.addEventListener(
+        "submit",
         async(event)=>{
 
             event.preventDefault();
 
-            const email=sanitize(emailInput?.value || "");
+            const email=sanitize(forgotPasswordEmail?.value || "");
 
             if(!email){
-                toast("먼저 이메일을 입력한 뒤 눌러주세요.");
-                emailInput?.focus();
+                if(forgotPasswordMessage){
+                    forgotPasswordMessage.textContent="이메일을 입력해주세요.";
+                    forgotPasswordMessage.style.color="#DC2626";
+                }
+                forgotPasswordEmail?.focus();
                 return;
             }
 
-            forgotPasswordLink.classList.add("disabled");
+            forgotPasswordSubmitBtn.disabled=true;
 
             const {error}=await sb.auth.resetPasswordForEmail(
                 email,
                 {redirectTo:`${location.origin}/reset-password.html`}
             );
 
-            forgotPasswordLink.classList.remove("disabled");
+            forgotPasswordSubmitBtn.disabled=false;
 
             if(error){
                 toast("메일 전송에 실패했습니다. 잠시 후 다시 시도해주세요.");
@@ -1253,6 +1296,10 @@ if(forgotPasswordLink){
             }
 
             toast("비밀번호 재설정 링크를 이메일로 보냈습니다.");
+
+            window.Taecker?.closeModal?.("forgotPasswordModal");
+
+            forgotPasswordForm.reset();
 
         }
     );
@@ -1647,6 +1694,22 @@ async function getCachedProfile(){
     }
 
     return profile;
+
+}
+
+/* =====================================================
+   EMAIL VERIFIED NOTICE
+   (회원가입 이메일의 인증 링크가 login.html?verified=1 로
+   돌아왔을 때 안내 메시지를 보여준다. 세션이 이미 함께
+   전달된 경우 redirectIfLoggedIn()이 곧바로 index.html로
+   보내주므로, 세션이 아직 없는 경우에만 안내가 눈에 보인다.)
+===================================================== */
+
+if(location.pathname.endsWith("login.html") && new URLSearchParams(location.search).get("verified")==="1"){
+
+    toast("이메일 인증이 완료되었습니다. 로그인해주세요.");
+
+    history.replaceState(null,"",location.pathname);
 
 }
 

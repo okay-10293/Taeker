@@ -490,7 +490,25 @@ async function loadSchedule(){
 
         }
 
-        const sorted=[...rows].sort((a,b)=>Number(a.AA_YMD)-Number(b.AA_YMD));
+        /* NEIS 학사일정 API는 같은 날짜+행사명이 여러 번 중복으로
+           내려오는 경우가 있어(학년/과정별로 행이 나뉘는 등),
+           날짜+행사명 기준으로 중복을 한 번 제거한다. */
+
+        const seen=new Set();
+
+        const deduped=rows.filter((row)=>{
+
+            const key=`${row.AA_YMD || ""}__${(row.EVENT_NM || "").trim()}`;
+
+            if(seen.has(key)) return false;
+
+            seen.add(key);
+
+            return true;
+
+        });
+
+        const sorted=[...deduped].sort((a,b)=>Number(a.AA_YMD)-Number(b.AA_YMD));
 
         el.scheduleList.innerHTML=`
             <ul class="schedule-list">

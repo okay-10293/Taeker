@@ -480,6 +480,44 @@ async function applySuspension(userId,mode,days,reason){
 
 }
 
+/* 정지가 아니라 계정 자체를 완전히 삭제한다. 작성한 글/댓글/좋아요도
+   함께 삭제된다(sql/admin_delete_member.sql의 cascade). 되돌릴 수 없다. */
+
+async function deleteMember(userId){
+
+    const client=getClient();
+
+    if(!client || !userId) return;
+
+    try{
+
+        const {error}=await client.rpc("admin_delete_member",{p_user_id:userId});
+
+        if(error) throw error;
+
+        window.Taecker?.toast?.("계정을 삭제했습니다.");
+
+        allMembers=allMembers.filter((m)=>m.id!==userId);
+
+        renderMemberList();
+
+    }
+
+    catch(error){
+
+        console.warn("계정 삭제에 실패했습니다:",error.message || error);
+
+        const message =
+            error.message==="CANNOT_DELETE_ADMIN" ? "관리자 계정은 삭제할 수 없습니다." :
+            error.message==="CANNOT_DELETE_SELF" ? "본인 계정은 삭제할 수 없습니다." :
+            "계정 삭제에 실패했습니다. 잠시 후 다시 시도해주세요.";
+
+        window.Taecker?.toast?.(message);
+
+    }
+
+}
+
 async function updateReportStatus(reportId,status,adminId){
 
     const client=getClient();
@@ -523,10 +561,12 @@ function impersonationItemHTML(report){
 
     const statusClass=
         report.status==="resolved" ? "status-resolved" :
+        report.status==="not_impersonation" ? "status-cleared" :
         report.status==="rejected" ? "status-rejected" : "status-pending";
 
     const statusText=
         report.status==="resolved" ? "확정(처리완료)" :
+        report.status==="not_impersonation" ? "도용 아님으로 확인됨" :
         report.status==="rejected" ? "반려됨" : "대기중";
 
     const victimMeta=`${GRADE_LABEL[report.victim_grade] || report.victim_grade+"학년"} ${report.victim_class}반 ${report.victim_number}번`;
@@ -539,6 +579,7 @@ function impersonationItemHTML(report){
 
     const actionButtons = report.status==="pending" ? `
         <button class="btn-danger" data-action="confirm-impersonation" data-report="${report.id}" ${accused ? "" : "disabled"}>도용 확정 (계정 삭제)</button>
+        <button data-action="not-impersonation" data-report="${report.id}">도용 아님 (조사 결과 무혐의)</button>
         <button data-action="reject-impersonation" data-report="${report.id}">반려</button>
     ` : "";
 
@@ -811,6 +852,47 @@ async function rejectImpersonation(reportId){
 
 }
 
+/* 조사해봤더니 도용이 아니었던 경우: 반려(신고 자체를 기각)와는
+   구분해서, 계정에는 아무 조치도 하지 않고 "도용 아님"으로
+   결과만 남긴다. */
+
+async function notImpersonation(reportId){
+
+    const client=getClient();
+
+    if(!client || !reportId) return;
+
+    try{
+
+        const {error}=await client
+            .from("impersonation_reports")
+            .update({
+
+                status:"not_impersonation",
+                resolved_at:new Date().toISOString(),
+                resolved_by:adminId
+
+            })
+            .eq("id",reportId);
+
+        if(error) throw error;
+
+        window.Taecker?.toast?.("도용이 아닌 것으로 처리했습니다. 계정에는 아무 조치도 취해지지 않습니다.");
+
+        await loadImpersonationReports();
+
+    }
+
+    catch(error){
+
+        console.warn("도용 아님 처리에 실패했습니다:",error.message || error);
+
+        window.Taecker?.toast?.("처리에 실패했습니다. 잠시 후 다시 시도해주세요.");
+
+    }
+
+}
+
 /* ---------- 회원 목록 (전체 목록 + 클라이언트 필터링) ---------- */
 
 let allMembers=[];
@@ -864,6 +946,7 @@ function memberItemHTML(profile){
                     <button data-action="unsuspend" data-user="${profile.id}">정지 해제</button>
                     <button data-action="rename-toggle" data-user="${profile.id}">닉네임 변경</button>
                     <button data-action="notice-toggle" data-user="${profile.id}">개인 공지 보내기</button>
+                    ${profile.is_admin ? "" : `<button class="btn-danger" data-action="delete-member" data-user="${profile.id}">계정 삭제</button>`}
                 </div>
             </div>
         </div>
@@ -1739,6 +1822,25 @@ function setupActionDelegation(){
 
         }
 
+        if(action==="delete-member"){
+
+            const userId=btn.dataset.user;
+
+            if(!userId) return;
+
+            const member=allMembers.find((m)=>m.id===userId);
+            const label=member?.nickname || "이 계정";
+
+            if(confirm(`${label} 계정을 완전히 삭제할까요?\n작성한 글·댓글·좋아요가 모두 함께 삭제되고 되돌릴 수 없습니다.`)){
+
+                deleteMember(userId);
+
+            }
+
+            return;
+
+        }
+
         if(action==="memo-save"){
 
             const userId=btn.dataset.user;
@@ -1925,6 +2027,22 @@ function setupActionDelegation(){
             if(confirm("이 신고를 도용으로 확정할까요?\n해당 계정과 작성한 글·댓글이 모두 즉시 삭제되고, 이메일은 다시는 가입할 수 없게 됩니다. 되돌릴 수 없습니다.")){
 
                 confirmImpersonation(reportId);
+
+            }
+
+            return;
+
+        }
+
+        if(action==="not-impersonation"){
+
+            const reportId=btn.dataset.report;
+
+            if(!reportId) return;
+
+            if(confirm("조사 결과 도용이 아닌 것으로 처리할까요?\n계정에는 아무 조치도 취해지지 않습니다.")){
+
+                notImpersonation(reportId);
 
             }
 
