@@ -899,11 +899,15 @@ let allMembers=[];
 
 function memberItemHTML(profile){
 
+    const titleBadge=(profile.title && profile.title.trim())
+        ? `<span class="title-badge-sm" data-role="title-badge">${escapeHtml(profile.title.trim())}</span>`
+        : `<span class="title-badge-sm hidden" data-role="title-badge"></span>`;
+
     return `
         <div class="admin-item admin-member-item" data-user-id="${profile.id}">
             <button type="button" class="admin-member-summary" data-action="member-toggle">
                 <div>
-                    <div class="admin-item-title" data-role="nickname-display">${escapeHtml(profile.nickname || "닉네임 없음")}</div>
+                    <div class="admin-item-title"><span data-role="nickname-display">${escapeHtml(profile.nickname || "닉네임 없음")}</span> ${titleBadge}</div>
                     <div class="admin-item-sub">${escapeHtml(memberMetaText(profile)) || "학년/반/번호 미입력"} · ${escapeHtml(profile.email || "")}</div>
                 </div>
                 <div class="admin-member-summary-right">
@@ -921,6 +925,11 @@ function memberItemHTML(profile){
                     <input type="text" class="input" data-role="rename-input" value="${escapeHtml(profile.nickname || "")}" maxlength="20">
                     <button class="btn-ok" data-action="rename-save" data-user="${profile.id}">저장</button>
                     <button data-action="rename-cancel" data-user="${profile.id}">취소</button>
+                </div>
+                <div class="admin-rename-row hidden" data-role="title-row">
+                    <input type="text" class="input" data-role="title-input" value="${escapeHtml(profile.title || "")}" maxlength="8" placeholder="예: 우수 활동가 (비워두면 칭호 제거, 최대 8자)">
+                    <button class="btn-ok" data-action="title-save" data-user="${profile.id}">저장</button>
+                    <button data-action="title-cancel" data-user="${profile.id}">취소</button>
                 </div>
                 <div class="admin-suspend-row hidden" data-role="suspend-row">
                     <input type="number" class="input" data-role="suspend-days-input" min="1" step="1" value="1">
@@ -945,6 +954,7 @@ function memberItemHTML(profile){
                     <button data-action="suspend-toggle" data-user="${profile.id}">정지</button>
                     <button data-action="unsuspend" data-user="${profile.id}">정지 해제</button>
                     <button data-action="rename-toggle" data-user="${profile.id}">닉네임 변경</button>
+                    <button data-action="title-toggle" data-user="${profile.id}">칭호 넣기</button>
                     <button data-action="notice-toggle" data-user="${profile.id}">개인 공지 보내기</button>
                     ${profile.is_admin ? "" : `<button class="btn-danger" data-action="delete-member" data-user="${profile.id}">계정 삭제</button>`}
                 </div>
@@ -963,6 +973,7 @@ function memberMatchesKeyword(profile,keyword){
         profile.email,
         profile.student_number,
         profile.admin_memo,
+        profile.title,
         memberMetaText(profile)
     ].filter(Boolean).join(" ").toLowerCase();
 
@@ -1039,6 +1050,55 @@ async function renameMember(userId,newNickname){
 
 }
 
+async function updateMemberTitle(userId,title){
+
+    const client=getClient();
+
+    if(!client || !userId) return false;
+
+    const trimmed=(title || "").trim();
+
+    if(trimmed.length>8){
+
+        window.Taecker?.toast?.("칭호는 최대 8자까지 입력할 수 있어요.");
+
+        return false;
+
+    }
+
+    try{
+
+        const {error}=await client
+            .from("profiles")
+            .update({title:trimmed || null})
+            .eq("id",userId);
+
+        if(error) throw error;
+
+        window.Taecker?.toast?.(trimmed ? "칭호를 등록했습니다." : "칭호를 제거했습니다.");
+
+        const member=allMembers.find((m)=>m.id===userId);
+
+        if(member) member.title=trimmed || null;
+
+        renderMemberList();
+
+        return true;
+
+    }
+
+    catch(error){
+
+        console.warn("칭호 저장에 실패했습니다:",error.message || error);
+
+        window.Taecker?.toast?.("칭호 저장에 실패했습니다. 잠시 후 다시 시도해주세요.");
+
+        return false;
+
+    }
+
+}
+
 async function updateMemberMemo(userId,memo){
 
     const client=getClient();
@@ -1090,7 +1150,7 @@ async function loadAllMembers(){
 
         const {data,error}=await client
             .from("profiles")
-            .select("id,nickname,email,grade,class_number,student_number,is_teacher,admin_memo,banned,suspended_until,suspended_reason")
+            .select("id,nickname,email,grade,class_number,student_number,is_teacher,title,admin_memo,banned,suspended_until,suspended_reason")
             .order("grade",{ascending:true,nullsFirst:false})
             .order("class_number",{ascending:true,nullsFirst:false})
             .order("student_number",{ascending:true,nullsFirst:false})
@@ -1995,6 +2055,73 @@ function setupActionDelegation(){
             btn.disabled=true;
 
             renameMember(userId,input.value).then((success)=>{
+
+                btn.disabled=false;
+
+                if(success) row?.classList.add("hidden");
+
+            });
+
+            return;
+
+        }
+
+        if(action==="title-toggle"){
+
+            const userId=btn.dataset.user;
+
+            if(!userId) return;
+
+            const item=btn.closest(".admin-item");
+            const row=item?.querySelector('[data-role="title-row"]');
+
+            if(!row) return;
+
+            row.classList.toggle("hidden");
+
+            if(!row.classList.contains("hidden")){
+
+                const input=row.querySelector('[data-role="title-input"]');
+                input?.focus();
+                input?.select();
+
+            }
+
+            return;
+
+        }
+
+        if(action==="title-cancel"){
+
+            const item=btn.closest(".admin-item");
+            const row=item?.querySelector('[data-role="title-row"]');
+            const input=row?.querySelector('[data-role="title-input"]');
+            const userId=item?.dataset.userId;
+            const member=allMembers.find((m)=>m.id===userId);
+
+            if(input) input.value=member?.title || "";
+
+            row?.classList.add("hidden");
+
+            return;
+
+        }
+
+        if(action==="title-save"){
+
+            const userId=btn.dataset.user;
+
+            if(!userId) return;
+
+            const item=btn.closest(".admin-item");
+            const row=item?.querySelector('[data-role="title-row"]');
+            const input=row?.querySelector('[data-role="title-input"]');
+
+            if(!input) return;
+
+            btn.disabled=true;
+
+            updateMemberTitle(userId,input.value).then((success)=>{
 
                 btn.disabled=false;
 

@@ -452,7 +452,9 @@ window.Taecker={
 
     toggleTheme,
 
-    Storage
+    Storage,
+
+    memberBadgeHTML
 
 };
 
@@ -557,6 +559,32 @@ function escapeHtml(str){
         "'":"&#39;"
 
     }[c]));
+
+}
+
+/* 닉네임 옆에 붙는 작은 뱃지(선생님 / 관리자가 부여한 칭호) HTML을 만든다.
+   칭호가 있으면 칭호를 우선 표시하고, 없으면 선생님 여부를 표시한다.
+   post.js / board.js / profile.js / mypage.js 등에서 window.Taecker.memberBadgeHTML()로 공용 사용. */
+function memberBadgeHTML(profile,size){
+
+    if(!profile) return "";
+
+    const cls=size==="sm" ? "title-badge-sm" : "title-badge";
+    const teacherCls=size==="sm" ? "teacher-badge-sm" : "teacher-badge";
+
+    if(profile.title && profile.title.trim()){
+
+        return `<span class="${cls}">${escapeHtml(profile.title.trim())}</span>`;
+
+    }
+
+    if(profile.is_teacher){
+
+        return `<span class="${teacherCls}">선생님</span>`;
+
+    }
+
+    return "";
 
 }
 
@@ -945,9 +973,7 @@ function postCardHTML(post){
     const commentBadge=post.comment_count
         ? `<span class="post-comment-count">[${post.comment_count}]</span>`
         : "";
-    const teacherBadge=post.profiles?.is_teacher
-        ? `<span class="teacher-badge-sm">선생님</span>`
-        : "";
+    const teacherBadge=memberBadgeHTML(post.profiles,"sm");
     const authorHTML=post.author_id
         ? `<span class="post-row-author" data-author-id="${post.author_id}">${nickname}</span>${teacherBadge}`
         : `<span>${nickname}</span>${teacherBadge}`;
@@ -1017,7 +1043,7 @@ async function fetchPosts(){
 
         let query=client
             .from("posts")
-            .select("id,title,content,category,view_count,like_count,comment_count,created_at,author_id,profiles(nickname,is_teacher)")
+            .select("id,title,content,category,view_count,like_count,comment_count,created_at,author_id,profiles(nickname,is_teacher,title)")
             .limit(20);
 
         if(state.category){

@@ -149,7 +149,7 @@ async function loadPost(){
 
         const {data,error}=await client
             .from("posts")
-            .select("id,title,content,category,view_count,like_count,comment_count,created_at,author_id,profiles(nickname,is_teacher)")
+            .select("id,title,content,category,view_count,like_count,comment_count,created_at,author_id,profiles(nickname,is_teacher,title)")
             .eq("id",postId)
             .single();
 
@@ -246,9 +246,8 @@ function renderPost(post){
 
     if(el.author){
 
-        const teacherBadge=post.profiles?.is_teacher
-            ? ` <span class="teacher-badge-sm">선생님</span>`
-            : "";
+        const badge=window.Taecker?.memberBadgeHTML?.(post.profiles,"sm") || "";
+        const teacherBadge=badge ? ` ${badge}` : "";
 
         el.author.innerHTML=post.author_id
             ? `<a href="profile.html?id=${encodeURIComponent(post.author_id)}" class="post-detail-author-link">${escapeHtml(nickname)}</a>${teacherBadge}`
@@ -495,9 +494,7 @@ function commentItemHTML(comment,currentUserId){
 
     const nickname=escapeHtml(comment.profiles?.nickname || "익명");
     const isOwn=currentUserId && comment.author_id===currentUserId;
-    const teacherBadge=comment.profiles?.is_teacher
-        ? `<span class="teacher-badge-sm">선생님</span>`
-        : "";
+    const teacherBadge=window.Taecker?.memberBadgeHTML?.(comment.profiles,"sm") || "";
     const authorHTML=comment.author_id
         ? `<a href="profile.html?id=${encodeURIComponent(comment.author_id)}" class="comment-item-author">${nickname}</a>${teacherBadge}`
         : `<span class="comment-item-author">${nickname}</span>${teacherBadge}`;
@@ -527,7 +524,7 @@ async function loadComments(){
 
         const {data,error}=await client
             .from("comments")
-            .select("id,content,created_at,author_id,profiles(nickname,is_teacher)")
+            .select("id,content,created_at,author_id,profiles(nickname,is_teacher,title)")
             .eq("post_id",postId)
             .order("created_at",{ascending:true});
 

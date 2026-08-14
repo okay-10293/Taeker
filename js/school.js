@@ -16,6 +16,7 @@ const el={
     configWarning:document.getElementById("schoolConfigWarning"),
 
     tabs:document.getElementById("schoolTabs"),
+    sidebarTabLinks:document.querySelectorAll('.sidebar a[data-tab]'),
     panelMeal:document.getElementById("panelMeal"),
     panelTimetable:document.getElementById("panelTimetable"),
     panelSchedule:document.getElementById("panelSchedule"),
@@ -567,6 +568,12 @@ function setActiveTab(tab){
     el.tabs?.querySelectorAll(".feed-tab").forEach((btn)=>{
 
         btn.classList.toggle("active",btn.dataset.tab===tab);
+
+    });
+
+    el.sidebarTabLinks?.forEach((link)=>{
+
+        link.classList.toggle("active",link.dataset.tab===tab);
 
     });
 

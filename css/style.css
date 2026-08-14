@@ -994,6 +994,12 @@ textarea.input{
 
     min-height:140px;
 
+    overflow-wrap:break-word;
+
+    word-break:break-word;
+
+    white-space:pre-wrap;
+
 }
 
 /* =====================================================
@@ -3817,6 +3823,12 @@ textarea.input{
 
     min-height:110px;
 
+    overflow-wrap:break-word;
+
+    word-break:break-word;
+
+    white-space:pre-wrap;
+
 }
 
 .register-card .btn{
@@ -3986,6 +3998,43 @@ textarea.input{
     border-radius:999px;
     background:#DCFCE7;
     color:#15803D;
+    font-size:10px;
+    font-weight:800;
+    line-height:1.5;
+    vertical-align:middle;
+
+}
+
+.title-badge{
+
+    display:inline-flex;
+
+    align-items:center;
+
+    padding:3px 10px;
+
+    margin-top:2px;
+
+    border-radius:999px;
+
+    background:#F5F3FF;
+
+    color:#7C3AED;
+
+    font-size:12px;
+
+    font-weight:700;
+
+}
+
+.title-badge-sm{
+
+    display:inline-flex;
+    align-items:center;
+    padding:1px 6px;
+    border-radius:999px;
+    background:#F5F3FF;
+    color:#7C3AED;
     font-size:10px;
     font-weight:800;
     line-height:1.5;
@@ -5232,6 +5281,11 @@ body.dark .sidebar{
 }
 
 body.dark .sidebar a:hover{
+    background:#1E293B;
+    color:#60A5FA;
+}
+
+body.dark .sidebar a.active{
     background:#1E293B;
     color:#60A5FA;
 }

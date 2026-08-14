@@ -490,9 +490,7 @@ function postCardHTML(post){
     const commentBadge=post.comment_count
         ? `<span class="post-comment-count">[${post.comment_count}]</span>`
         : "";
-    const teacherBadge=post.profiles?.is_teacher
-        ? `<span class="teacher-badge-sm">선생님</span>`
-        : "";
+    const teacherBadge=window.Taecker?.memberBadgeHTML?.(post.profiles,"sm") || "";
     const authorHTML=post.author_id
         ? `<span class="post-row-author" data-author-id="${post.author_id}">${nickname}</span>${teacherBadge}`
         : `<span>${nickname}</span>${teacherBadge}`;
@@ -619,7 +617,7 @@ async function fetchPage(page){
 
         let query=client
             .from("posts")
-            .select("id,title,content,category,view_count,like_count,comment_count,created_at,author_id,profiles(nickname,is_teacher)",{count:"exact"})
+            .select("id,title,content,category,view_count,like_count,comment_count,created_at,author_id,profiles(nickname,is_teacher,title)",{count:"exact"})
             .range(from,to);
 
         if(state.category){

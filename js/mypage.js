@@ -16,6 +16,7 @@ const el={
     avatarInitial:document.getElementById("mypageAvatarInitial"),
     nickname:document.getElementById("mypageNickname"),
     teacherBadge:document.getElementById("mypageTeacherBadge"),
+    titleBadge:document.getElementById("mypageTitleBadge"),
     meta:document.getElementById("mypageMeta"),
     email:document.getElementById("mypageEmail"),
 
@@ -141,7 +142,16 @@ async function loadProfile(){
 
     el.nickname.textContent=profile.nickname || "회원";
 
-    el.teacherBadge?.classList.toggle("hidden",!profile.is_teacher);
+    const hasTitle=!!(profile.title && profile.title.trim());
+
+    if(el.titleBadge){
+
+        el.titleBadge.textContent=hasTitle ? profile.title.trim() : "";
+        el.titleBadge.classList.toggle("hidden",!hasTitle);
+
+    }
+
+    el.teacherBadge?.classList.toggle("hidden",hasTitle || !profile.is_teacher);
 
     const metaParts=[];
 

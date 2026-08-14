@@ -19,6 +19,83 @@ const el={
 
 if(!el.form) return;
 
+const DAILY_LIMIT=3;
+
+/* ---------- DAILY LIMIT HELPERS ---------- */
+
+// KST(Asia/Seoul) 기준 "오늘" 00:00:00의 ISO 문자열을 반환합니다.
+function kstTodayStartISO(){
+
+    const now=new Date();
+    const kstMs=now.getTime()+(now.getTimezoneOffset()*60000)+(9*60*60000);
+    const kst=new Date(kstMs);
+
+    kst.setHours(0,0,0,0);
+
+    // kst는 "로컬 타임존인 척"하는 KST 시각이므로, 다시 UTC 기준 ISO로 변환합니다.
+    const utcMs=kst.getTime()-(9*60*60000);
+
+    return new Date(utcMs).toISOString();
+
+}
+
+async function getTodayInquiryCount(userId){
+
+    const client=getClient();
+
+    if(!client) return 0;
+
+    const {count,error}=await client
+        .from("inquiries")
+        .select("id",{count:"exact",head:true})
+        .eq("user_id",userId)
+        .gte("created_at",kstTodayStartISO());
+
+    if(error){
+
+        console.warn("오늘 문의 건수를 확인하지 못했습니다:",error.message || error);
+
+        return 0;
+
+    }
+
+    return count || 0;
+
+}
+
+async function refreshDailyLimitUI(userId){
+
+    if(!el.submitBtn) return 0;
+
+    const todayCount=await getTodayInquiryCount(userId);
+    const remaining=Math.max(0,DAILY_LIMIT-todayCount);
+
+    if(remaining<=0){
+
+        el.submitBtn.disabled=true;
+
+        const text=el.submitBtn.querySelector(".button-text");
+
+        if(text) text.textContent="오늘의 문의 횟수를 모두 사용했어요";
+
+        window.Taecker?.toast?.(`문의는 하루에 ${DAILY_LIMIT}건까지만 등록할 수 있어요.`);
+
+    }
+
+    else{
+
+        el.submitBtn.disabled=false;
+
+        const text=el.submitBtn.querySelector(".button-text");
+
+        if(text) text.textContent="문의 등록하기";
+
+    }
+
+    return remaining;
+
+}
+
 /* ---------- SUPABASE ---------- */
 
 function getClient(){
@@ -177,21 +254,25 @@ el.form.addEventListener("submit",async(event)=>{
 
     }
 
+    const user=await window.Auth.getCurrentUser();
+
+    if(!user){
+
+        window.Taecker?.toast?.("로그인이 필요합니다.");
+
+        setTimeout(()=>{ location.href="login.html"; },600);
+
+        return;
+
+    }
+
+    const remaining=await refreshDailyLimitUI(user.id);
+
+    if(remaining<=0) return;
+
     setLoading(true);
 
     try{
-
-        const user=await window.Auth.getCurrentUser();
-
-        if(!user){
-
-            window.Taecker?.toast?.("로그인이 필요합니다.");
-
-            setTimeout(()=>{ location.href="login.html"; },600);
-
-            return;
-
-        }
 
         const {error}=await client
             .from("inquiries")
@@ -218,13 +299,27 @@ el.form.addEventListener("submit",async(event)=>{
 
         console.error("문의 등록 실패:",error.message || error);
 
-        window.Taecker?.toast?.("문의 등록에 실패했습니다. 잠시 후 다시 시도해주세요.");
+        if(error?.code==="P0001" || /하루에 문의는/.test(error?.message || "")){
+
+            window.Taecker?.toast?.(`문의는 하루에 ${DAILY_LIMIT}건까지만 등록할 수 있어요.`);
+
+        }
+
+        else{
+
+            window.Taecker?.toast?.("문의 등록에 실패했습니다. 잠시 후 다시 시도해주세요.");
+
+        }
 
     }
 
     finally{
 
         setLoading(false);
+
+        // setLoading(false)가 버튼을 다시 활성화하므로, 오늘 남은 문의 가능 건수를
+        // 최종 반영해 버튼 상태(활성/비활성, 문구)를 정확히 맞춥니다.
+        refreshDailyLimitUI(user.id);
 
     }
 
@@ -251,6 +346,7 @@ window.addEventListener("load",async()=>{
     }
 
     loadMyInquiries(user.id);
+    refreshDailyLimitUI(user.id);
 
 });
 

@@ -17,6 +17,7 @@ const el={
     nickname:document.getElementById("profileNickname"),
     teacherBadge:document.getElementById("profileTeacherBadge"),
     studentBadge:document.getElementById("profileStudentBadge"),
+    titleBadge:document.getElementById("profileTitleBadge"),
     bio:document.getElementById("profileBio"),
 
     postCount:document.getElementById("profilePostCount"),
@@ -169,7 +170,7 @@ async function loadProfile(userId){
 
         const {data:profile,error}=await client
             .from("profiles")
-            .select("nickname,is_teacher,bio,created_at")
+            .select("nickname,is_teacher,title,bio,created_at")
             .eq("id",userId)
             .maybeSingle();
 
@@ -197,8 +198,17 @@ async function loadProfile(userId){
 
         }
 
-        el.teacherBadge?.classList.toggle("hidden",!profile.is_teacher);
-        el.studentBadge?.classList.toggle("hidden",!!profile.is_teacher);
+        const hasTitle=!!(profile.title && profile.title.trim());
+
+        if(el.titleBadge){
+
+            el.titleBadge.textContent=hasTitle ? profile.title.trim() : "";
+            el.titleBadge.classList.toggle("hidden",!hasTitle);
+
+        }
+
+        el.teacherBadge?.classList.toggle("hidden",hasTitle || !profile.is_teacher);
+        el.studentBadge?.classList.toggle("hidden",hasTitle || !!profile.is_teacher);
 
         if(el.bio){
 
