@@ -1217,6 +1217,48 @@ if(form){
 
 }
 /* =====================================================
+   FORGOT PASSWORD
+===================================================== */
+
+const forgotPasswordLink=document.getElementById("forgotPassword");
+
+if(forgotPasswordLink){
+
+    forgotPasswordLink.addEventListener(
+        "click",
+        async(event)=>{
+
+            event.preventDefault();
+
+            const email=sanitize(emailInput?.value || "");
+
+            if(!email){
+                toast("먼저 이메일을 입력한 뒤 눌러주세요.");
+                emailInput?.focus();
+                return;
+            }
+
+            forgotPasswordLink.classList.add("disabled");
+
+            const {error}=await sb.auth.resetPasswordForEmail(
+                email,
+                {redirectTo:`${location.origin}/reset-password.html`}
+            );
+
+            forgotPasswordLink.classList.remove("disabled");
+
+            if(error){
+                toast("메일 전송에 실패했습니다. 잠시 후 다시 시도해주세요.");
+                return;
+            }
+
+            toast("비밀번호 재설정 링크를 이메일로 보냈습니다.");
+
+        }
+    );
+
+}
+/* =====================================================
    AUTH STATE
 ===================================================== */
 

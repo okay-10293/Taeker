@@ -584,33 +584,23 @@ el.tabs?.addEventListener("click",(e)=>{
 
 window.addEventListener("load",async()=>{
 
-    if(!window.Auth){
-
-        return;
-
-    }
-
-    const user=await window.Auth.getCurrentUser();
-
-    if(!user){
-
-        el.loginRequired?.classList.remove("hidden");
-        el.wrap?.classList.add("hidden");
-
-        return;
-
-    }
+    /* 급식/시간표/학사일정은 로그인하지 않아도 볼 수 있다.
+       (예전에는 로그인한 학생에게만 열려 있었지만, 로그인 없이
+       보고 싶어하는 방문자를 위해 항상 schoolWrap을 보여준다.) */
 
     el.loginRequired?.classList.add("hidden");
     el.wrap?.classList.remove("hidden");
 
     /* 시간표 학년/반을 아직 한 번도 직접 선택한 적이 없다면(localStorage에
        저장된 값이 없다면) 회원가입 때 입력한 학년/반을 기본값으로 사용한다.
+       (로그인하지 않은 방문자는 프로필이 없으므로 그냥 1학년 1반을 기본값으로 둔다.)
        이후 사용자가 직접 바꾸면 그 선택이 우선시되어 계속 기억된다. */
 
     if(state.ttGrade===null || state.ttClass===null){
 
-        const profile=await window.Auth.getProfile?.();
+        const user=window.Auth ? await window.Auth.getCurrentUser() : null;
+
+        const profile=user && window.Auth?.getProfile ? await window.Auth.getProfile() : null;
 
         if(state.ttGrade===null){
 
