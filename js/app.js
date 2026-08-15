@@ -430,6 +430,48 @@ window.addEventListener("error",(event)=>{
 
 });
 
+/* ---------- UTIL (window.Taecker에서도 참조하므로 IIFE 밖에 둔다) ---------- */
+
+function escapeHtml(str){
+
+    return String(str ?? "").replace(/[&<>"']/g,(c)=>({
+
+        "&":"&amp;",
+        "<":"&lt;",
+        ">":"&gt;",
+        '"':"&quot;",
+        "'":"&#39;"
+
+    }[c]));
+
+}
+
+/* 닉네임 옆에 붙는 작은 뱃지(선생님 / 관리자가 부여한 칭호) HTML을 만든다.
+   칭호가 있으면 칭호를 우선 표시하고, 없으면 선생님 여부를 표시한다.
+   post.js / board.js / profile.js / mypage.js 등에서 window.Taecker.memberBadgeHTML()로 공용 사용. */
+function memberBadgeHTML(profile,size){
+
+    if(!profile) return "";
+
+    const cls=size==="sm" ? "title-badge-sm" : "title-badge";
+    const teacherCls=size==="sm" ? "teacher-badge-sm" : "teacher-badge";
+
+    if(profile.title && profile.title.trim()){
+
+        return `<span class="${cls}">${escapeHtml(profile.title.trim())}</span>`;
+
+    }
+
+    if(profile.is_teacher){
+
+        return `<span class="${teacherCls}">선생님</span>`;
+
+    }
+
+    return "";
+
+}
+
 /* =====================================================
    GLOBAL OBJECT
 ===================================================== */
@@ -547,46 +589,6 @@ const state={
 };
 
 /* ---------- UTIL ---------- */
-
-function escapeHtml(str){
-
-    return String(str ?? "").replace(/[&<>"']/g,(c)=>({
-
-        "&":"&amp;",
-        "<":"&lt;",
-        ">":"&gt;",
-        '"':"&quot;",
-        "'":"&#39;"
-
-    }[c]));
-
-}
-
-/* 닉네임 옆에 붙는 작은 뱃지(선생님 / 관리자가 부여한 칭호) HTML을 만든다.
-   칭호가 있으면 칭호를 우선 표시하고, 없으면 선생님 여부를 표시한다.
-   post.js / board.js / profile.js / mypage.js 등에서 window.Taecker.memberBadgeHTML()로 공용 사용. */
-function memberBadgeHTML(profile,size){
-
-    if(!profile) return "";
-
-    const cls=size==="sm" ? "title-badge-sm" : "title-badge";
-    const teacherCls=size==="sm" ? "teacher-badge-sm" : "teacher-badge";
-
-    if(profile.title && profile.title.trim()){
-
-        return `<span class="${cls}">${escapeHtml(profile.title.trim())}</span>`;
-
-    }
-
-    if(profile.is_teacher){
-
-        return `<span class="${teacherCls}">선생님</span>`;
-
-    }
-
-    return "";
-
-}
 
 function stripAndTruncate(str,len){
 
