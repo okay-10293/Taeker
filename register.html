@@ -936,11 +936,15 @@ registerForm.addEventListener(
 
                 const {data:codeOk,error:codeError}=
 
-                    await window.sb.rpc(
+                    await withTimeout(
 
-                        "redeem_teacher_code",
+                        window.sb.rpc(
 
-                        {p_code:teacherCode.value.trim()}
+                            "redeem_teacher_code",
+
+                            {p_code:teacherCode.value.trim()}
+
+                        )
 
                     );
 
@@ -970,7 +974,9 @@ registerForm.addEventListener(
 
             }=
 
-            await window.sb.auth.signUp({
+            await withTimeout(
+
+                window.sb.auth.signUp({
 
                 email:
 
@@ -1042,7 +1048,9 @@ registerForm.addEventListener(
 
                 }
 
-            });
+            })
+
+            );
 
             if(error){
 

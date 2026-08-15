@@ -125,22 +125,42 @@ if(rpForm){
         rpMessage.textContent="";
         rpButton.disabled=true;
 
-        const {error}=await window.sb.auth.updateUser({password});
+        try{
 
-        rpButton.disabled=false;
+            const {error}=await withTimeout(
 
-        if(error){
-            toast("비밀번호 변경에 실패했습니다. 다시 시도해주세요.");
-            return;
+                window.sb.auth.updateUser({password})
+
+            );
+
+            if(error){
+                toast("비밀번호 변경에 실패했습니다. 다시 시도해주세요.");
+                return;
+            }
+
+            toast("비밀번호가 변경되었습니다. 다시 로그인해주세요.");
+
+            await withTimeout(window.sb.auth.signOut(),8000).catch(()=>{});
+
+            setTimeout(()=>{
+                location.href="login.html";
+            },900);
+
         }
 
-        toast("비밀번호가 변경되었습니다. 다시 로그인해주세요.");
+        catch(error){
 
-        await window.sb.auth.signOut();
+            toast(error?.message?.includes("시간이 초과")
+                ? error.message
+                : "비밀번호 변경에 실패했습니다. 다시 시도해주세요.");
 
-        setTimeout(()=>{
-            location.href="login.html";
-        },900);
+        }
+
+        finally{
+
+            rpButton.disabled=false;
+
+        }
 
     });
 

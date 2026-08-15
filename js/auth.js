@@ -5,6 +5,38 @@
 "use strict";
 
 /* =====================================================
+   NETWORK TIMEOUT HELPER
+   -----------------------------------------------------
+   네트워크가 응답 없이 멈춰버리는 경우(방화벽/확장 프로그램 간섭/
+   불안정한 연결 등) await가 영원히 끝나지 않아서 로딩 스피너가
+   멈춘 채로 남는 문제를 막기 위한 안전장치.
+   Supabase auth 관련 호출(signInWithPassword, signUp,
+   resetPasswordForEmail, updateUser 등)에 공통으로 사용한다.
+===================================================== */
+
+function withTimeout(promise,ms=15000,message="요청 시간이 초과되었습니다. 네트워크 상태를 확인하고 다시 시도해주세요."){
+
+    let timer=null;
+
+    const timeout=new Promise((_,reject)=>{
+
+        timer=setTimeout(()=>{
+
+            reject(new Error(message));
+
+        },ms);
+
+    });
+
+    return Promise.race([promise,timeout]).finally(()=>{
+
+        clearTimeout(timer);
+
+    });
+
+}
+
+/* =====================================================
    STATE
 ===================================================== */
 
@@ -768,13 +800,17 @@ async function login(){
 
     }=
 
-    await sb.auth.signInWithPassword({
+    await withTimeout(
 
-        email,
+        sb.auth.signInWithPassword({
 
-        password
+            email,
 
-    });
+            password
+
+        })
+
+    );
 
     if(error){
 
@@ -1283,23 +1319,43 @@ if(forgotPasswordForm){
 
             forgotPasswordSubmitBtn.disabled=true;
 
-            const {error}=await sb.auth.resetPasswordForEmail(
-                email,
-                {redirectTo:`${location.origin}/reset-password.html`}
-            );
+            try{
 
-            forgotPasswordSubmitBtn.disabled=false;
+                const {error}=await withTimeout(
 
-            if(error){
-                toast("메일 전송에 실패했습니다. 잠시 후 다시 시도해주세요.");
-                return;
+                    sb.auth.resetPasswordForEmail(
+                        email,
+                        {redirectTo:`${location.origin}/reset-password.html`}
+                    )
+
+                );
+
+                if(error){
+                    toast("메일 전송에 실패했습니다. 잠시 후 다시 시도해주세요.");
+                    return;
+                }
+
+                toast("비밀번호 재설정 링크를 이메일로 보냈습니다.");
+
+                window.Taecker?.closeModal?.("forgotPasswordModal");
+
+                forgotPasswordForm.reset();
+
             }
 
-            toast("비밀번호 재설정 링크를 이메일로 보냈습니다.");
+            catch(error){
 
-            window.Taecker?.closeModal?.("forgotPasswordModal");
+                toast(error?.message?.includes("시간이 초과")
+                    ? error.message
+                    : "메일 전송에 실패했습니다. 잠시 후 다시 시도해주세요.");
 
-            forgotPasswordForm.reset();
+            }
+
+            finally{
+
+                forgotPasswordSubmitBtn.disabled=false;
+
+            }
 
         }
     );
