@@ -5910,8 +5910,8 @@ a.comment-item-author:hover{
 
     display:flex;
     gap:16px;
-    height:calc(100vh - 260px);
-    height:calc(100dvh - 260px);
+    height:calc(100vh - 300px);
+    height:calc(100dvh - 300px);
     min-height:480px;
     margin-top:20px;
 
@@ -6301,7 +6301,6 @@ a.comment-item-author:hover{
     align-items:flex-end;
     gap:10px;
     padding:14px 18px;
-    padding-bottom:calc(14px + env(safe-area-inset-bottom,0px));
     border-top:1px solid var(--border);
     background:var(--card);
 
