@@ -5912,7 +5912,7 @@ a.comment-item-author:hover{
     gap:16px;
     height:calc(100vh - 340px);
     height:calc(100dvh - 340px);
-    min-height:480px;
+    min-height:320px;
     margin-top:20px;
     margin-bottom:24px;
 
@@ -6393,7 +6393,7 @@ body.dark .chat-list-item:hover{
         position:relative;
         height:calc(100vh - 230px);
         height:calc(100dvh - 230px);
-        min-height:420px;
+        min-height:320px;
         gap:0;
 
     }
