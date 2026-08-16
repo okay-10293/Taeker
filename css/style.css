@@ -5910,8 +5910,8 @@ a.comment-item-author:hover{
 
     display:flex;
     gap:16px;
-    height:calc(100vh - 340px);
-    height:calc(100dvh - 340px);
+    height:calc(100vh - 260px);
+    height:calc(100dvh - 260px);
     min-height:320px;
     margin-top:20px;
     margin-bottom:24px;
