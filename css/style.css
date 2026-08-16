@@ -5900,21 +5900,33 @@ a.comment-item-author:hover{
    1:1 채팅 (chat.html)
 ===================================================== */
 
+body.chat-page{
+
+    display:flex;
+    flex-direction:column;
+    min-height:100vh;
+    min-height:100dvh;
+
+}
+
 .chat-container{
 
-    padding-bottom:24px;
+    flex:1;
+    display:flex;
+    flex-direction:column;
+    min-height:0;
+    padding-bottom:72px; /* 하단 고정 메뉴(.bottom-nav) 높이만큼 항상 확보 */
 
 }
 
 .chat-layout{
 
+    flex:1;
+    min-height:0;
     display:flex;
     gap:16px;
-    height:calc(100vh - 240px);
-    height:calc(100dvh - 240px);
-    min-height:320px;
     margin-top:20px;
-    margin-bottom:40px;
+    margin-bottom:28px; /* 하단 고정 메뉴 위로 보이는 여백 */
 
 }
 
@@ -6395,9 +6407,6 @@ body.dark .chat-list-item:hover{
     .chat-layout{
 
         position:relative;
-        height:calc(100vh - 230px);
-        height:calc(100dvh - 230px);
-        min-height:320px;
         gap:0;
 
     }
