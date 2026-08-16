@@ -6229,8 +6229,8 @@ a.comment-item-author:hover{
     display:flex;
     flex-direction:column;
     align-items:flex-start;
-    max-width:72%;
-    margin-top:12px;
+    max-width:68%;
+    margin-top:10px;
 
 }
 
@@ -6251,10 +6251,10 @@ a.comment-item-author:hover{
 
     background:#F3F4F6;
     color:var(--text);
-    padding:10px 14px;
-    border-radius:16px 16px 16px 4px;
-    font-size:14px;
-    line-height:1.55;
+    padding:8px 12px;
+    border-radius:14px 14px 14px 4px;
+    font-size:13.5px;
+    line-height:1.45;
     word-break:break-word;
     white-space:pre-wrap;
     box-shadow:0 1px 2px rgba(15,23,42,.05);
@@ -6263,19 +6263,19 @@ a.comment-item-author:hover{
 
 .chat-bubble-row-grouped .chat-bubble{
 
-    border-radius:16px;
+    border-radius:14px;
 
 }
 
 .chat-bubble-row-mine .chat-bubble{
 
-    border-radius:16px 16px 4px 16px;
+    border-radius:14px 14px 4px 14px;
 
 }
 
 .chat-bubble-row-mine.chat-bubble-row-grouped .chat-bubble{
 
-    border-radius:16px;
+    border-radius:14px;
 
 }
 
