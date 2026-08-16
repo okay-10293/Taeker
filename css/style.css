@@ -5910,10 +5910,11 @@ a.comment-item-author:hover{
 
     display:flex;
     gap:16px;
-    height:calc(100vh - 300px);
-    height:calc(100dvh - 300px);
+    height:calc(100vh - 340px);
+    height:calc(100dvh - 340px);
     min-height:480px;
     margin-top:20px;
+    margin-bottom:24px;
 
 }
 
