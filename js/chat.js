@@ -267,9 +267,7 @@ function messageBubbleHTML(msg,grouped){
 
     return `
         <div class="chat-bubble-row ${mine ? "chat-bubble-row-mine" : ""} ${grouped ? "chat-bubble-row-grouped" : ""}">
-            <div class="chat-bubble ${mine ? "chat-bubble-mine" : ""}">
-                <span class="chat-bubble-text">${escapeHtml(msg.content)}</span>
-            </div>
+            <div class="chat-bubble ${mine ? "chat-bubble-mine" : ""}"><span class="chat-bubble-text">${escapeHtml(msg.content)}</span></div>
             <span class="chat-bubble-time">${formatMsgTime(msg.created_at)}</span>
         </div>
     `;
