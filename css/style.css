@@ -5927,8 +5927,8 @@ body.chat-page{
     min-height:0;
     display:flex;
     gap:16px;
-    margin-top:20px;
-    margin-bottom:32px; /* 하단 고정 메뉴 위로 보이는 여백 */
+    margin-top:12px;
+    margin-bottom:14px; /* 하단 고정 메뉴 위로 보이는 여백 */
 
 }
 
