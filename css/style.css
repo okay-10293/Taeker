@@ -5902,40 +5902,25 @@ a.comment-item-author:hover{
 
 body.chat-page{
 
-    display:flex;
-    flex-direction:column;
-    height:100vh;
-    height:100dvh;
-    overflow:hidden;
+    min-height:100vh;
+    min-height:100dvh;
 
 }
 
 .chat-container{
 
-    flex:1;
     width:100%;
-    display:flex;
-    flex-direction:column;
-    min-height:0;
-    padding-top:8px;
-    padding-bottom:72px; /* 하단 고정 메뉴(.bottom-nav) 높이만큼 항상 확보 */
-
-}
-
-.chat-container .board-title{
-
-    display:none;
+    padding-bottom:40px;
 
 }
 
 .chat-layout{
 
-    flex:1;
-    min-height:0;
     display:flex;
     gap:16px;
-    margin-top:0;
-    margin-bottom:10px; /* 하단 고정 메뉴 위로 보이는 여백 */
+    height:700px;
+    margin-top:20px;
+    margin-bottom:20px;
 
 }
 
