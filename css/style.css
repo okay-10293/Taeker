@@ -5921,13 +5921,32 @@ body.chat-page{
 
 }
 
+.chat-container .board-title{
+
+    margin-bottom:8px;
+
+}
+
+.chat-container .board-title h2{
+
+    font-size:20px;
+    margin-bottom:2px;
+
+}
+
+.chat-container .board-title p{
+
+    display:none;
+
+}
+
 .chat-layout{
 
     flex:1;
     min-height:0;
     display:flex;
     gap:16px;
-    margin-top:12px;
+    margin-top:8px;
     margin-bottom:14px; /* 하단 고정 메뉴 위로 보이는 여백 */
 
 }
