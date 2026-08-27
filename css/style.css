@@ -5917,24 +5917,12 @@ body.chat-page{
     display:flex;
     flex-direction:column;
     min-height:0;
+    padding-top:8px;
     padding-bottom:72px; /* 하단 고정 메뉴(.bottom-nav) 높이만큼 항상 확보 */
 
 }
 
 .chat-container .board-title{
-
-    margin-bottom:8px;
-
-}
-
-.chat-container .board-title h2{
-
-    font-size:20px;
-    margin-bottom:2px;
-
-}
-
-.chat-container .board-title p{
 
     display:none;
 
@@ -5946,8 +5934,8 @@ body.chat-page{
     min-height:0;
     display:flex;
     gap:16px;
-    margin-top:8px;
-    margin-bottom:14px; /* 하단 고정 메뉴 위로 보이는 여백 */
+    margin-top:0;
+    margin-bottom:10px; /* 하단 고정 메뉴 위로 보이는 여백 */
 
 }
 
