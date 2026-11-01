@@ -98,10 +98,6 @@
             <span>글쓰기</span>
         </button>
 
-        <div class="auth-area" id="authArea">
-            <a href="login.html" class="btn btn-ghost">로그인</a>
-            <a href="register.html" class="btn">회원가입</a>
-        </div>
 
         <div class="dropdown hidden" id="profileDropdown">
             <button class="profile-trigger" id="profileBtn" aria-haspopup="true" aria-expanded="false">
@@ -127,8 +123,6 @@
                     </div>
                 </div>
                 <div class="dropdown-divider"></div>
-                <a href="mypage.html" class="dropdown-item">마이페이지</a>
-                <a href="#" class="dropdown-item" data-soon="설정 기능은 준비 중입니다.">설정</a>
                 <div class="dropdown-divider"></div>
                 <button class="dropdown-item dropdown-item-danger" id="logoutBtn">로그아웃</button>
             </div>
@@ -162,9 +156,8 @@
             <li><a href="school.html?tab=timetable" data-tab="timetable">시간표</a></li>
             <li><a href="school.html?tab=meal" data-tab="meal">급식</a></li>
             <li><a href="school.html?tab=schedule" data-tab="schedule">학사일정</a></li>
-            <li><a href="chat.html">1:1 대화</a></li>
-            <li><a href="mypage.html">마이페이지</a></li>
             <li><a href="inquiry.html">문의하기</a></li>
+            <li><a href="login.html" style="opacity:.55;font-size:.85em;">관리자</a></li>
         </ul>
     </nav>
 </aside>
@@ -178,13 +171,6 @@
         <h2>학교 정보</h2>
         <p>태성고등학교의 급식, 시간표, 학사일정을 확인하세요.</p>
     </section>
-
-    <!-- 로그인 필요 안내 (비로그인 상태) -->
-    <div class="card school-login-required hidden" id="schoolLoginRequired">
-        <h3>로그인이 필요합니다</h3>
-        <p>급식·시간표·학사일정 정보는 로그인한 학생만 확인할 수 있습니다.</p>
-        <a href="login.html" class="btn" style="margin-top:10px;display:inline-flex;">로그인하러 가기</a>
-    </div>
 
     <div class="school-wrap hidden" id="schoolWrap">
 
@@ -277,9 +263,8 @@
 
         <!-- ---------- 설정 안 됨 안내 (관리자에게만 표시) ---------- -->
         <div class="card school-config-warning hidden" id="schoolConfigWarning">
-            <h3><svg width="16" height="16" viewBox="0 0 24 24" fill="none" style="vertical-align:-3px;margin-right:5px;"><path d="M12 3L22 20H2L12 3Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M12 10V14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="17" r="1" fill="currentColor"/></svg>학교 정보 연동이 아직 설정되지 않았습니다</h3>
-            <p>NEIS Open API 인증키와 학교 코드가 등록되어야 급식·시간표·학사일정이 표시됩니다. 관리자 패널 &gt; 학교설정 탭에서 등록해주세요.</p>
-            <a href="admin.html" class="btn btn-outline" style="margin-top:10px;display:inline-flex;">관리자 패널로 이동</a>
+            <h3><svg width="16" height="16" viewBox="0 0 24 24" fill="none" style="vertical-align:-3px;margin-right:5px;"><path d="M12 3L22 20H2L12 3Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M12 10V14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="17" r="1" fill="currentColor"/></svg>아직 학교 정보가 설정되지 않았어요</h3>
+            <p>급식·시간표·학사일정을 불러오려면 학교 정보 설정이 필요해요. 설정이 끝나면 자동으로 표시됩니다.</p>
         </div>
 
     </div>
@@ -317,20 +302,20 @@
         <span>시간표</span>
     </a>
 
-    <a href="chat.html">
+    <a href="school.html?tab=meal">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-            <path d="M4 5H20V16H8L4 20V5Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
-            <path d="M8.5 10H15.5M8.5 13H13" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <path d="M7 3V11M4 3V8C4 9.7 5.3 11 7 11C8.7 11 10 9.7 10 8V3M7 11V21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <path d="M17 21V3C14.8 4.5 14 7 14 10C14 12 15.2 13 17 13" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
-        <span>채팅</span>
+        <span>급식</span>
     </a>
 
-    <a href="#" id="bottomNavMy">
+    <a href="inquiry.html">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-            <circle cx="12" cy="8" r="4" stroke="currentColor" stroke-width="2"/>
-            <path d="M4 20C4 16.7 7.6 14 12 14C16.4 14 20 16.7 20 20" stroke="currentColor" stroke-width="2"/>
+            <path d="M4 5H20V16H8L4 20V5Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+            <path d="M12 8.5V12M12 14.3V14.4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
         </svg>
-        <span>마이</span>
+        <span>문의</span>
     </a>
 </nav>
 

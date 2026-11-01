@@ -67,10 +67,6 @@
     .status-pending{ background:#FEF3C7; color:#B45309; }
     .status-resolved{ background:#DCFCE7; color:#15803D; }
     .status-rejected{ background:#F3F4F6; color:#6B7280; }
-    .status-cleared{ background:#DBEAFE; color:#1D4ED8; }
-    .status-banned{ background:#FEE2E2; color:#B91C1C; }
-    .status-suspended{ background:#FFEDD5; color:#C2410C; }
-    .status-active{ background:#DCFCE7; color:#15803D; }
     .admin-actions{
         display:flex;
         gap:8px;
@@ -110,51 +106,6 @@
         flex-wrap:wrap;
     }
     .admin-search-row .input{ flex:1; min-width:160px; }
-    .admin-rename-row{
-        display:flex;
-        gap:8px;
-        margin-top:10px;
-        flex-wrap:wrap;
-    }
-    .admin-rename-row.hidden{ display:none; }
-    .admin-rename-row .input{
-        flex:1;
-        min-width:140px;
-        padding:9px 12px;
-        font-size:13px;
-    }
-    .admin-suspend-row{
-        display:flex;
-        align-items:center;
-        gap:8px;
-        margin-top:10px;
-        flex-wrap:wrap;
-    }
-    .admin-suspend-row.hidden{ display:none; }
-    .admin-suspend-row .input{
-        width:80px;
-        flex:none;
-        padding:9px 12px;
-        font-size:13px;
-    }
-    .admin-suspend-row textarea.input{
-        width:100%;
-        flex:1 1 100%;
-        min-width:160px;
-        resize:vertical;
-        font-family:inherit;
-    }
-    .admin-suspend-row-buttons{
-        display:flex;
-        gap:8px;
-        flex-wrap:wrap;
-        width:100%;
-    }
-    .admin-suspend-unit{
-        color:var(--sub);
-        font-size:13px;
-        font-weight:600;
-    }
     .admin-memo-row{
         display:flex;
         align-items:flex-start;
@@ -175,50 +126,32 @@
         color:var(--sub);
         padding:32px 0;
     }
-    /* ---------- 회원 목록: 기본 접힘, 눌러야 펼쳐지는 컴팩트 행 ---------- */
-    .admin-member-item{
-        padding:0;
-        overflow:hidden;
+    /* ---------- 신고 대상 미리보기 / 게시글 관리 ---------- */
+    .admin-preview{
+        background:var(--background);
+        border:1px solid var(--border);
+        border-radius:10px;
+        padding:10px 12px;
+        margin-bottom:6px;
+        font-size:13px;
+        color:var(--text);
+        white-space:pre-wrap;
+        word-break:break-word;
     }
-    .admin-member-summary{
-        width:100%;
-        display:flex;
-        justify-content:space-between;
-        align-items:center;
-        gap:12px;
-        padding:12px 16px;
-        background:none;
-        border:none;
-        text-align:left;
-        cursor:pointer;
-        font:inherit;
-        color:inherit;
-    }
-    .admin-member-summary:hover{
-        background:#F9FAFB;
-    }
-    .admin-member-summary-right{
-        display:flex;
-        align-items:center;
-        gap:10px;
-        flex-shrink:0;
-    }
-    .admin-member-chevron{
+    .admin-preview-gone{
         color:var(--sub);
-        font-size:12px;
-        transition:transform .15s ease;
+        text-align:center;
     }
-    .admin-member-detail{
-        padding:0 16px 16px;
+    .admin-comments{
+        margin-top:12px;
+        padding-top:12px;
         border-top:1px solid var(--border);
-        margin-top:0;
-        padding-top:14px;
     }
-    .admin-member-detail.hidden{
-        display:none;
-    }
-    .admin-member-item .admin-item-sub{
-        margin-top:2px;
+    .admin-comments.hidden{ display:none; }
+    .admin-actions a.btn{
+        display:inline-flex;
+        align-items:center;
+        text-decoration:none;
     }
     @media (max-width:480px){
         .admin-item-top{
@@ -278,10 +211,6 @@
             </svg>
         </button>
 
-        <div class="auth-area" id="authArea">
-            <a href="login.html" class="btn btn-ghost">로그인</a>
-            <a href="register.html" class="btn">회원가입</a>
-        </div>
 
         <div class="dropdown hidden" id="profileDropdown">
             <button class="profile-trigger" id="profileBtn" aria-haspopup="true" aria-expanded="false">
@@ -307,7 +236,6 @@
                     </div>
                 </div>
                 <div class="dropdown-divider"></div>
-                <a href="mypage.html" class="dropdown-item">마이페이지</a>
                 <div class="dropdown-divider"></div>
                 <button class="dropdown-item dropdown-item-danger" id="logoutBtn">로그아웃</button>
             </div>
@@ -325,9 +253,8 @@
         <ul>
             <li><a href="index.html">홈</a></li>
             <li><a href="board.html">게시판</a></li>
-            <li><a href="chat.html">1:1 대화</a></li>
-            <li><a href="mypage.html">마이페이지</a></li>
             <li><a href="inquiry.html">문의하기</a></li>
+            <li><a href="login.html" style="opacity:.55;font-size:.85em;">관리자</a></li>
             <li><a href="admin.html" class="active">관리자 패널</a></li>
         </ul>
     </nav>
@@ -340,7 +267,7 @@
 
     <section class="board-title">
         <h2>관리자 패널</h2>
-        <p>신고 내역을 확인하고 계정을 정지할 수 있습니다.</p>
+        <p>신고 내역 확인, 게시글·댓글 관리, 공지사항 작성, 문의 답변을 할 수 있습니다.</p>
     </section>
 
     <!-- 접근 불가 (비로그인 / 비관리자) -->
@@ -353,9 +280,8 @@
 
         <div class="admin-tabs">
             <button class="admin-tab active" data-tab="reports">신고 내역</button>
-            <button class="admin-tab" data-tab="members">회원 검색 / 정지</button>
+            <button class="admin-tab" data-tab="posts">게시글 관리</button>
             <button class="admin-tab" data-tab="notices">공지사항</button>
-            <button class="admin-tab" data-tab="impersonation">학번 도용 신고</button>
             <button class="admin-tab" data-tab="inquiries">문의하기</button>
             <button class="admin-tab" data-tab="school">학교설정</button>
         </div>
@@ -376,17 +302,19 @@
 
         </section>
 
-        <!-- ================= 회원 검색 / 정지 ================= -->
-        <section class="admin-panel" id="panelMembers">
+        <!-- ================= 게시글 관리 ================= -->
+        <section class="admin-panel" id="panelPosts">
 
             <div class="admin-search-row">
-                <input type="text" class="input" id="memberSearchInput" placeholder="닉네임/학번으로 목록 필터링">
-                <button class="btn" id="memberSearchBtn">새로고침</button>
+                <p class="admin-item-sub" style="flex:1;align-self:center;margin:0;">최신 글부터 보여줘요. 글/댓글을 삭제할 수 있어요.</p>
+                <button class="btn" id="postRefreshBtn">새로고침</button>
             </div>
 
-            <div id="memberList">
+            <div id="postList">
                 <div class="admin-empty">불러오는 중...</div>
             </div>
+
+            <button class="btn btn-outline btn-block hidden" id="postMoreBtn" style="margin-top:6px;">더보기</button>
 
         </section>
 
@@ -413,23 +341,6 @@
             </div>
 
             <div id="noticeList">
-                <div class="admin-empty">불러오는 중...</div>
-            </div>
-
-        </section>
-
-        <!-- ================= 학번 도용 신고 ================= -->
-        <section class="admin-panel" id="panelImpersonation">
-
-            <div class="admin-tabs" style="margin-bottom:16px;">
-                <button class="admin-tab active" data-impersonation-status="pending">대기중</button>
-                <button class="admin-tab" data-impersonation-status="resolved">처리완료</button>
-                <button class="admin-tab" data-impersonation-status="not_impersonation">도용 아님</button>
-                <button class="admin-tab" data-impersonation-status="rejected">반려됨</button>
-                <button class="admin-tab" data-impersonation-status="all">전체</button>
-            </div>
-
-            <div id="impersonationList">
                 <div class="admin-empty">불러오는 중...</div>
             </div>
 
@@ -513,20 +424,20 @@
         <span>게시판</span>
     </a>
 
-    <a href="chat.html">
+    <a href="school.html?tab=meal">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-            <path d="M4 5H20V16H8L4 20V5Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
-            <path d="M8.5 10H15.5M8.5 13H13" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <path d="M7 3V11M4 3V8C4 9.7 5.3 11 7 11C8.7 11 10 9.7 10 8V3M7 11V21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <path d="M17 21V3C14.8 4.5 14 7 14 10C14 12 15.2 13 17 13" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
-        <span>채팅</span>
+        <span>급식</span>
     </a>
 
-    <a href="#" id="bottomNavMy">
+    <a href="inquiry.html">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-            <circle cx="12" cy="8" r="4" stroke="currentColor" stroke-width="2"/>
-            <path d="M4 20C4 16.7 7.6 14 12 14C16.4 14 20 16.7 20 20" stroke="currentColor" stroke-width="2"/>
+            <path d="M4 5H20V16H8L4 20V5Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+            <path d="M12 8.5V12M12 14.3V14.4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
         </svg>
-        <span>마이</span>
+        <span>문의</span>
     </a>
 
     <a href="admin.html" class="active">

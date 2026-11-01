@@ -71,10 +71,6 @@
             </div>
         </div>
 
-        <div class="auth-area" id="authArea">
-            <a href="login.html" class="btn btn-ghost">로그인</a>
-            <a href="register.html" class="btn">회원가입</a>
-        </div>
 
         <div class="dropdown hidden" id="profileDropdown">
             <button class="profile-trigger" id="profileBtn" aria-haspopup="true" aria-expanded="false">
@@ -100,8 +96,6 @@
                     </div>
                 </div>
                 <div class="dropdown-divider"></div>
-                <a href="mypage.html" class="dropdown-item">마이페이지</a>
-                <a href="#" class="dropdown-item" data-soon="설정 기능은 준비 중입니다.">설정</a>
                 <div class="dropdown-divider"></div>
                 <button class="dropdown-item dropdown-item-danger" id="logoutBtn">로그아웃</button>
             </div>
@@ -135,9 +129,8 @@
             <li><a href="school.html?tab=timetable">시간표</a></li>
             <li><a href="school.html?tab=meal">급식</a></li>
             <li><a href="school.html?tab=schedule">학사일정</a></li>
-            <li><a href="chat.html">1:1 대화</a></li>
-            <li><a href="mypage.html">마이페이지</a></li>
             <li><a href="inquiry.html" class="active">문의하기</a></li>
+            <li><a href="login.html" style="opacity:.55;font-size:.85em;">관리자</a></li>
         </ul>
     </nav>
 </aside>
@@ -153,6 +146,21 @@
     </section>
 
     <form class="card write-card" id="inquiryForm">
+
+        <div class="form-group">
+            <label for="inquiryName">이름 <span style="font-weight:400;color:var(--sub);">(선택)</span></label>
+            <div class="input-box">
+                <input type="text" id="inquiryName" class="input" maxlength="20" placeholder="이름 또는 닉네임" autocomplete="off">
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="inquiryContact">연락처 <span style="font-weight:400;color:var(--sub);">(선택)</span></label>
+            <div class="input-box">
+                <input type="text" id="inquiryContact" class="input" maxlength="100" placeholder="답변 받을 이메일 / 인스타 등" autocomplete="off">
+            </div>
+            <p class="input-message">적어두면 운영진이 직접 연락할 수도 있어요. 안 적어도 접수번호로 답변을 확인할 수 있어요.</p>
+        </div>
 
         <div class="form-group">
             <label for="inquiryContent">문의 내용</label>
@@ -177,11 +185,22 @@
 
     </form>
 
+    <!-- 접수 완료: 접수번호 안내 -->
+    <div class="card hidden" id="inquiryReceipt" style="margin-top:20px;text-align:center;">
+        <p style="font-size:14px;color:var(--sub);">문의가 접수되었어요. 접수번호</p>
+        <p id="inquiryReceiptCode" style="font-size:28px;font-weight:800;letter-spacing:2px;margin:8px 0;user-select:all;"></p>
+        <button type="button" class="btn btn-outline" id="inquiryCopyBtn">접수번호 복사</button>
+        <p style="font-size:13px;color:var(--sub);margin-top:12px;line-height:1.6;">이 번호가 있어야 답변을 확인할 수 있어요.<br>꼭 저장해두세요!</p>
+    </div>
+
     <section style="margin-top:28px;">
-        <h3 style="font-size:16px;font-weight:800;margin-bottom:12px;">내 문의 내역</h3>
-        <div id="myInquiryList">
-            <p class="widget-empty">로그인하면 내가 남긴 문의 내역을 볼 수 있어요.</p>
-        </div>
+        <h3 style="font-size:16px;font-weight:800;margin-bottom:12px;">답변 확인</h3>
+        <form class="card" id="inquiryLookupForm" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+            <input type="text" id="inquiryLookupCode" class="input" maxlength="20" placeholder="접수번호 입력" autocomplete="off" style="flex:1;min-width:160px;text-transform:uppercase;">
+            <button type="submit" class="btn" id="inquiryLookupBtn">조회</button>
+        </form>
+        <div id="inquiryMyCodes" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:10px;"></div>
+        <div id="myInquiryList" style="margin-top:12px;"></div>
     </section>
 
 </main>
@@ -211,20 +230,20 @@
         <span>시간표</span>
     </a>
 
-    <a href="chat.html">
+    <a href="school.html?tab=meal">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-            <path d="M4 5H20V16H8L4 20V5Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
-            <path d="M8.5 10H15.5M8.5 13H13" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <path d="M7 3V11M4 3V8C4 9.7 5.3 11 7 11C8.7 11 10 9.7 10 8V3M7 11V21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <path d="M17 21V3C14.8 4.5 14 7 14 10C14 12 15.2 13 17 13" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
-        <span>채팅</span>
+        <span>급식</span>
     </a>
 
-    <a href="#" id="bottomNavMy">
+    <a href="inquiry.html">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-            <circle cx="12" cy="8" r="4" stroke="currentColor" stroke-width="2"/>
-            <path d="M4 20C4 16.7 7.6 14 12 14C16.4 14 20 16.7 20 20" stroke="currentColor" stroke-width="2"/>
+            <path d="M4 5H20V16H8L4 20V5Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+            <path d="M12 8.5V12M12 14.3V14.4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
         </svg>
-        <span>마이</span>
+        <span>문의</span>
     </a>
 </nav>
 

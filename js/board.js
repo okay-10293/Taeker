@@ -53,9 +53,10 @@ const CATEGORY_LABEL={
     free:"자유게시판",
     question:"질문게시판",
     info:"정보게시판",
-    grade1:"학년별 게시판",
-    grade2:"학년별 게시판",
-    grade3:"학년별 게시판"
+    grade:"학년별 게시판",
+    grade1:"1학년",
+    grade2:"2학년",
+    grade3:"3학년"
 
 };
 
@@ -65,9 +66,10 @@ const CATEGORY_DESC={
     free:"친구들과 편하게 일상 이야기를 나눠보세요.",
     question:"익명으로 다른 사람들에게 무엇이든 물어보세요.",
     info:"수행평가나 학교 행사처럼 도움이 되는 정보를 나눠보세요.",
-    grade1:"같은 학년 친구들끼리만 편하게 이야기해보세요.",
-    grade2:"같은 학년 친구들끼리만 편하게 이야기해보세요.",
-    grade3:"같은 학년 친구들끼리만 편하게 이야기해보세요."
+    grade:"학년별로 모여서 편하게 이야기해보세요.",
+    grade1:"1학년 친구들과 편하게 이야기해보세요.",
+    grade2:"2학년 친구들과 편하게 이야기해보세요.",
+    grade3:"3학년 친구들과 편하게 이야기해보세요."
 
 };
 
@@ -196,44 +198,15 @@ function syncCategoryChips(){
 
 }
 
-/* 로그인한 학생 본인 학년의 게시판 칩만 추가한다. (다른 학년 칩은 아예 만들지도 않음) */
+/* 학년별 게시판 칩 (1/2/3학년) — 누구나 볼 수 있음 */
 
-async function injectGradeChip(){
+function injectGradeChip(){
 
-    if(!window.Auth) return;
+    if(!el.categoryBar) return;
 
-    try{
+    const icon='<svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M2 9L12 4L22 9L12 14L2 9Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M6 11V16C6 17.5 8.5 19 12 19C15.5 19 18 17.5 18 16V11" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
 
-        const user=await window.Auth.getCurrentUser();
-
-        if(!user){
-
-            /* 로그인 전 상태로 "학년별 게시판" 링크를 탔다면 전체보기로 되돌린다 */
-            if(state.category==="grade") state.category="";
-
-            return;
-
-        }
-
-        const profile=await window.Auth.getProfile();
-
-        const grade=profile?.grade;
-
-        if(!grade || grade<1 || grade>3){
-
-            /* 학년 정보가 없는 계정(선생님 등)이면 학년별 게시판이 없으므로 전체보기로 되돌린다 */
-            if(state.category==="grade") state.category="";
-
-            return;
-
-        }
-
-        const category=`grade${grade}`;
-
-        /* 사이드바 "학년별 게시판" 링크(category=grade)로 들어온 경우, 내 학년 카테고리로 치환 */
-        if(state.category==="grade") state.category=category;
-
-        if(!el.categoryBar) return;
+    ["grade1","grade2","grade3"].forEach((category)=>{
 
         if(el.categoryBar.querySelector(`[data-category="${category}"]`)) return;
 
@@ -241,19 +214,13 @@ async function injectGradeChip(){
 
         chip.className="chip";
         chip.dataset.category=category;
-        chip.innerHTML='<svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M2 9L12 4L22 9L12 14L2 9Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M6 11V16C6 17.5 8.5 19 12 19C15.5 19 18 17.5 18 16V11" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>'+CATEGORY_LABEL[category];
+        chip.innerHTML=icon+CATEGORY_LABEL[category];
 
         el.categoryBar.appendChild(chip);
 
-        syncCategoryChips();
+    });
 
-    }
-
-    catch(error){
-
-        console.warn("학년 게시판 칩을 추가하지 못했습니다:",error.message || error);
-
-    }
+    syncCategoryChips();
 
 }
 
@@ -402,23 +369,6 @@ el.adminBulkDeleteBtn?.addEventListener("click",async()=>{
 
 });
 
-el.postList?.addEventListener("click",(e)=>{
-
-    const authorEl=e.target.closest(".post-row-author");
-
-    if(!authorEl) return;
-
-    const authorId=authorEl.dataset.authorId;
-
-    if(!authorId) return;
-
-    e.preventDefault();
-    e.stopPropagation();
-
-    location.href=`profile.html?id=${encodeURIComponent(authorId)}`;
-
-});
-
 el.categoryBar?.addEventListener("click",(e)=>{
 
     const chip=e.target.closest(".chip");
@@ -485,15 +435,12 @@ el.searchInput?.addEventListener("input",debounce((e)=>{
 
 function postCardHTML(post){
 
-    const nickname=escapeHtml(post.profiles?.nickname || post.author_name || "익명");
+    const nickname=escapeHtml(post.nickname || "익명");
     const categoryLabel=CATEGORY_LABEL[post.category] || "일반";
     const commentBadge=post.comment_count
         ? `<span class="post-comment-count">[${post.comment_count}]</span>`
         : "";
-    const teacherBadge=window.Taecker?.memberBadgeHTML?.(post.profiles,"sm") || "";
-    const authorHTML=post.author_id
-        ? `<span class="post-row-author" data-author-id="${post.author_id}">${nickname}</span>${teacherBadge}`
-        : `<span>${nickname}</span>${teacherBadge}`;
+    const authorHTML=`<span>${nickname}</span>`;
 
     const checkboxHTML=state.isAdmin
         ? `<span class="post-select-wrap">
@@ -617,10 +564,16 @@ async function fetchPage(page){
 
         let query=client
             .from("posts")
-            .select("id,title,content,category,view_count,like_count,comment_count,created_at,author_id,profiles(nickname,is_teacher,title)",{count:"exact"})
+            .select("id,title,content,category,view_count,like_count,comment_count,created_at,nickname",{count:"exact"})
             .range(from,to);
 
-        if(state.category){
+        if(state.category==="grade"){
+
+            query=query.in("category",["grade1","grade2","grade3"]);
+
+        }
+
+        else if(state.category){
 
             query=query.eq("category",state.category);
 

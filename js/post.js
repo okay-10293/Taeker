@@ -32,7 +32,10 @@ const el={
     commentSubmitBtn:document.getElementById("commentSubmitBtn"),
     commentList:document.getElementById("commentList"),
 
+    editPostBtn:document.getElementById("editPostBtn"),
     deletePostBtn:document.getElementById("deletePostBtn"),
+    commentNickname:document.getElementById("commentNickname"),
+    commentPassword:document.getElementById("commentPassword"),
     reportPostBtn:document.getElementById("reportPostBtn"),
     reportModal:document.getElementById("reportModal"),
     reportModalTarget:document.getElementById("reportModalTarget"),
@@ -53,9 +56,9 @@ const CATEGORY_LABEL={
     question:"질문게시판",
     info:"정보게시판",
 
-    grade1:"학년별 게시판",
-    grade2:"학년별 게시판",
-    grade3:"학년별 게시판"
+    grade1:"1학년 게시판",
+    grade2:"2학년 게시판",
+    grade3:"3학년 게시판"
 
 };
 
@@ -66,7 +69,7 @@ const state={
 
     post:null,
     liked:false,
-    currentUser:null,
+    isAdmin:false,
     reportTarget:null
 
 };
@@ -123,6 +126,90 @@ function showError(message){
 
 }
 
+/* ---------- 입력 팝업 (비밀번호 등) ----------
+   window.prompt()는 모바일/인앱 브라우저에서 막히는 경우가 있어 직접 만든 팝업을 쓴다. */
+
+function askDialog({title,desc,fields,okText}){
+
+    return new Promise((resolve)=>{
+
+        const wrapEl=document.createElement("div");
+
+        wrapEl.className="modal active";
+
+        wrapEl.innerHTML=`
+            <div class="modal-content">
+                <h3 style="margin-bottom:6px;">${escapeHtml(title)}</h3>
+                ${desc ? `<p style="color:var(--sub);font-size:13px;margin-bottom:14px;">${escapeHtml(desc)}</p>` : ""}
+                <form>
+                    ${fields.map((f)=>`
+                        <div class="form-group">
+                            <label>${escapeHtml(f.label)}</label>
+                            ${f.multiline
+                                ? `<textarea class="input" name="${f.key}" rows="8" maxlength="${f.max || 4000}"></textarea>`
+                                : `<input class="input" name="${f.key}" type="${f.type || "text"}" maxlength="${f.max || 100}" autocomplete="off">`}
+                        </div>`).join("")}
+                    <div class="write-actions">
+                        <button type="button" class="btn btn-outline" data-cancel>취소</button>
+                        <button type="submit" class="btn">${escapeHtml(okText || "확인")}</button>
+                    </div>
+                </form>
+            </div>`;
+
+        document.body.appendChild(wrapEl);
+
+        const form=wrapEl.querySelector("form");
+
+        fields.forEach((f)=>{ if(f.value!=null) form.elements[f.key].value=f.value; });
+
+        const first=form.elements[fields[0].key];
+
+        setTimeout(()=>first?.focus(),50);
+
+        function close(result){
+
+            wrapEl.remove();
+            resolve(result);
+
+        }
+
+        wrapEl.querySelector("[data-cancel]").addEventListener("click",()=>close(null));
+        wrapEl.addEventListener("click",(e)=>{ if(e.target===wrapEl) close(null); });
+
+        form.addEventListener("submit",(e)=>{
+
+            e.preventDefault();
+
+            const out={};
+
+            fields.forEach((f)=>{ out[f.key]=form.elements[f.key].value; });
+
+            close(out);
+
+        });
+
+    });
+
+}
+
+/* 관리자로 로그인해 있으면 비밀번호 없이 수정/삭제 가능 */
+
+async function checkAdmin(){
+
+    try{
+
+        state.isAdmin=!!(window.Auth && await window.Auth.isAdmin());
+
+    }
+
+    catch(error){
+
+        state.isAdmin=false;
+
+    }
+
+}
+
 /* ---------- LOAD POST ---------- */
 
 async function loadPost(){
@@ -149,7 +236,7 @@ async function loadPost(){
 
         const {data,error}=await client
             .from("posts")
-            .select("id,title,content,category,view_count,like_count,comment_count,created_at,author_id,profiles(nickname,is_teacher,title)")
+            .select("id,title,content,category,view_count,like_count,comment_count,created_at,nickname,source_notice_id")
             .eq("id",postId)
             .single();
 
@@ -207,18 +294,6 @@ async function loadPost(){
 
     try{
 
-        await refreshDeletePermission();
-
-    }
-
-    catch(error){
-
-        console.warn("삭제 권한을 확인하지 못했습니다:",error.message || error);
-
-    }
-
-    try{
-
         await loadComments();
 
     }
@@ -239,21 +314,18 @@ async function loadPost(){
 
 function renderPost(post){
 
-    const nickname=post.profiles?.nickname || "익명";
+    const nickname=post.nickname || "익명";
 
     if(el.categoryBadge) el.categoryBadge.textContent=CATEGORY_LABEL[post.category] || "일반";
     if(el.title) el.title.textContent=post.title;
 
-    if(el.author){
+    if(el.author) el.author.textContent=nickname;
 
-        const badge=window.Taecker?.memberBadgeHTML?.(post.profiles,"sm") || "";
-        const teacherBadge=badge ? ` ${badge}` : "";
+    /* 관리자 패널 공지에서 자동 생성된 글은 관리자 패널에서만 수정/삭제 */
+    const isSystemNotice=!!post.source_notice_id;
 
-        el.author.innerHTML=post.author_id
-            ? `<a href="profile.html?id=${encodeURIComponent(post.author_id)}" class="post-detail-author-link">${escapeHtml(nickname)}</a>${teacherBadge}`
-            : `${escapeHtml(nickname)}${teacherBadge}`;
-
-    }
+    el.editPostBtn?.classList.toggle("hidden",isSystemNotice);
+    el.deletePostBtn?.classList.toggle("hidden",isSystemNotice);
 
     if(el.date) el.date.textContent=timeAgo(post.created_at);
     if(el.viewCount) el.viewCount.textContent=`조회 ${post.view_count ?? 0}`;
@@ -270,30 +342,19 @@ function renderPost(post){
 
 async function refreshLikeState(){
 
-    const client=getClient();
+    if(!window.AnonAPI) return;
 
-    if(!client || !window.Auth) return;
+    try{
 
-    const user=await window.Auth.getCurrentUser();
-
-    state.currentUser=user;
-
-    if(!user){
-
-        state.liked=false;
-        updateLikeButton();
-        return;
+        state.liked=!!(await window.AnonAPI.hasLiked(postId));
 
     }
 
-    const {data}=await client
-        .from("likes")
-        .select("user_id")
-        .eq("post_id",postId)
-        .eq("user_id",user.id)
-        .maybeSingle();
+    catch(error){
 
-    state.liked=!!data;
+        state.liked=false;
+
+    }
 
     updateLikeButton();
 
@@ -316,83 +377,27 @@ let likeBusy=false;
 
 el.likeBtn?.addEventListener("click",async()=>{
 
-    if(likeBusy) return;
-
-    const client=getClient();
-
-    if(!client || !window.Auth) return;
-
-    const user=state.currentUser || await window.Auth.getCurrentUser();
-
-    if(!user){
-
-        window.Taecker?.toast?.("로그인이 필요합니다.");
-
-        setTimeout(()=>{ location.href="login.html"; },600);
-
-        return;
-
-    }
+    if(likeBusy || !window.AnonAPI) return;
 
     likeBusy=true;
 
-    /* 낙관적 업데이트 */
-
-    const wasLiked=state.liked;
-
-    state.liked=!wasLiked;
-    updateLikeButton();
-
-    if(el.likeCount){
-
-        const current=Number(el.likeCount.textContent) || 0;
-
-        el.likeCount.textContent=wasLiked ? Math.max(current-1,0) : current+1;
-
-    }
-
     try{
 
-        if(wasLiked){
+        const result=await window.AnonAPI.toggleLike(postId);
 
-            const {error}=await client
-                .from("likes")
-                .delete()
-                .eq("post_id",postId)
-                .eq("user_id",user.id);
+        state.liked=!!result?.liked;
 
-            if(error) throw error;
+        updateLikeButton();
 
-        }else{
-
-            const {error}=await client
-                .from("likes")
-                .insert({post_id:postId,user_id:user.id});
-
-            if(error) throw error;
-
-        }
+        if(el.likeCount) el.likeCount.textContent=result?.like_count ?? 0;
 
     }
 
     catch(error){
 
-        console.error("좋아요 처리 실패:",error.message || error);
+        console.error("추천 처리 실패:",error.message || error);
 
-        /* 실패 시 롤백 */
-
-        state.liked=wasLiked;
-        updateLikeButton();
-
-        if(el.likeCount){
-
-            const current=Number(el.likeCount.textContent) || 0;
-
-            el.likeCount.textContent=wasLiked ? current+1 : Math.max(current-1,0);
-
-        }
-
-        window.Taecker?.toast?.("좋아요 처리에 실패했습니다.");
+        window.Taecker?.toast?.(error.message || "추천 처리에 실패했습니다.");
 
     }
 
@@ -404,70 +409,46 @@ el.likeBtn?.addEventListener("click",async()=>{
 
 });
 
-/* ---------- DELETE POST ---------- */
+/* ---------- EDIT / DELETE POST (비밀번호) ---------- */
 
-async function refreshDeletePermission(){
-
-    if(!el.deletePostBtn) return;
-
-    if(!state.currentUser || !state.post){
-
-        el.deletePostBtn.classList.add("hidden");
-        return;
-
-    }
-
-    const isOwner=state.post.author_id && state.post.author_id===state.currentUser.id;
-
-    let isAdmin=false;
-
-    if(!isOwner && window.Auth?.getProfile){
-
-        try{
-
-            const profile=await window.Auth.getProfile();
-
-            isAdmin=!!profile?.is_admin;
-
-        }
-
-        catch(error){
-
-            console.warn("관리자 여부를 확인하지 못했습니다:",error.message || error);
-
-        }
-
-    }
-
-    el.deletePostBtn.classList.toggle("hidden",!(isOwner || isAdmin));
-
-}
-
-let deleteBusy=false;
+let postBusy=false;
 
 el.deletePostBtn?.addEventListener("click",async()=>{
 
-    if(deleteBusy || !postId) return;
+    if(postBusy || !postId || !window.AnonAPI) return;
 
-    const confirmDelete=confirm("게시글을 삭제하시겠습니까? 삭제하면 복구할 수 없습니다.");
+    let password="";
 
-    if(!confirmDelete) return;
+    if(!state.isAdmin){
 
-    const client=getClient();
+        const answer=await askDialog({
+            title:"글 삭제",
+            desc:"글을 쓸 때 정한 비밀번호를 입력해주세요. 삭제하면 복구할 수 없어요.",
+            fields:[{key:"password",label:"비밀번호",type:"password",max:30}],
+            okText:"삭제"
+        });
 
-    if(!client) return;
+        if(!answer) return;
 
-    deleteBusy=true;
-    el.deletePostBtn.disabled=true;
+        password=answer.password;
+
+    }
+
+    else if(!confirm("관리자 권한으로 게시글을 삭제합니다. 복구할 수 없어요.")) return;
+
+    postBusy=true;
 
     try{
 
-        const {error}=await client
-            .from("posts")
-            .delete()
-            .eq("id",postId);
+        const status=await window.AnonAPI.deletePost(postId,password);
 
-        if(error) throw error;
+        if(status!=="ok"){
+
+            window.Taecker?.toast?.(window.AnonAPI.explainStatus(status));
+
+            return;
+
+        }
 
         window.Taecker?.toast?.("게시글이 삭제되었습니다.");
 
@@ -479,10 +460,73 @@ el.deletePostBtn?.addEventListener("click",async()=>{
 
         console.error("게시글 삭제 실패:",error.message || error);
 
-        window.Taecker?.toast?.("게시글 삭제에 실패했습니다.");
+        window.Taecker?.toast?.(error.message || "게시글 삭제에 실패했습니다.");
 
-        deleteBusy=false;
-        el.deletePostBtn.disabled=false;
+    }
+
+    finally{
+
+        postBusy=false;
+
+    }
+
+});
+
+el.editPostBtn?.addEventListener("click",async()=>{
+
+    if(postBusy || !postId || !state.post || !window.AnonAPI) return;
+
+    const fields=[
+        {key:"title",label:"제목",value:state.post.title,max:100},
+        {key:"content",label:"내용",value:state.post.content,multiline:true,max:4000}
+    ];
+
+    if(!state.isAdmin) fields.push({key:"password",label:"비밀번호",type:"password",max:30});
+
+    const answer=await askDialog({title:"글 수정",fields,okText:"수정"});
+
+    if(!answer) return;
+
+    postBusy=true;
+
+    try{
+
+        const status=await window.AnonAPI.updatePost({
+            id:postId,
+            password:answer.password || "",
+            title:answer.title,
+            content:answer.content
+        });
+
+        if(status!=="ok"){
+
+            window.Taecker?.toast?.(window.AnonAPI.explainStatus(status));
+
+            return;
+
+        }
+
+        state.post.title=answer.title.trim();
+        state.post.content=answer.content.trim();
+
+        if(el.title) el.title.textContent=state.post.title;
+        if(el.content) el.content.textContent=state.post.content;
+
+        window.Taecker?.toast?.("글이 수정되었습니다.");
+
+    }
+
+    catch(error){
+
+        console.error("게시글 수정 실패:",error.message || error);
+
+        window.Taecker?.toast?.(error.message || "게시글 수정에 실패했습니다.");
+
+    }
+
+    finally{
+
+        postBusy=false;
 
     }
 
@@ -490,23 +534,17 @@ el.deletePostBtn?.addEventListener("click",async()=>{
 
 /* ---------- COMMENTS ---------- */
 
-function commentItemHTML(comment,currentUserId){
+function commentItemHTML(comment){
 
-    const nickname=escapeHtml(comment.profiles?.nickname || "익명");
-    const isOwn=currentUserId && comment.author_id===currentUserId;
-    const teacherBadge=window.Taecker?.memberBadgeHTML?.(comment.profiles,"sm") || "";
-    const authorHTML=comment.author_id
-        ? `<a href="profile.html?id=${encodeURIComponent(comment.author_id)}" class="comment-item-author">${nickname}</a>${teacherBadge}`
-        : `<span class="comment-item-author">${nickname}</span>${teacherBadge}`;
+    const nickname=escapeHtml(comment.nickname || "익명");
 
     return `
         <div class="comment-item" data-comment-id="${comment.id}">
             <div class="comment-item-head">
-                ${authorHTML}
+                <span class="comment-item-author">${nickname}</span>
                 <span class="comment-item-time">${timeAgo(comment.created_at)}</span>
-                ${isOwn
-                    ? `<button type="button" class="comment-item-delete" data-delete-id="${comment.id}">삭제</button>`
-                    : `<button type="button" class="comment-item-report" data-report-comment-id="${comment.id}" data-report-author-id="${comment.author_id || ""}">신고</button>`}
+                <button type="button" class="comment-item-delete" data-delete-id="${comment.id}">삭제</button>
+                <button type="button" class="comment-item-report" data-report-comment-id="${comment.id}">신고</button>
             </div>
             <div class="comment-item-content">${escapeHtml(comment.content)}</div>
         </div>
@@ -524,7 +562,7 @@ async function loadComments(){
 
         const {data,error}=await client
             .from("comments")
-            .select("id,content,created_at,author_id,profiles(nickname,is_teacher,title)")
+            .select("id,content,created_at,nickname")
             .eq("post_id",postId)
             .order("created_at",{ascending:true});
 
@@ -538,9 +576,7 @@ async function loadComments(){
 
         }
 
-        const currentUserId=state.currentUser?.id || null;
-
-        el.commentList.innerHTML=data.map((c)=>commentItemHTML(c,currentUserId)).join("");
+        el.commentList.innerHTML=data.map((c)=>commentItemHTML(c)).join("");
 
     }
 
@@ -560,7 +596,7 @@ el.commentList?.addEventListener("click",async(e)=>{
 
     if(reportBtn){
 
-        openReportModal("comment",reportBtn.dataset.reportCommentId,"이 댓글을 신고합니다.",reportBtn.dataset.reportAuthorId || null);
+        openReportModal("comment",reportBtn.dataset.reportCommentId,"이 댓글을 신고합니다.");
 
         return;
 
@@ -568,26 +604,38 @@ el.commentList?.addEventListener("click",async(e)=>{
 
     const btn=e.target.closest("[data-delete-id]");
 
-    if(!btn) return;
+    if(!btn || !window.AnonAPI) return;
 
     const commentId=btn.dataset.deleteId;
 
-    const confirmDelete=confirm("댓글을 삭제하시겠습니까?");
+    let password="";
 
-    if(!confirmDelete) return;
+    if(!state.isAdmin){
 
-    const client=getClient();
+        const answer=await askDialog({
+            title:"댓글 삭제",
+            desc:"댓글을 쓸 때 정한 비밀번호를 입력해주세요.",
+            fields:[{key:"password",label:"비밀번호",type:"password",max:30}],
+            okText:"삭제"
+        });
 
-    if(!client) return;
+        if(!answer) return;
+
+        password=answer.password;
+
+    }
 
     try{
 
-        const {error}=await client
-            .from("comments")
-            .delete()
-            .eq("id",commentId);
+        const status=await window.AnonAPI.deleteComment(commentId,password);
 
-        if(error) throw error;
+        if(status!=="ok"){
+
+            window.Taecker?.toast?.(window.AnonAPI.explainStatus(status));
+
+            return;
+
+        }
 
         btn.closest(".comment-item")?.remove();
 
@@ -596,8 +644,6 @@ el.commentList?.addEventListener("click",async(e)=>{
             el.commentList.innerHTML=`<div class="comment-empty">아직 댓글이 없습니다. 첫 댓글을 남겨보세요!</div>`;
 
         }
-
-        /* 댓글 수 텍스트 갱신 (트리거가 DB의 comment_count는 알아서 줄여줌) */
 
         const remaining=el.commentList.querySelectorAll(".comment-item").length;
 
@@ -610,7 +656,7 @@ el.commentList?.addEventListener("click",async(e)=>{
 
         console.error("댓글 삭제 실패:",error.message || error);
 
-        window.Taecker?.toast?.("댓글 삭제에 실패했습니다.");
+        window.Taecker?.toast?.(error.message || "댓글 삭제에 실패했습니다.");
 
     }
 
@@ -621,46 +667,22 @@ el.commentForm?.addEventListener("submit",async(event)=>{
     event.preventDefault();
 
     const content=el.commentInput?.value.trim();
+    const nickname=el.commentNickname?.value.trim();
+    const password=el.commentPassword?.value || "";
 
-    if(!content){
+    if(!nickname){ window.Taecker?.toast?.("닉네임을 입력해주세요."); el.commentNickname?.focus(); return; }
+    if(password.length<4){ window.Taecker?.toast?.("비밀번호는 4자 이상 입력해주세요."); el.commentPassword?.focus(); return; }
+    if(!content){ el.commentInput?.focus(); return; }
 
-        el.commentInput?.focus();
-
-        return;
-
-    }
-
-    const client=getClient();
-
-    if(!client || !window.Auth) return;
-
-    const user=state.currentUser || await window.Auth.getCurrentUser();
-
-    if(!user){
-
-        window.Taecker?.toast?.("로그인이 필요합니다.");
-
-        setTimeout(()=>{ location.href="login.html"; },600);
-
-        return;
-
-    }
+    if(!window.AnonAPI) return;
 
     if(el.commentSubmitBtn) el.commentSubmitBtn.disabled=true;
 
     try{
 
-        const {error}=await client
-            .from("comments")
-            .insert({
+        await window.AnonAPI.createComment({postId,nickname,password,content});
 
-                post_id:postId,
-                author_id:user.id,
-                content
-
-            });
-
-        if(error) throw error;
+        window.AnonAPI.saveNick(nickname);
 
         el.commentInput.value="";
 
@@ -677,7 +699,7 @@ el.commentForm?.addEventListener("submit",async(event)=>{
 
         console.error("댓글 등록 실패:",error.message || error);
 
-        window.Taecker?.toast?.("댓글 등록에 실패했습니다.");
+        window.Taecker?.toast?.(error.message || "댓글 등록에 실패했습니다.");
 
     }
 
@@ -691,9 +713,9 @@ el.commentForm?.addEventListener("submit",async(event)=>{
 
 /* ---------- REPORT ---------- */
 
-function openReportModal(targetType,targetId,label,targetUserId){
+function openReportModal(targetType,targetId,label){
 
-    state.reportTarget={targetType,targetId,targetUserId:targetUserId || null};
+    state.reportTarget={targetType,targetId};
 
     if(el.reportModalTarget) el.reportModalTarget.textContent=label;
     if(el.reportReason) el.reportReason.value="";
@@ -715,7 +737,7 @@ el.reportPostBtn?.addEventListener("click",()=>{
 
     if(!postId) return;
 
-    openReportModal("post",postId,"이 게시글을 신고합니다.",state.post?.author_id);
+    openReportModal("post",postId,"이 게시글을 신고합니다.");
 
 });
 
@@ -750,52 +772,17 @@ el.reportForm?.addEventListener("submit",async(event)=>{
 
     }
 
-    const client=getClient();
-
-    if(!client || !window.Auth) return;
-
-    const user=state.currentUser || await window.Auth.getCurrentUser();
-
-    if(!user){
-
-        window.Taecker?.toast?.("로그인이 필요합니다.");
-
-        setTimeout(()=>{ location.href="login.html"; },600);
-
-        return;
-
-    }
-
-    if(state.reportTarget.targetUserId && state.reportTarget.targetUserId===user.id){
-
-        if(el.reportFormMessage){
-
-            el.reportFormMessage.textContent="본인이 작성한 글/댓글은 신고할 수 없습니다.";
-            el.reportFormMessage.style.color="#DC2626";
-
-        }
-
-        return;
-
-    }
+    if(!window.AnonAPI) return;
 
     if(el.reportSubmitBtn) el.reportSubmitBtn.disabled=true;
 
     try{
 
-        const {error}=await client
-            .from("reports")
-            .insert({
-
-                reporter_id:user.id,
-                target_type:state.reportTarget.targetType,
-                target_id:state.reportTarget.targetId,
-                target_user_id:state.reportTarget.targetUserId,
-                reason
-
-            });
-
-        if(error) throw error;
+        await window.AnonAPI.submitReport({
+            targetType:state.reportTarget.targetType,
+            targetId:state.reportTarget.targetId,
+            reason
+        });
 
         window.Taecker?.toast?.("신고가 접수되었습니다.");
 
@@ -809,7 +796,7 @@ el.reportForm?.addEventListener("submit",async(event)=>{
 
         if(el.reportFormMessage){
 
-            el.reportFormMessage.textContent="신고 접수에 실패했습니다. 잠시 후 다시 시도해주세요.";
+            el.reportFormMessage.textContent=error.message || "신고 접수에 실패했습니다. 잠시 후 다시 시도해주세요.";
             el.reportFormMessage.style.color="#DC2626";
 
         }
@@ -826,7 +813,11 @@ el.reportForm?.addEventListener("submit",async(event)=>{
 
 /* ---------- INIT ---------- */
 
-window.addEventListener("load",()=>{
+window.addEventListener("load",async()=>{
+
+    await checkAdmin();
+
+    if(el.commentNickname && window.AnonAPI) el.commentNickname.value=window.AnonAPI.getSavedNick();
 
     loadPost();
 

@@ -1,820 +1,137 @@
 /* =====================================================
-   TAECKER AUTH
+   TAECKER AUTH (비로그인 운영 버전)
+
+   - 일반 사용자는 로그인하지 않는다. 글/댓글은 닉네임 + 비밀번호로 작성하고
+     수정/삭제도 그 비밀번호로 한다 (디시인사이드 방식).
+   - Supabase 로그인은 "관리자 전용"으로만 남아 있다 (login.html → admin.html).
+   - window.sb      : Supabase 클라이언트
+   - window.Auth    : 관리자 세션 헬퍼
+   - window.AnonAPI : 비로그인 글/댓글/추천/신고/문의 API (DB의 RPC 함수 호출)
 ===================================================== */
 
 "use strict";
 
 /* =====================================================
-   NETWORK TIMEOUT HELPER
-   -----------------------------------------------------
-   네트워크가 응답 없이 멈춰버리는 경우(방화벽/확장 프로그램 간섭/
-   불안정한 연결 등) await가 영원히 끝나지 않아서 로딩 스피너가
-   멈춘 채로 남는 문제를 막기 위한 안전장치.
-   Supabase auth 관련 호출(signInWithPassword, signUp,
-   resetPasswordForEmail, updateUser 등)에 공통으로 사용한다.
-===================================================== */
-
-function withTimeout(promise,ms=15000,message="요청 시간이 초과되었습니다. 네트워크 상태를 확인하고 다시 시도해주세요."){
-
-    let timer=null;
-
-    const timeout=new Promise((_,reject)=>{
-
-        timer=setTimeout(()=>{
-
-            reject(new Error(message));
-
-        },ms);
-
-    });
-
-    return Promise.race([promise,timeout]).finally(()=>{
-
-        clearTimeout(timer);
-
-    });
-
-}
-
-/* =====================================================
-   STATE
-===================================================== */
-
-const AuthState={
-
-    loading:false,
-
-    remember:false,
-
-    capslock:false,
-
-    passwordVisible:false
-
-};
-
-/* =====================================================
-   DOM
-===================================================== */
-
-const form=document.getElementById("loginForm");
-
-const emailInput=document.getElementById("email");
-
-const passwordInput=document.getElementById("password");
-
-const loginButton=document.getElementById("loginButton");
-
-const togglePasswordButton=document.getElementById("togglePassword");
-
-const emailMessage=document.getElementById("emailMessage");
-
-const passwordMessage=document.getElementById("passwordMessage");
-
-const rememberCheckbox=document.getElementById("rememberMe");
-
-const capslockMessage=document.getElementById("capsLockMessage");
-
-const passwordStrengthBar=document.getElementById("passwordStrengthBar");
-
-const passwordStrengthText=document.getElementById("passwordStrengthText");
-
-/* =====================================================
-   UTIL
-===================================================== */
-
-function setMessage(element,message,color="#64748B"){
-
-    if(!element){
-
-        return;
-
-    }
-
-    element.textContent=message;
-
-    element.style.color=color;
-
-}
-
-function enableButton(){
-
-    if(!loginButton){
-
-        return;
-
-    }
-
-    loginButton.disabled=false;
-
-}
-
-function disableButton(){
-
-    if(!loginButton){
-
-        return;
-
-    }
-
-    loginButton.disabled=true;
-
-}
-
-function sanitize(value){
-
-    return value.trim();
-
-}
-
-/* =====================================================
-   EMAIL VALIDATION
-===================================================== */
-
-function validateEmail(email){
-
-    email=sanitize(email);
-
-    const regex=
-
-        /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-    if(email.length===0){
-
-        return{
-
-            valid:false,
-
-            message:"이메일을 입력하세요."
-
-        };
-
-    }
-
-    if(!regex.test(email)){
-
-        return{
-
-            valid:false,
-
-            message:"올바른 이메일 형식이 아닙니다."
-
-        };
-
-    }
-
-    return{
-
-        valid:true,
-
-        message:"올바른 이메일 형식입니다."
-
-    };
-
-}
-
-/* =====================================================
-   PASSWORD VALIDATION
-===================================================== */
-
-function validatePassword(password){
-
-    if(password.length===0){
-
-        return{
-
-            valid:false,
-
-            message:"비밀번호를 입력하세요."
-
-        };
-
-    }
-
-    if(password.length<6){
-
-        return{
-
-            valid:false,
-
-            message:"6자 이상 입력해주세요."
-
-        };
-
-    }
-
-    return{
-
-        valid:true,
-
-        message:"입력을 완료했습니다."
-
-    };
-
-}
-
-/* =====================================================
-   PASSWORD STRENGTH
-===================================================== */
-
-function calculateStrength(password){
-
-    let score=0;
-
-    if(password.length>=6){
-
-        score++;
-
-    }
-
-    if(/[A-Z]/.test(password)){
-
-        score++;
-
-    }
-
-    if(/[a-z]/.test(password)){
-
-        score++;
-
-    }
-
-    if(/[0-9]/.test(password)){
-
-        score++;
-
-    }
-
-    if(/[^A-Za-z0-9]/.test(password)){
-
-        score++;
-
-    }
-
-    return score;
-
-}
-
-function updateStrength(password){
-
-    if(
-
-        !passwordStrengthBar ||
-
-        !passwordStrengthText
-
-    ){
-
-        return;
-
-    }
-
-    const score=
-
-        calculateStrength(password);
-
-    let width="0%";
-
-    let color="#DC2626";
-
-    let text="매우 약함";
-
-    switch(score){
-
-        case 1:
-
-            width="20%";
-
-            break;
-
-        case 2:
-
-            width="40%";
-
-            color="#F97316";
-
-            text="약함";
-
-            break;
-
-        case 3:
-
-            width="60%";
-
-            color="#F59E0B";
-
-            text="보통";
-
-            break;
-
-        case 4:
-
-            width="80%";
-
-            color="#22C55E";
-
-            text="강함";
-
-            break;
-
-        case 5:
-
-            width="100%";
-
-            color="#16A34A";
-
-            text="매우 강함";
-
-            break;
-
-    }
-
-    passwordStrengthBar.style.width=width;
-
-    passwordStrengthBar.style.background=color;
-
-    passwordStrengthText.textContent=text;
-
-}
-/* =====================================================
-   REALTIME VALIDATION
-   (로그인 페이지는 회원가입 페이지가 아니므로,
-   타이핑 중 "올바른 형식입니다" 같은 실시간 안내 문구는
-   띄우지 않는다. 실제 로그인 실패 시 나오는
-   "이메일 또는 비밀번호가 올바르지 않습니다." 안내는
-   translateError()를 통해 toast로 그대로 유지된다.)
-===================================================== */
-
-/* =====================================================
-   CAPS LOCK
-===================================================== */
-
-function updateCapsLock(event){
-
-    if(!capslockMessage){
-
-        return;
-
-    }
-
-    const enabled=
-
-        event.getModifierState(
-
-            "CapsLock"
-
-        );
-
-    AuthState.capslock=enabled;
-
-    capslockMessage.classList.toggle(
-
-        "hidden",
-
-        !enabled
-
-    );
-
-}
-
-if(passwordInput){
-
-    passwordInput.addEventListener(
-
-        "keyup",
-
-        updateCapsLock
-
-    );
-
-    passwordInput.addEventListener(
-
-        "keydown",
-
-        updateCapsLock
-
-    );
-
-}
-
-/* =====================================================
-   PASSWORD TOGGLE
-===================================================== */
-
-function togglePassword(){
-
-    if(!passwordInput){
-
-        return;
-
-    }
-
-    AuthState.passwordVisible=
-
-        !AuthState.passwordVisible;
-
-    passwordInput.type=
-
-        AuthState.passwordVisible
-
-            ? "text"
-
-            : "password";
-
-    if(togglePasswordButton){
-
-        togglePasswordButton.textContent=
-
-            AuthState.passwordVisible
-
-                ? "숨기기"
-
-                : "보기";
-
-    }
-
-}
-
-if(togglePasswordButton){
-
-    togglePasswordButton.addEventListener(
-
-        "click",
-
-        togglePassword
-
-    );
-
-}
-
-/* =====================================================
-   REMEMBER ME
-===================================================== */
-
-const rememberedEmail=
-
-    Storage.get(
-
-        "rememberEmail",
-
-        ""
-
-    );
-
-if(
-
-    rememberedEmail &&
-
-    emailInput
-
-){
-
-    emailInput.value=
-
-        rememberedEmail;
-
-    if(rememberCheckbox){
-
-        rememberCheckbox.checked=true;
-
-    }
-
-    AuthState.remember=true;
-
-}
-
-if(rememberCheckbox){
-
-    rememberCheckbox.addEventListener(
-
-        "change",
-
-        ()=>{
-
-            AuthState.remember=
-
-                rememberCheckbox.checked;
-
-        }
-
-    );
-
-}
-
-function saveRememberEmail(){
-
-    if(!emailInput){
-
-        return;
-
-    }
-
-    if(AuthState.remember){
-
-        Storage.set(
-
-            "rememberEmail",
-
-            sanitize(
-
-                emailInput.value
-
-            )
-
-        );
-
-    }else{
-
-        Storage.remove(
-
-            "rememberEmail"
-
-        );
-
-    }
-
-}
-
-/* =====================================================
-   ENTER LOGIN
-===================================================== */
-
-document.addEventListener(
-
-    "keydown",
-
-    (event)=>{
-
-        if(
-
-            event.key==="Enter" &&
-
-            document.activeElement===passwordInput
-
-        ){
-
-            event.preventDefault();
-
-            form?.requestSubmit();
-
-        }
-
-    }
-
-);
-/* =====================================================
-   LOGIN LOADING
-===================================================== */
-
-function setLoading(state){
-
-    AuthState.loading=state;
-
-    if(!loginButton){
-
-        return;
-
-    }
-
-    loginButton.disabled=state;
-
-    const text=
-
-        loginButton.querySelector(
-
-            ".button-text"
-
-        );
-
-    const loader=
-
-        loginButton.querySelector(
-
-            ".button-loader"
-
-        );
-
-    if(text){
-
-        text.style.display=
-
-            state
-
-                ? "none"
-
-                : "inline-flex";
-
-    }
-
-    if(loader){
-
-        loader.classList.toggle(
-
-            "hidden",
-
-            !state
-
-        );
-
-    }
-
-    if(emailInput){
-
-        emailInput.disabled=state;
-
-    }
-
-    if(passwordInput){
-
-        passwordInput.disabled=state;
-
-    }
-
-    if(togglePasswordButton){
-
-        togglePasswordButton.disabled=state;
-
-    }
-
-}
-
-/* =====================================================
-   FORM VALIDATION
-===================================================== */
-
-function validateForm(){
-
-    const email=
-
-        validateEmail(
-
-            emailInput.value
-
-        );
-
-    const password=
-
-        validatePassword(
-
-            passwordInput.value
-
-        );
-
-    /* 유효할 때는 문구를 띄우지 않고, 형식이 잘못됐을 때만 안내한다 */
-
-    setMessage(
-
-        emailMessage,
-
-        email.valid ? "" : email.message,
-
-        "#DC2626"
-
-    );
-
-    setMessage(
-
-        passwordMessage,
-
-        password.valid ? "" : password.message,
-
-        "#DC2626"
-
-    );
-
-    if(!email.valid){
-
-        emailInput.focus();
-
-        return false;
-
-    }
-
-    if(!password.valid){
-
-        passwordInput.focus();
-
-        return false;
-
-    }
-
-    return true;
-
-}
-
-/* =====================================================
-   LOGIN PREPARE
-===================================================== */
-
-async function prepareLogin(){
-
-    if(AuthState.loading){
-
-        return false;
-
-    }
-
-    if(!validateForm()){
-
-        return false;
-
-    }
-
-    saveRememberEmail();
-
-    setLoading(true);
-
-    return true;
-
-}
-
-/* =====================================================
-   LOGIN FINISH
-===================================================== */
-
-function finishLogin(){
-
-    setLoading(false);
-
-}
-
-/* =====================================================
-   (구버전 FORM SUBMIT 리스너 제거됨 — 실제 로그인 처리는
-   아래 SUBMIT 섹션의 최종 버전 하나만 사용)
-===================================================== */
-/* =====================================================
    SUPABASE
 ===================================================== */
 
-const SUPABASE_URL=
+const SUPABASE_URL="https://tywbdarlmyxitskxwreu.supabase.co";
 
-    "https://tywbdarlmyxitskxwreu.supabase.co";
-
-const SUPABASE_KEY=
-
-    "sb_publishable_iRkBObTciH_A31nh_XWaQA_c7Xz7MC0";
+const SUPABASE_KEY="sb_publishable_iRkBObTciH_A31nh_XWaQA_c7Xz7MC0";
 
 /*
-    주의: 변수명을 "supabase"로 지으면 CDN이 전역에 심어둔
-    window.supabase(라이브러리 네임스페이스, createClient만 있음)와
-    이름이 겹쳐서 다른 <script> 태그에서 sb.from(...) 같은
-    호출을 할 때 라이브러리 객체를 잘못 참조하는 문제가 발생한다.
-    그래서 클라이언트 인스턴스는 sb 라는 이름으로 만들고,
-    다른 파일에서는 항상 window.sb 를 통해 접근한다.
+    주의: 변수명을 "supabase"로 지으면 CDN이 전역에 심어둔 window.supabase와
+    이름이 겹치므로 클라이언트는 sb 라는 이름으로 만들고, 다른 파일에서는
+    항상 window.sb 로 접근한다.
 */
 
-const sb=
+let sb=null;
 
-    window.supabase.createClient(
+try{
 
-        SUPABASE_URL,
+    sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 
-        SUPABASE_KEY
+}
 
-    );
+catch(error){
+
+    console.error("Supabase 클라이언트 생성 실패:",error);
+
+}
 
 window.sb=sb;
 
 /* =====================================================
-   LOGIN
+   ADMIN AUTH (관리자만 로그인)
 ===================================================== */
 
-async function login(){
+async function getCurrentUser(){
 
-    const email=
+    if(!sb) return null;
 
-        sanitize(
+    try{
 
-            emailInput.value
+        const {data}=await sb.auth.getSession();
 
-        );
+        return data?.session?.user ?? null;
 
-    const password=
+    }
 
-        passwordInput.value;
+    catch(error){
 
-    const {
+        return null;
 
-        data,
+    }
 
-        error
+}
 
-    }=
+/* 로그인한 계정의 프로필 (관리자 계정만 존재). 로그인 상태가 아니면 null */
 
-    await withTimeout(
+let profileCache=null;
 
-        sb.auth.signInWithPassword({
+async function getProfile(){
 
-            email,
+    const user=await getCurrentUser();
 
-            password
+    if(!user){
 
-        })
+        profileCache=null;
 
-    );
+        return null;
+
+    }
+
+    if(profileCache && profileCache.id===user.id) return profileCache;
+
+    const {data,error}=await sb
+        .from("profiles")
+        .select("*")
+        .eq("id",user.id)
+        .maybeSingle();
+
+    if(error || !data) return null;
+
+    profileCache=data;
+
+    return data;
+
+}
+
+const getCachedProfile=getProfile;
+
+async function isAdmin(){
+
+    const profile=await getProfile();
+
+    return profile?.is_admin===true;
+
+}
+
+async function login(email,password){
+
+    if(!sb) throw new Error("서버에 연결할 수 없어요. 잠시 후 다시 시도해주세요.");
+
+    const {data,error}=await sb.auth.signInWithPassword({email,password});
 
     if(error){
 
-        throw error;
+        throw new Error(
+            /invalid login credentials/i.test(error.message)
+                ? "이메일 또는 비밀번호가 올바르지 않아요."
+                : error.message
+        );
+
+    }
+
+    profileCache=null;
+
+    const profile=await getProfile();
+
+    if(!profile?.is_admin){
+
+        await sb.auth.signOut();
+
+        throw new Error("관리자 계정이 아니에요.");
 
     }
 
@@ -822,1158 +139,275 @@ async function login(){
 
 }
 
-/* =====================================================
-   SESSION
-===================================================== */
-
-async function checkSession(){
-
-    const {
-
-        data
-
-    }=
-
-    await sb.auth.getSession();
-
-    if(
-
-        data.session
-
-    ){
-
-        location.href=
-
-            "index.html";
-
-    }
-
-}
-
-/* =====================================================
-   (구버전 SUBMIT 리스너 제거됨 — 최종 버전은 아래
-   LOGIN SUBMIT 섹션에 있음)
-
-   (checkSession() 무조건 호출도 제거됨 — 페이지 구분 없이
-   세션이 있으면 무조건 location.href="index.html"을 실행해서,
-   index.html 자체에서 로그인 상태로 로드될 때마다
-   자기 자신으로 재이동 → 새로고침 → 재이동 이 반복되며
-   화면이 계속 깜빡이는(무한 새로고침 루프) 버그가 있었음.
-   페이지를 올바르게 구분하는 redirectIfLoggedIn()이
-   파일 하단에 이미 있으므로 그것만 사용.)
-===================================================== */
-/* =====================================================
-   PROFILE
-===================================================== */
-
-async function ensureProfile(user){
-
-    const {data,error}=
-
-    await sb
-
-    .from("profiles")
-
-    .select("id")
-
-    .eq("id",user.id)
-
-    .maybeSingle();
-
-    if(error){
-
-        throw error;
-
-    }
-
-    if(data){
-
-        return;
-
-    }
-
-    /*
-     register.html의 signUp() options.data에 담아 보낸
-     회원가입 정보(user_metadata)를 사용한다.
-     메타데이터가 없는 경우(예: 다른 경로로 생성된 계정)에는
-     이메일 앞부분을 닉네임으로 대체한다.
-    */
-
-    const meta=user.user_metadata || {};
-
-    const nickname=
-
-        meta.nickname ||
-
-        user.email.split("@")[0];
-
-    const {error:insertError}=
-
-    await sb
-
-    .from("profiles")
-
-    .insert({
-
-        id:user.id,
-
-        email:user.email,
-
-        nickname,
-
-        grade:meta.grade ?? null,
-
-        class_number:meta.class_number ?? null,
-
-        student_number:
-
-            (meta.student_number ?? null)===null
-
-                ? null
-
-                : String(meta.student_number),
-
-        bio:meta.bio ?? "",
-
-        is_teacher:meta.is_teacher===true
-
-    });
-
-    if(insertError){
-
-        throw insertError;
-
-    }
-
-}
-
-/* =====================================================
-   SUSPENSION / BAN CHECK
-   (관리자 패널에서 정지/영구정지된 계정을 로그인 시점과
-   세션 복원 시점 양쪽에서 걸러내기 위한 헬퍼)
-===================================================== */
-
-function isSuspended(profile){
-
-    if(!profile){
-
-        return {blocked:false};
-
-    }
-
-    if(profile.banned===true){
-
-        const reason=(profile.suspended_reason || "").trim();
-
-        return {
-
-            blocked:true,
-
-            type:"banned",
-
-            reason,
-
-            message:reason
-                ? `영구 정지된 계정입니다. (사유: ${reason})`
-                : "영구 정지된 계정입니다. 문의가 필요하면 관리자에게 연락해주세요."
-
-        };
-
-    }
-
-    if(profile.suspended_until){
-
-        const until=new Date(profile.suspended_until);
-
-        if(!isNaN(until) && until.getTime()>Date.now()){
-
-            const untilText=until.toLocaleString("ko-KR",{
-
-                month:"numeric",
-
-                day:"numeric",
-
-                hour:"2-digit",
-
-                minute:"2-digit"
-
-            });
-
-            const reason=(profile.suspended_reason || "").trim();
-
-            return {
-
-                blocked:true,
-
-                type:"suspended",
-
-                reason,
-
-                until:profile.suspended_until,
-
-                message:reason
-                    ? `이용이 정지된 계정입니다. (사유: ${reason} / 해제 예정: ${untilText})`
-                    : `이용이 정지된 계정입니다. (해제 예정: ${untilText})`
-
-            };
-
-        }
-
-    }
-
-    return {blocked:false};
-
-}
-
-/* =====================================================
-   ERROR MESSAGE
-===================================================== */
-
-function translateError(message){
-
-    if(
-
-        message.includes(
-
-            "Invalid login credentials"
-
-        )
-
-    ){
-
-        return "이메일 또는 비밀번호가 올바르지 않습니다.";
-
-    }
-
-    if(
-
-        message.includes(
-
-            "Email not confirmed"
-
-        )
-
-    ){
-
-        return "이메일 인증이 필요합니다. 가입하신 이메일함(스팸함도 확인해주세요)에서 인증 메일을 확인해주세요.";
-
-    }
-
-    if(
-
-        message.includes(
-
-            "network"
-
-        )
-
-    ){
-
-        return "네트워크 오류가 발생했습니다.";
-
-    }
-
-    return message;
-
-}
-
-/* =====================================================
-   LOGIN SUBMIT
-===================================================== */
-
-function showSuspensionNotice(suspension){
-
-    const box=document.getElementById("suspensionNotice");
-
-    if(!box){
-
-        toast(suspension.message);
-
-        return;
-
-    }
-
-    const titleEl=document.getElementById("suspensionNoticeTitle");
-    const reasonEl=document.getElementById("suspensionNoticeReason");
-    const periodEl=document.getElementById("suspensionNoticePeriod");
-
-    if(titleEl){
-
-        titleEl.textContent=
-            suspension.type==="banned"
-                ? "영구 정지된 계정입니다."
-                : "이용이 정지된 계정입니다.";
-
-    }
-
-    if(reasonEl){
-
-        reasonEl.textContent=
-            suspension.reason
-                ? `사유: ${suspension.reason}`
-                : "사유가 등록되지 않았습니다. 관리자에게 문의해주세요.";
-
-    }
-
-    if(periodEl){
-
-        if(suspension.type==="banned"){
-
-            periodEl.textContent="기간: 영구 정지 (해제되지 않습니다)";
-
-        }else if(suspension.until){
-
-            const untilText=new Date(suspension.until).toLocaleString("ko-KR",{
-
-                year:"numeric",
-                month:"numeric",
-                day:"numeric",
-                hour:"2-digit",
-                minute:"2-digit"
-
-            });
-
-            periodEl.textContent=`해제 예정: ${untilText}`;
-
-        }else{
-
-            periodEl.textContent="";
-
-        }
-
-    }
-
-    box.classList.remove("hidden");
-
-    box.scrollIntoView({behavior:"smooth",block:"center"});
-
-}
-
-if(form){
-
-    form.addEventListener(
-
-        "submit",
-
-        async(event)=>{
-
-            event.preventDefault();
-
-            document.getElementById("suspensionNotice")?.classList.add("hidden");
-
-            const ready=
-
-                await prepareLogin();
-
-            if(!ready){
-
-                return;
-
-            }
-
-            try{
-
-                const result=
-
-                    await login();
-
-                await ensureProfile(
-
-                    result.user
-
-                );
-
-                const {data:freshProfile}=
-
-                    await sb
-
-                    .from("profiles")
-
-                    .select("banned,suspended_until,suspended_reason")
-
-                    .eq("id",result.user.id)
-
-                    .maybeSingle();
-
-                const suspension=
-
-                    isSuspended(freshProfile);
-
-                if(suspension.blocked){
-
-                    await sb.auth.signOut();
-
-                    showSuspensionNotice(suspension);
-
-                    return;
-
-                }
-
-                saveRememberEmail();
-
-                toast(
-
-                    "로그인되었습니다."
-
-                );
-
-                setTimeout(()=>{
-
-                    location.href=
-
-                        "index.html";
-
-                },700);
-
-            }
-
-            catch(error){
-
-                toast(
-
-                    translateError(
-
-                        error.message
-
-                    )
-
-                );
-
-            }
-
-            finally{
-
-                finishLogin();
-
-            }
-
-        }
-
-    );
-
-}
-/* =====================================================
-   FORGOT PASSWORD
-===================================================== */
-
-/* 로그인 화면 이메일 입력칸을 그대로 재사용하던 예전 방식 대신,
-   전용 팝업으로 이메일을 따로 입력받는다. */
-
-const forgotPasswordOpen=document.getElementById("forgotPasswordOpen");
-const forgotPasswordForm=document.getElementById("forgotPasswordForm");
-const forgotPasswordEmail=document.getElementById("forgotPasswordEmail");
-const forgotPasswordCancelBtn=document.getElementById("forgotPasswordCancelBtn");
-const forgotPasswordSubmitBtn=document.getElementById("forgotPasswordSubmitBtn");
-const forgotPasswordMessage=document.getElementById("forgotPasswordMessage");
-
-if(forgotPasswordOpen){
-
-    forgotPasswordOpen.addEventListener(
-        "click",
-        (event)=>{
-
-            event.preventDefault();
-
-            if(forgotPasswordMessage) forgotPasswordMessage.textContent="";
-
-            if(forgotPasswordEmail){
-
-                /* 로그인 칸에 이미 이메일을 입력해뒀다면 편의상 미리 채워준다. */
-                forgotPasswordEmail.value=sanitize(emailInput?.value || "");
-
-            }
-
-            window.Taecker?.openModal?.("forgotPasswordModal");
-
-            setTimeout(()=>forgotPasswordEmail?.focus(),50);
-
-        }
-    );
-
-}
-
-forgotPasswordCancelBtn?.addEventListener("click",()=>{
-
-    window.Taecker?.closeModal?.("forgotPasswordModal");
-
-});
-
-if(forgotPasswordForm){
-
-    forgotPasswordForm.addEventListener(
-        "submit",
-        async(event)=>{
-
-            event.preventDefault();
-
-            const email=sanitize(forgotPasswordEmail?.value || "");
-
-            if(!email){
-                if(forgotPasswordMessage){
-                    forgotPasswordMessage.textContent="이메일을 입력해주세요.";
-                    forgotPasswordMessage.style.color="#DC2626";
-                }
-                forgotPasswordEmail?.focus();
-                return;
-            }
-
-            forgotPasswordSubmitBtn.disabled=true;
-
-            try{
-
-                const {error}=await withTimeout(
-
-                    sb.auth.resetPasswordForEmail(
-                        email,
-                        {redirectTo:`${location.origin}/reset-password.html`}
-                    )
-
-                );
-
-                if(error){
-                    toast("메일 전송에 실패했습니다. 잠시 후 다시 시도해주세요.");
-                    return;
-                }
-
-                toast("비밀번호 재설정 링크를 이메일로 보냈습니다.");
-
-                window.Taecker?.closeModal?.("forgotPasswordModal");
-
-                forgotPasswordForm.reset();
-
-            }
-
-            catch(error){
-
-                toast(error?.message?.includes("시간이 초과")
-                    ? error.message
-                    : "메일 전송에 실패했습니다. 잠시 후 다시 시도해주세요.");
-
-            }
-
-            finally{
-
-                forgotPasswordSubmitBtn.disabled=false;
-
-            }
-
-        }
-    );
-
-}
-/* =====================================================
-   AUTH STATE
-===================================================== */
-
-sb.auth.onAuthStateChange(
-
-    async(event,session)=>{
-
-        switch(event){
-
-            case "SIGNED_IN":
-
-                console.log(
-
-                    "SIGNED IN"
-
-                );
-
-                break;
-
-            case "SIGNED_OUT":
-
-                console.log(
-
-                    "SIGNED OUT"
-
-                );
-
-                break;
-
-            case "TOKEN_REFRESHED":
-
-                console.log(
-
-                    "TOKEN REFRESHED"
-
-                );
-
-                break;
-
-        }
-
-    }
-
-);
-
-/* =====================================================
-   CURRENT USER
-===================================================== */
-
-async function getCurrentUser(){
-
-    const {
-
-        data,
-
-        error
-
-    }=
-
-    await sb.auth.getUser();
-
-    if(error){
-
-        return null;
-
-    }
-
-    return data.user;
-
-}
-
-/* =====================================================
-   PROFILE
-===================================================== */
-
-async function getProfile(){
-
-    const user=
-
-        await getCurrentUser();
-
-    if(!user){
-
-        return null;
-
-    }
-
-    const {
-
-        data,
-
-        error
-
-    }=
-
-    await sb
-
-    .from("profiles")
-
-    .select("*")
-
-    .eq("id",user.id)
-
-    .single();
-
-    if(!error){
-
-        return data;
-
-    }
-
-    /*
-     프로필 row가 없는 경우(예: 로그인 폼을 거치지 않고
-     세션이 복원된 경우) 여기서 한 번 더 생성을 시도한다.
-     이렇게 해야 "내 정보를 불러올 수 없습니다" 상태로
-     영구히 남는 걸 막을 수 있다.
-    */
-
-    try{
-
-        await ensureProfile(user);
-
-    }
-
-    catch(ensureError){
-
-        console.warn("프로필 생성 재시도 실패:",ensureError.message || ensureError);
-
-        return null;
-
-    }
-
-    const retry=
-
-    await sb
-
-    .from("profiles")
-
-    .select("*")
-
-    .eq("id",user.id)
-
-    .single();
-
-    return retry.error ? null : retry.data;
-
-}
-
-/* =====================================================
-   LOGOUT
-===================================================== */
-
 async function logout(){
 
-    await sb.auth.signOut();
+    try{ await sb?.auth.signOut(); }
 
-    Storage.remove(
+    catch(error){ /* 무시 */ }
 
-        "rememberEmail"
+    profileCache=null;
 
-    );
+    window.Taecker?.toast?.("로그아웃되었습니다.");
 
-    toast(
-
-        "로그아웃되었습니다."
-
-    );
-
-    setTimeout(()=>{
-
-        location.href=
-
-            "login.html";
-
-    },500);
+    setTimeout(()=>{ location.href="index.html"; },400);
 
 }
 
-/* =====================================================
-   GLOBAL
-===================================================== */
-
-window.Auth={
-
-    login,
-
-    logout,
-
-    getCurrentUser,
-
-    getProfile,
-
-    checkSession,
-
-    ensureProfile
-
-};
-/* =====================================================
-   AUTH GUARD
-===================================================== */
+/* 관리자 전용 페이지 가드: 관리자가 아니면 로그인 페이지로 */
 
 async function requireAuth(){
 
-    const {
+    if(await isAdmin()) return true;
 
-        data
+    window.Taecker?.toast?.("관리자 로그인이 필요합니다.");
 
-    }=
+    setTimeout(()=>{ location.href="login.html"; },600);
 
-    await sb.auth.getSession();
-
-    if(!data.session){
-
-        toast(
-
-            "로그인이 필요합니다."
-
-        );
-
-        setTimeout(()=>{
-
-            location.href=
-
-                "login.html";
-
-        },500);
-
-        return false;
-
-    }
-
-    return true;
+    return false;
 
 }
-
-/* =====================================================
-   LOGIN PAGE REDIRECT
-===================================================== */
-
-async function redirectIfLoggedIn(){
-
-    const {
-
-        data
-
-    }=
-
-    await sb.auth.getSession();
-
-    if(
-
-        data.session &&
-
-        location.pathname.endsWith(
-
-            "login.html"
-
-        )
-
-    ){
-
-        location.replace(
-
-            "index.html"
-
-        );
-
-    }
-
-}
-
-/* =====================================================
-   SESSION REFRESH
-===================================================== */
 
 async function refreshSession(){
 
-    const {
+    const {data,error}=await sb.auth.refreshSession();
 
-        data,
-
-        error
-
-    }=
-
-    await sb.auth.refreshSession();
-
-    if(error){
-
-        console.error(error);
-
-        return null;
-
-    }
-
-    return data.session;
+    return error ? null : data.session;
 
 }
-
-/* =====================================================
-   PROFILE CACHE
-===================================================== */
-
-async function cacheProfile(){
-
-    const profile=
-
-        await getProfile();
-
-    if(profile){
-
-        const suspension=
-
-            isSuspended(profile);
-
-        if(
-
-            suspension.blocked &&
-
-            !location.pathname.endsWith("login.html") &&
-
-            !location.pathname.endsWith("register.html")
-
-        ){
-
-            await sb.auth.signOut();
-
-            Storage.remove("profile");
-
-            toast(suspension.message);
-
-            setTimeout(()=>{
-
-                location.href="login.html";
-
-            },600);
-
-            return;
-
-        }
-
-        Storage.set(
-
-            "profile",
-
-            profile
-
-        );
-
-    }
-
-}
-
-async function getCachedProfile(){
-
-    const cached=
-
-        Storage.get(
-
-            "profile",
-
-            null
-
-        );
-
-    if(cached){
-
-        return cached;
-
-    }
-
-    const profile=
-
-        await getProfile();
-
-    if(profile){
-
-        Storage.set(
-
-            "profile",
-
-            profile
-
-        );
-
-    }
-
-    return profile;
-
-}
-
-/* =====================================================
-   EMAIL VERIFIED NOTICE
-   (회원가입 이메일의 인증 링크가 login.html?verified=1 로
-   돌아왔을 때 안내 메시지를 보여준다. 세션이 이미 함께
-   전달된 경우 redirectIfLoggedIn()이 곧바로 index.html로
-   보내주므로, 세션이 아직 없는 경우에만 안내가 눈에 보인다.)
-===================================================== */
-
-if(location.pathname.endsWith("login.html") && new URLSearchParams(location.search).get("verified")==="1"){
-
-    toast("이메일 인증이 완료되었습니다. 로그인해주세요.");
-
-    history.replaceState(null,"",location.pathname);
-
-}
-
-/* =====================================================
-   INIT
-===================================================== */
-
-redirectIfLoggedIn();
-
-cacheProfile();
-
-/* =====================================================
-   EXPORT
-===================================================== */
-
-Object.assign(
-
-    window.Auth,
-
-    {
-
-        requireAuth,
-
-        refreshSession,
-
-        getCachedProfile
-
-    }
-
-);
-/* =====================================================
-   LOGIN LIMIT
-===================================================== */
-
-let loginAttempts=0;
-
-const MAX_LOGIN_ATTEMPTS=5;
-
-function resetAttempts(){
-
-    loginAttempts=0;
-
-}
-
-function increaseAttempts(){
-
-    loginAttempts++;
-
-}
-
-function canLogin(){
-
-    return loginAttempts<MAX_LOGIN_ATTEMPTS;
-
-}
-
-/* =====================================================
-   SAFE LOGIN
-===================================================== */
-
-async function safeLogin(){
-
-    if(!canLogin()){
-
-        toast(
-
-            "로그인 시도가 너무 많습니다. 잠시 후 다시 시도해주세요."
-
-        );
-
-        return false;
-
-    }
-
-    try{
-
-        const result=
-
-            await login();
-
-        resetAttempts();
-
-        return result;
-
-    }
-
-    catch(error){
-
-        increaseAttempts();
-
-        throw error;
-
-    }
-
-}
-
-/* =====================================================
-   RESET FORM
-===================================================== */
-
-function resetForm(){
-
-    if(form){
-
-        form.reset();
-
-    }
-
-    if(emailMessage){
-
-        emailMessage.textContent="";
-
-    }
-
-    if(passwordMessage){
-
-        passwordMessage.textContent="";
-
-    }
-
-    if(passwordStrengthBar){
-
-        passwordStrengthBar.style.width="0%";
-
-    }
-
-    if(passwordStrengthText){
-
-        passwordStrengthText.textContent="";
-
-    }
-
-}
-
-/* =====================================================
-   AUTH INFO
-===================================================== */
 
 async function isLoggedIn(){
 
-    const {
-
-        data
-
-    }=
-
-    await sb.auth.getSession();
-
-    return !!data.session;
+    return !!(await getCurrentUser());
 
 }
 
 async function getAccessToken(){
 
-    const {
+    const {data}=await sb.auth.getSession();
 
-        data
-
-    }=
-
-    await sb.auth.getSession();
-
-    return data.session?.access_token ?? null;
+    return data?.session?.access_token ?? null;
 
 }
 
-/* =====================================================
-   GLOBAL
-===================================================== */
+window.Auth={
 
-Object.assign(
-
-    window.Auth,
-
-    {
-
-        safeLogin,
-
-        resetForm,
-
-        resetAttempts,
-
-        isLoggedIn,
-
-        getAccessToken
-
-    }
-
-);
-
-/* =====================================================
-   DEV
-===================================================== */
-
-window.TaeckerAuth={
-
-    supabase:sb,
-
-    Auth
+    login,
+    logout,
+    getCurrentUser,
+    getProfile,
+    getCachedProfile,
+    isAdmin,
+    requireAuth,
+    refreshSession,
+    isLoggedIn,
+    getAccessToken
 
 };
 
+window.TaeckerAuth={ supabase:sb, Auth:window.Auth };
+
 /* =====================================================
-   READY
+   ANON API (비로그인 글/댓글/추천/신고/문의)
+   모든 쓰기는 DB의 RPC 함수로만 이루어진다 (sql/anonymous_mode.sql).
+   수정/삭제 계열은 'ok' | 'wrong' | 'locked' | 'notfound' 를 돌려준다.
 ===================================================== */
 
-console.log(
+const CLIENT_ID_KEY="taeker_client_id";
 
-    "Taeker Auth Loaded"
+const NICK_KEY="taeker_nick";
 
-);
+let memoryClientId=null;
+
+/* 기기 식별값: 추천 중복 방지/도배 방지/신고 중복 방지에만 쓰이는 임의의 문자열 */
+
+function getClientId(){
+
+    try{
+
+        let id=localStorage.getItem(CLIENT_ID_KEY);
+
+        if(id && id.length>=8) return id;
+
+        id=makeRandomId();
+
+        localStorage.setItem(CLIENT_ID_KEY,id);
+
+        return id;
+
+    }
+
+    catch(error){
+
+        if(!memoryClientId) memoryClientId=makeRandomId();
+
+        return memoryClientId;
+
+    }
+
+}
+
+function makeRandomId(){
+
+    if(window.crypto?.randomUUID) return window.crypto.randomUUID().replace(/-/g,"");
+
+    return Array.from({length:32},()=>Math.floor(Math.random()*16).toString(16)).join("");
+
+}
+
+/* 마지막으로 쓴 닉네임을 기억해서 다음에 자동으로 채워준다 (비밀번호는 저장하지 않음) */
+
+function getSavedNick(){
+
+    try{ return localStorage.getItem(NICK_KEY) || ""; }
+
+    catch(error){ return ""; }
+
+}
+
+function saveNick(nick){
+
+    try{ localStorage.setItem(NICK_KEY,nick); }
+
+    catch(error){ /* 무시 */ }
+
+}
+
+const STATUS_MESSAGE={
+
+    wrong:"비밀번호가 일치하지 않아요.",
+    locked:"비밀번호를 여러 번 틀려서 10분 동안 잠겼어요.",
+    notfound:"이미 삭제되었거나 수정할 수 없는 글이에요."
+
+};
+
+/* 'ok'가 아닌 상태 문자열 → 사용자에게 보여줄 문구 */
+
+function explainStatus(status){
+
+    return STATUS_MESSAGE[status] || "요청을 처리하지 못했어요.";
+
+}
+
+async function rpc(name,args){
+
+    if(!sb) throw new Error("서버에 연결할 수 없어요. 잠시 후 다시 시도해주세요.");
+
+    const {data,error}=await sb.rpc(name,args);
+
+    if(error){
+
+        /* DB 함수가 직접 던진 안내 문구(errcode P0001)는 그대로 보여주고, 나머지는 일반 문구로 */
+
+        throw new Error(
+            error.code==="P0001" && error.message
+                ? error.message
+                : "요청에 실패했어요. 잠시 후 다시 시도해주세요."
+        );
+
+    }
+
+    return data;
+
+}
+
+window.AnonAPI={
+
+    getClientId,
+    getSavedNick,
+    saveNick,
+    explainStatus,
+
+    createPost({nickname,password,title,content,category}){
+
+        return rpc("create_post",{
+            p_nickname:nickname,
+            p_password:password,
+            p_title:title,
+            p_content:content,
+            p_category:category,
+            p_client_id:getClientId()
+        });
+
+    },
+
+    updatePost({id,password,title,content}){
+
+        return rpc("update_post",{p_id:id,p_password:password,p_title:title,p_content:content});
+
+    },
+
+    deletePost(id,password){
+
+        return rpc("delete_post",{p_id:id,p_password:password});
+
+    },
+
+    createComment({postId,nickname,password,content}){
+
+        return rpc("create_comment",{
+            p_post_id:postId,
+            p_nickname:nickname,
+            p_password:password,
+            p_content:content,
+            p_client_id:getClientId()
+        });
+
+    },
+
+    deleteComment(id,password){
+
+        return rpc("delete_comment",{p_id:id,p_password:password});
+
+    },
+
+    /* → {liked:boolean, like_count:number} */
+
+    toggleLike(postId){
+
+        return rpc("toggle_like",{p_post_id:postId,p_client_id:getClientId()});
+
+    },
+
+    hasLiked(postId){
+
+        return rpc("has_liked",{p_post_id:postId,p_client_id:getClientId()});
+
+    },
+
+    submitReport({targetType,targetId,reason}){
+
+        return rpc("submit_report",{
+            p_target_type:targetType,
+            p_target_id:targetId,
+            p_reason:reason,
+            p_client_id:getClientId()
+        });
+
+    },
+
+    /* → 접수번호(문자열). 이 번호로 답변을 조회한다 */
+
+    submitInquiry({nickname,contact,content}){
+
+        return rpc("submit_inquiry",{
+            p_nickname:nickname || "",
+            p_contact:contact || "",
+            p_content:content,
+            p_client_id:getClientId()
+        });
+
+    },
+
+    /* → {content,status,admin_reply,created_at,replied_at} | null */
+
+    async lookupInquiry(code){
+
+        const rows=await rpc("lookup_inquiry",{p_code:code});
+
+        return Array.isArray(rows) && rows.length ? rows[0] : null;
+
+    }
+
+};
+
+console.log("Taeker Auth Loaded");

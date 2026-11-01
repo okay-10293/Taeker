@@ -2,7 +2,8 @@
    TAECKER SCHOOL
    school.html 전용 - 급식 / 시간표 / 학사일정
    NEIS(나이스 교육정보 개방 포털) Open API 연동
-   설정값(인증키·학교코드)은 Supabase의 school_config 테이블에서 가져온다.
+   인증키·학교코드는 서버(DB)에만 보관하고, 브라우저는 neis_get() RPC 를
+   통해서만 호출한다 (로그인 없이 누구나 조회 가능, 키는 노출되지 않음).
 ===================================================== */
 
 "use strict";
@@ -11,7 +12,6 @@
 
 const el={
 
-    loginRequired:document.getElementById("schoolLoginRequired"),
     wrap:document.getElementById("schoolWrap"),
     configWarning:document.getElementById("schoolConfigWarning"),
 
@@ -114,37 +114,26 @@ function getClient(){
    NEIS API
 ===================================================== */
 
-const NEIS_BASE="https://open.neis.go.kr/hub/";
-
 async function callNeis(endpoint,params){
 
-    if(!state.config?.neis_api_key || !state.config?.atpt_ofcdc_sc_code || !state.config?.sd_schul_code){
+    if(!state.config?.configured){
 
         throw new Error("NOT_CONFIGURED");
 
     }
 
-    const query=new URLSearchParams({
+    const client=getClient();
 
-        KEY:state.config.neis_api_key,
-        Type:"json",
-        pIndex:"1",
-        pSize:"100",
-        ATPT_OFCDC_SC_CODE:state.config.atpt_ofcdc_sc_code,
-        SD_SCHUL_CODE:state.config.sd_schul_code,
-        ...params
+    if(!client) throw new Error("NO_CLIENT");
 
-    });
+    const {data,error}=await client.rpc("neis_get",{p_endpoint:endpoint,p_params:params || {}});
 
-    const res=await fetch(`${NEIS_BASE}${endpoint}?${query.toString()}`);
+    if(error){
 
-    if(!res.ok){
-
-        throw new Error(`HTTP_${res.status}`);
+        throw new Error(error.message || "NEIS_ERROR");
 
     }
 
-    const data=await res.json();
 
     const root=data[endpoint];
 
@@ -185,27 +174,23 @@ async function loadConfig(){
 
     const client=getClient();
 
-    if(!client) return null;
+    if(!client) return {configured:false};
 
     try{
 
-        const {data,error}=await client
-            .from("school_config")
-            .select("neis_api_key,atpt_ofcdc_sc_code,sd_schul_code,school_name")
-            .eq("id",1)
-            .maybeSingle();
+        const {data,error}=await client.rpc("is_school_configured");
 
         if(error) throw error;
 
-        return data;
+        return {configured:data===true,school_name:"태성고등학교"};
 
     }
 
     catch(error){
 
-        console.warn("학교 설정을 불러오지 못했습니다:",error.message || error);
+        console.warn("학교 설정 상태를 확인하지 못했습니다:",error.message || error);
 
-        return null;
+        return {configured:false};
 
     }
 
@@ -213,7 +198,7 @@ async function loadConfig(){
 
 function isConfigured(){
 
-    return !!(state.config?.neis_api_key && state.config?.atpt_ofcdc_sc_code && state.config?.sd_schul_code);
+    return state.config?.configured===true;
 
 }
 
@@ -609,37 +594,15 @@ el.tabs?.addEventListener("click",(e)=>{
 
 window.addEventListener("load",async()=>{
 
-    /* 급식/시간표/학사일정은 로그인하지 않아도 볼 수 있다.
-       (예전에는 로그인한 학생에게만 열려 있었지만, 로그인 없이
-       보고 싶어하는 방문자를 위해 항상 schoolWrap을 보여준다.) */
+    /* 급식/시간표/학사일정은 로그인 없이 누구나 볼 수 있다. */
 
-    el.loginRequired?.classList.add("hidden");
     el.wrap?.classList.remove("hidden");
 
-    /* 시간표 학년/반을 아직 한 번도 직접 선택한 적이 없다면(localStorage에
-       저장된 값이 없다면) 회원가입 때 입력한 학년/반을 기본값으로 사용한다.
-       (로그인하지 않은 방문자는 프로필이 없으므로 그냥 1학년 1반을 기본값으로 둔다.)
-       이후 사용자가 직접 바꾸면 그 선택이 우선시되어 계속 기억된다. */
+    /* 시간표 학년/반을 한 번도 직접 선택한 적이 없다면 1학년 1반을 기본값으로 둔다.
+       사용자가 직접 바꾸면 그 선택이 localStorage에 저장되어 계속 기억된다. */
 
-    if(state.ttGrade===null || state.ttClass===null){
-
-        const user=window.Auth ? await window.Auth.getCurrentUser() : null;
-
-        const profile=user && window.Auth?.getProfile ? await window.Auth.getProfile() : null;
-
-        if(state.ttGrade===null){
-
-            state.ttGrade=profile?.grade!=null ? String(profile.grade) : "1";
-
-        }
-
-        if(state.ttClass===null){
-
-            state.ttClass=profile?.class_number!=null ? String(profile.class_number) : "1";
-
-        }
-
-    }
+    if(state.ttGrade===null) state.ttGrade="1";
+    if(state.ttClass===null) state.ttClass="1";
 
     if(el.ttGradeSelect) el.ttGradeSelect.value=state.ttGrade;
     if(el.ttClassSelect) el.ttClassSelect.value=state.ttClass;

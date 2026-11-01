@@ -11,6 +11,8 @@ const el={
 
     form:document.getElementById("writeForm"),
     category:document.getElementById("writeCategory"),
+    nickname:document.getElementById("writeNickname"),
+    password:document.getElementById("writePassword"),
     title:document.getElementById("writeTitle"),
     titleMessage:document.getElementById("writeTitleMessage"),
     content:document.getElementById("writeContent"),
@@ -120,9 +122,26 @@ el.form.addEventListener("submit",async(event)=>{
 
     }
 
-    const client=getClient();
+    const nickname=(el.nickname?.value || "").trim();
+    const password=el.password?.value || "";
 
-    if(!client || !window.Auth){
+    if(!nickname){
+
+        window.Taecker?.toast?.("닉네임을 입력해주세요.");
+        el.nickname.focus();
+        return;
+
+    }
+
+    if(password.length<4){
+
+        window.Taecker?.toast?.("비밀번호는 4자 이상 입력해주세요.");
+        el.password.focus();
+        return;
+
+    }
+
+    if(!window.AnonAPI){
 
         window.Taecker?.toast?.("잠시 후 다시 시도해주세요.");
         return;
@@ -133,38 +152,15 @@ el.form.addEventListener("submit",async(event)=>{
 
     try{
 
-        const user=await window.Auth.getCurrentUser();
+        const id=await window.AnonAPI.createPost({nickname,password,title,content,category});
 
-        if(!user){
-
-            window.Taecker?.toast?.("로그인이 필요합니다.");
-
-            setTimeout(()=>{ location.href="login.html"; },600);
-
-            return;
-
-        }
-
-        const {data,error}=await client
-            .from("posts")
-            .insert({
-
-                title,
-                content,
-                category,
-                author_id:user.id
-
-            })
-            .select("id")
-            .single();
-
-        if(error) throw error;
+        window.AnonAPI.saveNick(nickname);
 
         window.Taecker?.toast?.("글이 등록되었습니다.");
 
         setTimeout(()=>{
 
-            location.href=`post.html?id=${encodeURIComponent(data.id)}`;
+            location.href=`post.html?id=${encodeURIComponent(id)}`;
 
         },500);
 
@@ -174,7 +170,7 @@ el.form.addEventListener("submit",async(event)=>{
 
         console.error("글 등록 실패:",error.message || error);
 
-        window.Taecker?.toast?.("글 등록에 실패했습니다. 잠시 후 다시 시도해주세요.");
+        window.Taecker?.toast?.(error.message || "글 등록에 실패했습니다. 잠시 후 다시 시도해주세요.");
 
     }
 
@@ -186,63 +182,40 @@ el.form.addEventListener("submit",async(event)=>{
 
 });
 
-/* ---------- AUTH GUARD ---------- */
+/* ---------- INIT ---------- */
 
-const GRADE_CATEGORY_LABEL={
+/* 마지막으로 쓴 닉네임 자동 입력 */
+if(el.nickname && window.AnonAPI){
 
-    grade1:"학년별 게시판",
-    grade2:"학년별 게시판",
-    grade3:"학년별 게시판"
-
-};
-
-async function injectGradeOption(){
-
-    if(!el.category || !window.Auth) return;
-
-    try{
-
-        const profile=await window.Auth.getProfile();
-        const grade=profile?.grade;
-
-        if(!grade || grade<1 || grade>3) return;
-
-        const category=`grade${grade}`;
-
-        if(Array.from(el.category.options).some((opt)=>opt.value===category)) return;
-
-        const option=document.createElement("option");
-
-        option.value=category;
-        option.textContent=GRADE_CATEGORY_LABEL[category];
-
-        el.category.appendChild(option);
-
-    }
-
-    catch(error){
-
-        console.warn("학년 게시판 옵션을 추가하지 못했습니다:",error.message || error);
-
-    }
+    el.nickname.value=window.AnonAPI.getSavedNick();
 
 }
 
+/* 관리자로 로그인해 있으면 공지사항 카테고리 추가 */
 window.addEventListener("load",async()=>{
 
-    if(!window.Auth) return;
+    try{
 
-    const loggedIn=await window.Auth.requireAuth();
+        if(!window.Auth || !el.category) return;
 
-    if(!loggedIn){
+        if(await window.Auth.isAdmin()){
 
-        el.form.classList.add("hidden");
+            if(!Array.from(el.category.options).some((o)=>o.value==="notice")){
 
-        return;
+                const option=document.createElement("option");
+
+                option.value="notice";
+                option.textContent="공지사항";
+
+                el.category.insertBefore(option,el.category.firstChild);
+
+            }
+
+        }
 
     }
 
-    await injectGradeOption();
+    catch(error){ /* 일반 방문자는 그냥 무시 */ }
 
     applyCategoryPrefill();
 

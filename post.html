@@ -78,10 +78,6 @@
             <span>글쓰기</span>
         </button>
 
-        <div class="auth-area" id="authArea">
-            <a href="login.html" class="btn btn-ghost">로그인</a>
-            <a href="register.html" class="btn">회원가입</a>
-        </div>
 
         <div class="dropdown hidden" id="profileDropdown">
             <button class="profile-trigger" id="profileBtn" aria-haspopup="true" aria-expanded="false">
@@ -107,8 +103,6 @@
                     </div>
                 </div>
                 <div class="dropdown-divider"></div>
-                <a href="mypage.html" class="dropdown-item">마이페이지</a>
-                <a href="#" class="dropdown-item" data-soon="설정 기능은 준비 중입니다.">설정</a>
                 <div class="dropdown-divider"></div>
                 <button class="dropdown-item dropdown-item-danger" id="logoutBtn">로그아웃</button>
             </div>
@@ -142,9 +136,8 @@
             <li><a href="school.html?tab=timetable">시간표</a></li>
             <li><a href="school.html?tab=meal">급식</a></li>
             <li><a href="school.html?tab=schedule">학사일정</a></li>
-            <li><a href="chat.html">1:1 대화</a></li>
-            <li><a href="mypage.html">마이페이지</a></li>
             <li><a href="inquiry.html">문의하기</a></li>
+            <li><a href="login.html" style="opacity:.55;font-size:.85em;">관리자</a></li>
         </ul>
     </nav>
 </aside>
@@ -187,7 +180,8 @@
                 </button>
                 <span class="post-detail-view-count" id="commentCountText"></span>
                 <span style="margin-left:auto;display:flex;align-items:center;">
-                    <button type="button" class="report-btn hidden" id="deletePostBtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:4px;"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>삭제</button>
+                    <button type="button" class="report-btn" id="editPostBtn">수정</button>
+                    <button type="button" class="report-btn" id="deletePostBtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:4px;"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>삭제</button>
                     <button type="button" class="report-btn" id="reportPostBtn" data-target-type="post"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" style="vertical-align:-2px;margin-right:3px;"><path d="M5 3V21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M5 4H17L14 8L17 12H5" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>신고</button>
                 </span>
             </div>
@@ -198,7 +192,11 @@
 
             <h3 class="comment-section-title">댓글 <span id="commentSectionCount"></span></h3>
 
-            <form class="comment-form" id="commentForm">
+            <form class="comment-form" id="commentForm" style="flex-wrap:wrap;">
+                <div class="input-box" style="display:flex; gap:.5rem; flex:1 1 100%;">
+                    <input type="text" id="commentNickname" class="input" maxlength="12" placeholder="닉네임" autocomplete="off" required>
+                    <input type="password" id="commentPassword" class="input" maxlength="30" placeholder="비밀번호 (4자 이상)" autocomplete="new-password" required>
+                </div>
                 <div class="input-box" style="flex:1;">
                     <textarea
                         id="commentInput"
@@ -277,20 +275,20 @@
         <span>시간표</span>
     </a>
 
-    <a href="chat.html">
+    <a href="school.html?tab=meal">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-            <path d="M4 5H20V16H8L4 20V5Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
-            <path d="M8.5 10H15.5M8.5 13H13" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <path d="M7 3V11M4 3V8C4 9.7 5.3 11 7 11C8.7 11 10 9.7 10 8V3M7 11V21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <path d="M17 21V3C14.8 4.5 14 7 14 10C14 12 15.2 13 17 13" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
-        <span>채팅</span>
+        <span>급식</span>
     </a>
 
-    <a href="#" id="bottomNavMy">
+    <a href="inquiry.html">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-            <circle cx="12" cy="8" r="4" stroke="currentColor" stroke-width="2"/>
-            <path d="M4 20C4 16.7 7.6 14 12 14C16.4 14 20 16.7 20 20" stroke="currentColor" stroke-width="2"/>
+            <path d="M4 5H20V16H8L4 20V5Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+            <path d="M12 8.5V12M12 14.3V14.4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
         </svg>
-        <span>마이</span>
+        <span>문의</span>
     </a>
 </nav>
 

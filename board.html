@@ -98,10 +98,6 @@
             <span>글쓰기</span>
         </button>
 
-        <div class="auth-area" id="authArea">
-            <a href="login.html" class="btn btn-ghost">로그인</a>
-            <a href="register.html" class="btn">회원가입</a>
-        </div>
 
         <div class="dropdown hidden" id="profileDropdown">
             <button class="profile-trigger" id="profileBtn" aria-haspopup="true" aria-expanded="false">
@@ -127,8 +123,6 @@
                     </div>
                 </div>
                 <div class="dropdown-divider"></div>
-                <a href="mypage.html" class="dropdown-item">마이페이지</a>
-                <a href="#" class="dropdown-item" data-soon="설정 기능은 준비 중입니다.">설정</a>
                 <div class="dropdown-divider"></div>
                 <button class="dropdown-item dropdown-item-danger" id="logoutBtn">로그아웃</button>
             </div>
@@ -162,9 +156,8 @@
             <li><a href="school.html?tab=timetable">시간표</a></li>
             <li><a href="school.html?tab=meal">급식</a></li>
             <li><a href="school.html?tab=schedule">학사일정</a></li>
-            <li><a href="chat.html">1:1 대화</a></li>
-            <li><a href="mypage.html">마이페이지</a></li>
             <li><a href="inquiry.html">문의하기</a></li>
+            <li><a href="login.html" style="opacity:.55;font-size:.85em;">관리자</a></li>
         </ul>
     </nav>
 </aside>
@@ -262,20 +255,20 @@
         <span>시간표</span>
     </a>
 
-    <a href="chat.html">
+    <a href="school.html?tab=meal">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-            <path d="M4 5H20V16H8L4 20V5Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
-            <path d="M8.5 10H15.5M8.5 13H13" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <path d="M7 3V11M4 3V8C4 9.7 5.3 11 7 11C8.7 11 10 9.7 10 8V3M7 11V21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <path d="M17 21V3C14.8 4.5 14 7 14 10C14 12 15.2 13 17 13" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
-        <span>채팅</span>
+        <span>급식</span>
     </a>
 
-    <a href="#" id="bottomNavMy">
+    <a href="inquiry.html">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-            <circle cx="12" cy="8" r="4" stroke="currentColor" stroke-width="2"/>
-            <path d="M4 20C4 16.7 7.6 14 12 14C16.4 14 20 16.7 20 20" stroke="currentColor" stroke-width="2"/>
+            <path d="M4 5H20V16H8L4 20V5Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+            <path d="M12 8.5V12M12 14.3V14.4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
         </svg>
-        <span>마이</span>
+        <span>문의</span>
     </a>
 </nav>
 
