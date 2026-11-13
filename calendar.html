@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>달력 | 태커</title>
+<meta name="description" content="누구나 일정을 추가하고 함께 보는 태커 달력.">
+<meta name="theme-color" content="#2563EB">
+<link rel="stylesheet" href="css/style.css?v=1788107726">
+<link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png">
+<link rel="apple-touch-icon" href="assets/favicon-180.png">
+<meta property="og:site_name" content="태커">
+<meta property="og:title" content="달력 | 태커">
+<meta property="og:description" content="누구나 일정을 추가하고 함께 보는 태커 달력.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://taeker.pages.dev/calendar.html">
+<meta property="og:image" content="https://taeker.pages.dev/assets/og-image.png">
+<meta property="og:locale" content="ko_KR">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+<body>
+    <div class="init-loader" id="initLoader" aria-hidden="true">
+        <span class="init-loader-mark">태커</span>
+        <span class="init-loader-spinner"></span>
+    </div>
+
+
+<!-- =====================================================
+     HEADER
+===================================================== -->
+<header class="header">
+
+    <div class="header-left">
+        <button class="nav-toggle" id="menuBtn" aria-label="메뉴 열기">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                <path d="M3 6H21M3 12H21M3 18H21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+        </button>
+
+        <a href="index.html" class="brand">
+            <h1>태커</h1>
+            <span>태성고등학교 커뮤니티</span>
+        </a>
+    </div>
+
+    <div class="header-search" id="headerSearchWrap">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+            <circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/>
+            <path d="M20 20L16.5 16.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+        <input
+            type="search"
+            id="searchInput"
+            class="header-search-input"
+            placeholder="게시글 검색"
+            autocomplete="off">
+    </div>
+
+    <div class="header-actions">
+
+        <button class="icon-btn header-search-toggle" id="searchToggleBtn" aria-label="검색">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                <circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/>
+                <path d="M20 20L16.5 16.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+        </button>
+
+        <button class="icon-btn" id="themeToggleBtn" aria-label="다크모드 전환">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" id="themeIconSun">
+                <circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="2"/>
+                <path d="M12 2V4M12 20V22M4 12H2M22 12H20M5 5L6.5 6.5M18 18L19.5 19.5M19.5 5L18 6.5M6.5 18L5 19.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+        </button>
+
+        <div class="dropdown" id="notifDropdown">
+            <button class="icon-btn dropdown-trigger" id="notifBtn" aria-haspopup="true" aria-expanded="false" aria-label="알림">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                    <path d="M15 17H20L18.5 15.5V10C18.5 6.96 16.54 4.36 13.75 3.45V3C13.75 2.03 12.97 1.25 12 1.25C11.03 1.25 10.25 2.03 10.25 3V3.45C7.46 4.36 5.5 6.96 5.5 10V15.5L4 17H9" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+                    <path d="M9 17C9 18.66 10.34 20 12 20C13.66 20 15 18.66 15 17" stroke="currentColor" stroke-width="2"/>
+                </svg>
+                <span class="badge-dot hidden" id="notifBadge"></span>
+            </button>
+
+            <div class="dropdown-menu dropdown-menu-right" id="notifMenu">
+                <div class="dropdown-header">알림</div>
+                <div class="dropdown-empty" id="notifEmpty">
+                    <p>새로운 알림이 없습니다.</p>
+                </div>
+                <div class="dropdown-list hidden" id="notifList"></div>
+            </div>
+        </div>
+
+        <button class="btn btn-write" id="headerWriteBtn">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                <path d="M12 5V19M5 12H19" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+            <span>글쓰기</span>
+        </button>
+
+
+        <div class="dropdown hidden" id="profileDropdown">
+            <button class="profile-trigger" id="profileBtn" aria-haspopup="true" aria-expanded="false">
+                <span class="avatar-sm" id="headerAvatar">
+                    <img src="" alt="" id="headerAvatarImg" class="hidden">
+                    <span id="headerAvatarInitial">태</span>
+                </span>
+                <span class="profile-trigger-name" id="headerNickname">회원</span>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                    <path d="M6 9L12 15L18 9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </button>
+
+            <div class="dropdown-menu dropdown-menu-right" id="profileMenu">
+                <div class="dropdown-profile-summary">
+                    <span class="avatar-sm avatar-sm-lg">
+                        <img src="" alt="" id="menuAvatarImg" class="hidden">
+                        <span id="menuAvatarInitial">태</span>
+                    </span>
+                    <div>
+                        <p class="dropdown-profile-name" id="menuNickname">회원</p>
+                        <p class="dropdown-profile-email" id="menuEmail">-</p>
+                    </div>
+                </div>
+                <div class="dropdown-divider"></div>
+                <div class="dropdown-divider"></div>
+                <button class="dropdown-item dropdown-item-danger" id="logoutBtn">로그아웃</button>
+            </div>
+        </div>
+
+    </div>
+
+</header>
+
+<!-- =====================================================
+     SIDEBAR
+===================================================== -->
+<aside class="sidebar" id="sidebar">
+    <nav>
+        <ul>
+            <li><a href="index.html">홈</a></li>
+            <li class="sidebar-group">
+                <button type="button" class="sidebar-group-toggle" aria-expanded="false">
+                    <span>게시판</span>
+                    <svg class="sidebar-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                </button>
+                <ul class="sidebar-submenu hidden">
+                    <li><a href="board.html">전체보기</a></li>
+                    <li><a href="board.html?category=notice">공지사항</a></li>
+                    <li><a href="board.html?category=free">자유게시판</a></li>
+                    <li><a href="board.html?category=question">질문게시판</a></li>
+                    <li><a href="board.html?category=info">정보게시판</a></li>
+                    <li><a href="board.html?category=grade">학년별 게시판</a></li>
+                </ul>
+            </li>
+            <li><a href="school.html?tab=timetable" data-tab="timetable">시간표</a></li>
+            <li><a href="school.html?tab=meal" data-tab="meal">급식</a></li>
+            <li><a href="school.html?tab=schedule" data-tab="schedule">학사일정</a></li>
+            <li><a href="calendar.html" class="active">달력</a></li>
+            <li><a href="inquiry.html">문의하기</a></li>
+            <li><a href="login.html" style="opacity:.55;font-size:.85em;">관리자</a></li>
+        </ul>
+    </nav>
+</aside>
+
+<!-- =====================================================
+     MAIN
+===================================================== -->
+<main class="container">
+
+    <section class="board-title">
+        <h2>달력</h2>
+        <p>누구나 일정을 추가할 수 있어요. 로그인 없이 닉네임과 비밀번호만 정하면 돼요.</p>
+    </section>
+
+    <div class="cal-nav school-date-nav">
+        <button class="icon-btn" id="calPrev" aria-label="이전 달">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M15 6L9 12L15 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <span class="school-date-label" id="calLabel"></span>
+        <button class="icon-btn" id="calNext" aria-label="다음 달">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M9 6L15 12L9 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <button class="btn btn-outline" id="calToday" style="margin-left:auto;">오늘</button>
+    </div>
+
+    <div class="card cal-card">
+        <div class="cal-week"><span class="sun">일</span><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span class="sat">토</span></div>
+        <div class="cal-grid" id="calGrid"></div>
+    </div>
+
+    <div class="card cal-day">
+        <div class="cal-day-head">
+            <h3 id="calDayTitle"></h3>
+            <button class="btn cal-primary" id="calAddBtn" type="button">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 5V19M5 12H19" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                <span>일정 추가</span>
+            </button>
+        </div>
+        <div id="calDayList"></div>
+    </div>
+
+</main>
+
+<div class="modal" id="calModal" role="dialog" aria-modal="true" aria-labelledby="calModalTitle">
+    <div class="modal-content cal-modal">
+        <h3 id="calModalTitle">일정 추가</h3>
+        <form id="calForm" autocomplete="off">
+            <label class="cal-field">날짜<input class="input" type="date" id="calDate" required></label>
+            <label class="cal-field">제목<input class="input" type="text" id="calTitle" maxlength="40" placeholder="예: 수학 수행평가" required></label>
+            <label class="cal-field">메모 (선택)<textarea class="input" id="calMemo" maxlength="300" rows="3" placeholder="자세한 내용"></textarea></label>
+            <div class="cal-row">
+                <label class="cal-field">닉네임<input class="input" type="text" id="calNick" maxlength="12" placeholder="익명" required></label>
+                <label class="cal-field">비밀번호<input class="input" type="password" id="calPw" minlength="4" maxlength="30" placeholder="삭제할 때 필요" required></label>
+            </div>
+            <p class="cal-hint">비밀번호는 일정을 삭제할 때만 쓰여요. 잊어버리면 삭제할 수 없으니 기억해두세요.</p>
+            <div class="cal-actions">
+                <button type="button" class="btn btn-outline" id="calCancel">취소</button>
+                <button type="submit" class="btn cal-primary" id="calSubmit">등록</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<button class="fab" id="writeBtn" aria-label="글쓰기">
+    <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
+        <path d="M12 5V19M5 12H19" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+    </svg>
+</button>
+
+<div id="overlay" class="overlay"></div>
+
+<nav class="bottom-nav">
+    <a href="index.html">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+            <path d="M3 10L12 3L21 10V20H15V14H9V20H3Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+        </svg>
+        <span>홈</span>
+    </a>
+
+    <a href="board.html">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+            <path d="M4 5H20V15H7L4 18V5Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+        </svg>
+        <span>게시판</span>
+    </a>
+
+    <a href="school.html?tab=timetable">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+            <rect x="4" y="4" width="16" height="16" rx="2" stroke="currentColor" stroke-width="2"/>
+            <path d="M8 8H16M8 12H16M8 16H13" stroke="currentColor" stroke-width="2"/>
+        </svg>
+        <span>시간표</span>
+    </a>
+
+    <a href="calendar.html" class="active">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+            <rect x="4" y="5" width="16" height="15" rx="2" stroke="currentColor" stroke-width="2"/>
+            <path d="M4 10H20M9 3V7M15 3V7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+        <span>달력</span>
+    </a>
+
+    <a href="school.html?tab=meal">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+            <path d="M7 3V11M4 3V8C4 9.7 5.3 11 7 11C8.7 11 10 9.7 10 8V3M7 11V21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <path d="M17 21V3C14.8 4.5 14 7 14 10C14 12 15.2 13 17 13" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span>급식</span>
+    </a>
+
+    <a href="inquiry.html">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+            <path d="M4 5H20V16H8L4 20V5Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+            <path d="M12 8.5V12M12 14.3V14.4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+        <span>문의</span>
+    </a>
+</nav>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/app.js?v=1788107726"></script>
+<script src="js/auth.js?v=1788107726"></script>
+<script src="js/calendar.js?v=1788107726"></script>
+
+</body>
+</html>
