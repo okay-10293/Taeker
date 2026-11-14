@@ -56,7 +56,7 @@ body{
 
     --sub:#6B7280;
 
-    --radius:20px;
+    --radius:12px;
 
     --shadow:
     0 12px 35px rgba(15,23,42,.06);
@@ -232,7 +232,7 @@ img{
 
     align-items:center;
 
-    border-radius:14px;
+    border-radius:9px;
 
     transition:var(--transition);
 
@@ -306,7 +306,7 @@ img{
 
     padding:14px 16px;
 
-    border-radius:14px;
+    border-radius:9px;
 
     transition:var(--transition);
 
@@ -343,7 +343,7 @@ img{
     justify-content:space-between;
     width:100%;
     padding:14px 16px;
-    border-radius:14px;
+    border-radius:9px;
     transition:var(--transition);
     font-weight:600;
     font-size:15px;
@@ -391,7 +391,7 @@ img{
     padding:10px 14px;
     font-size:14px;
     font-weight:500;
-    border-radius:12px;
+    border-radius:8px;
 }
 
 body.dark .sidebar-group-toggle{
@@ -463,7 +463,7 @@ body.dark .sidebar-submenu{
 
     color:white;
 
-    border-radius:26px;
+    border-radius:14px;
 
     padding:30px;
 
@@ -506,7 +506,7 @@ body.dark .sidebar-submenu{
 
     background:#FFFFFF;
 
-    border-radius:20px;
+    border-radius:12px;
 
     padding:24px;
 
@@ -556,7 +556,7 @@ body.dark .sidebar-submenu{
 
     background:#F8FAFC;
 
-    border-radius:18px;
+    border-radius:12px;
 
     padding:18px;
 
@@ -763,7 +763,7 @@ body.dark .sidebar-submenu{
 
     background:transparent;
 
-    border-radius:10px;
+    border-radius:7px;
 
     padding:0;
 
@@ -967,7 +967,7 @@ body.dark .sidebar-submenu{
 
     border:1px solid var(--border);
 
-    border-radius:14px;
+    border-radius:9px;
 
     background:#FFFFFF;
 
@@ -1021,7 +1021,7 @@ textarea.input{
 
     padding:12px 18px;
 
-    border-radius:14px;
+    border-radius:9px;
 
     background:var(--primary);
 
@@ -1065,7 +1065,7 @@ textarea.input{
 
     padding:9px 16px;
 
-    border-radius:10px;
+    border-radius:7px;
 
     background:#DC2626;
 
@@ -1119,7 +1119,7 @@ textarea.input{
 
     border:1px solid #FECACA;
 
-    border-radius:12px;
+    border-radius:8px;
 
 }
 
@@ -1334,7 +1334,7 @@ body.dark .admin-bulk-bar{
 
     background:#FFFFFF;
 
-    border-radius:24px;
+    border-radius:14px;
 
     padding:28px;
 
@@ -1386,7 +1386,7 @@ body.dark .admin-bulk-bar{
 
     padding:14px 20px;
 
-    border-radius:14px;
+    border-radius:9px;
 
     opacity:0;
 
@@ -1418,7 +1418,7 @@ body.dark .admin-bulk-bar{
 
     background:#FFFFFF;
 
-    border-radius:22px;
+    border-radius:14px;
 
     padding:28px;
 
@@ -1490,7 +1490,7 @@ body.dark .admin-bulk-bar{
 
     background:#FFFFFF;
 
-    border-radius:18px;
+    border-radius:12px;
 
     padding:20px;
 
@@ -1913,7 +1913,7 @@ body.dark{
 
     padding:22px;
 
-    border-radius:22px;
+    border-radius:14px;
 
     background:rgba(255,255,255,.55);
 
@@ -1955,7 +1955,7 @@ body.dark{
 
     height:58px;
 
-    border-radius:18px;
+    border-radius:12px;
 
     background:
 
@@ -2017,7 +2017,7 @@ body.dark{
 
     padding:42px;
 
-    border-radius:30px;
+    border-radius:14px;
 
     background:
 
@@ -2100,7 +2100,7 @@ body.dark{
 
     background:#FEF2F2;
     border:1px solid #FECACA;
-    border-radius:14px;
+    border-radius:9px;
     padding:16px 18px;
     margin-bottom:20px;
 
@@ -2202,7 +2202,7 @@ select.input:disabled{
 
     padding:0 18px;
 
-    border-radius:16px;
+    border-radius:10px;
 
     border:1px solid #CBD5E1;
 
@@ -2268,7 +2268,7 @@ select.input:disabled{
 
     cursor:pointer;
 
-    border-radius:10px;
+    border-radius:7px;
 
     padding:8px 12px;
 
@@ -2314,7 +2314,7 @@ select.input:disabled{
 
     padding:12px 14px;
 
-    border-radius:12px;
+    border-radius:8px;
 
     background:#FEF2F2;
 
@@ -2449,7 +2449,7 @@ select.input:disabled{
 
     border:none;
 
-    border-radius:16px;
+    border-radius:10px;
 
     background:
 
@@ -2631,7 +2631,7 @@ select.input:disabled{
 
     height:52px;
 
-    border-radius:16px;
+    border-radius:10px;
 
     border:1px solid #D6E0F5;
 
@@ -2671,7 +2671,7 @@ select.input:disabled{
 
     margin-top:6px;
 
-    border-radius:18px;
+    border-radius:12px;
 
     background:
 
@@ -2695,7 +2695,7 @@ select.input:disabled{
 
     height:48px;
 
-    border-radius:14px;
+    border-radius:9px;
 
     display:flex;
 
@@ -2778,7 +2778,7 @@ select.input:disabled{
 
     padding:18px;
 
-    border-radius:18px;
+    border-radius:12px;
 
     background:rgba(255,255,255,.58);
 
@@ -2816,7 +2816,7 @@ select.input:disabled{
 
     height:52px;
 
-    border-radius:16px;
+    border-radius:10px;
 
     display:flex;
 
@@ -2930,7 +2930,7 @@ select.input:disabled{
 
     padding:28px;
 
-    border-radius:24px;
+    border-radius:14px;
 
     text-align:center;
 
@@ -3401,7 +3401,7 @@ body.dark .loader-card p{
 
         padding:30px 24px;
 
-        border-radius:24px;
+        border-radius:14px;
 
     }
 
@@ -3717,7 +3717,7 @@ body.dark ::-webkit-scrollbar-thumb:hover{
 
     background:#FFFFFF;
 
-    border-radius:24px;
+    border-radius:14px;
 
     padding:40px;
 
@@ -4172,7 +4172,7 @@ textarea.input{
 
         padding:22px;
 
-        border-radius:18px;
+        border-radius:12px;
 
     }
 
@@ -4407,7 +4407,7 @@ textarea.input{
     margin:0 auto;
     padding:0 16px;
     height:44px;
-    border-radius:14px;
+    border-radius:9px;
     background:#F1F5F9;
     color:var(--sub);
     transition:var(--transition);
@@ -4559,7 +4559,7 @@ textarea.input{
     min-width:220px;
     background:var(--card);
     border:1px solid var(--border);
-    border-radius:18px;
+    border-radius:12px;
     box-shadow:0 24px 48px rgba(15,23,42,.14);
     padding:10px;
     opacity:0;
@@ -4626,7 +4626,7 @@ textarea.input{
     gap:10px;
     width:100%;
     padding:12px 12px;
-    border-radius:14px;
+    border-radius:9px;
     text-align:left;
     background:transparent;
     border:1px solid transparent;
@@ -4738,7 +4738,7 @@ textarea.input{
     align-items:center;
     width:100%;
     padding:11px 12px;
-    border-radius:12px;
+    border-radius:8px;
     font-size:14px;
     font-weight:600;
     color:var(--text);
@@ -4864,7 +4864,7 @@ textarea.input{
     gap:4px;
     padding:4px;
     background:var(--card);
-    border-radius:12px;
+    border-radius:8px;
     box-shadow:var(--shadow);
 }
 
@@ -4918,7 +4918,7 @@ textarea.input{
     min-width:36px;
     height:36px;
     padding:0 10px;
-    border-radius:10px;
+    border-radius:7px;
     border:1px solid var(--border);
     background:var(--card);
     color:var(--text);
@@ -5049,7 +5049,7 @@ body.dark .page-btn.active{
     align-items:center;
     gap:12px;
     padding:10px 4px;
-    border-radius:12px;
+    border-radius:8px;
     transition:var(--transition);
 }
 
@@ -5090,7 +5090,7 @@ body.dark .page-btn.active{
 
 .skeleton-post{
     background:var(--card);
-    border-radius:18px;
+    border-radius:12px;
     padding:20px;
     box-shadow:var(--shadow);
 }
@@ -5612,7 +5612,7 @@ body.dark .header-search.header-search-mobile-open{
 
 .comment-item{
     padding:14px 16px;
-    border-radius:14px;
+    border-radius:9px;
     background:var(--background);
 }
 
@@ -5750,7 +5750,7 @@ a.comment-item-author:hover{
 .school-select{
 
     padding:8px 12px;
-    border-radius:10px;
+    border-radius:7px;
     border:1px solid var(--border);
     background:var(--card);
     color:var(--text);
@@ -6022,7 +6022,7 @@ body.chat-page{
     background:none;
     border:none;
     border-left:3px solid transparent;
-    border-radius:12px;
+    border-radius:8px;
     cursor:pointer;
     text-align:left;
     color:var(--text);
@@ -6276,7 +6276,7 @@ body.chat-page{
 
 .chat-bubble-row-grouped .chat-bubble{
 
-    border-radius:14px;
+    border-radius:9px;
 
 }
 
@@ -6288,7 +6288,7 @@ body.chat-page{
 
 .chat-bubble-row-mine.chat-bubble-row-grouped .chat-bubble{
 
-    border-radius:14px;
+    border-radius:9px;
 
 }
 
@@ -6326,7 +6326,7 @@ body.chat-page{
     resize:none;
     max-height:120px;
     border:1px solid var(--border);
-    border-radius:20px;
+    border-radius:12px;
     padding:11px 16px;
     font-size:14px;
     font-family:inherit;
@@ -6463,7 +6463,7 @@ body.dark .chat-list-item:hover{
 .cal-week .sun,.cal-cell.sun .cal-num{color:#dc2626}
 .cal-week .sat,.cal-cell.sat .cal-num{color:#5A8BE6}
 .cal-grid{gap:4px}
-.cal-cell{min-height:84px;padding:6px 4px;border:1px solid var(--border);border-radius:12px;background:transparent;color:var(--text);display:flex;flex-direction:column;align-items:stretch;gap:2px;text-align:left;cursor:pointer;overflow:hidden;font:inherit}
+.cal-cell{min-height:84px;padding:6px 4px;border:1px solid var(--border);border-radius:8px;background:transparent;color:var(--text);display:flex;flex-direction:column;align-items:stretch;gap:2px;text-align:left;cursor:pointer;overflow:hidden;font:inherit}
 .cal-cell.cal-empty{border:0;cursor:default}
 .cal-cell:hover{background:rgba(90,139,230,.06)}
 .cal-cell.today .cal-num{background:var(--primary);color:#fff;border-radius:999px;min-width:22px;height:22px;display:inline-flex;align-items:center;justify-content:center}
@@ -6478,7 +6478,7 @@ body.dark .chat-list-item:hover{
 .cal-item-main{min-width:0}
 .cal-item-main p{margin:4px 0;color:var(--sub);font-size:14px;white-space:pre-wrap;word-break:break-word}
 .cal-by{font-size:12px;color:var(--sub)}
-.cal-del{flex:none;align-self:flex-start;background:none;border:1px solid var(--border);color:var(--sub);border-radius:10px;padding:5px 10px;font-size:12px;cursor:pointer}
+.cal-del{flex:none;align-self:flex-start;background:none;border:1px solid var(--border);color:var(--sub);border-radius:7px;padding:5px 10px;font-size:12px;cursor:pointer}
 .cal-del:hover{color:#dc2626;border-color:#dc2626}
 .cal-modal h3{margin:0 0 14px}
 .cal-field{display:block;font-size:13px;font-weight:600;color:var(--sub);margin-bottom:12px}
@@ -6495,7 +6495,7 @@ body.dark .cal-modal .input{background:rgba(255,255,255,.06);color:var(--text)}
   .cal-chip{font-size:10px;padding:1px 3px}
   .cal-row{grid-template-columns:1fr}
 }
-.cal-primary{display:inline-flex!important;align-items:center;gap:6px;background:var(--primary);color:#fff;border:0;border-radius:12px;padding:10px 16px;font-weight:700;cursor:pointer}
+.cal-primary{display:inline-flex!important;align-items:center;gap:6px;background:var(--primary);color:#fff;border:0;border-radius:8px;padding:10px 16px;font-weight:700;cursor:pointer}
 .cal-primary:disabled{opacity:.6}
 
 /* ---------- 아이콘 색상 포인트 ---------- */
@@ -6524,9 +6524,9 @@ body.dark .cal-chip.school{background:rgba(79,178,134,.22);color:#7fd1ad}
 body.dark .cal-school-tag{color:#7fd1ad}
 
 .hero-card{position:relative}
-.hero-logo{position:absolute;right:26px;top:50%;transform:translateY(-50%);background:#fff;border-radius:18px;padding:10px 14px;display:flex;box-shadow:0 6px 18px rgba(15,23,42,.12)}
+.hero-logo{position:absolute;right:26px;top:50%;transform:translateY(-50%);background:#fff;border-radius:12px;padding:10px 14px;display:flex;box-shadow:0 6px 18px rgba(15,23,42,.12)}
 .hero-logo img{display:block;height:48px;width:auto}
-@media(max-width:640px){.hero-logo{right:16px;padding:7px 10px;border-radius:14px}.hero-logo img{height:38px}}
+@media(max-width:640px){.hero-logo{right:16px;padding:7px 10px;border-radius:9px}.hero-logo img{height:38px}}
 .hero-logo img{height:56px;opacity:.85}
 .hero-logo{padding:10px 14px}
 @media(max-width:640px){.hero-logo img{height:44px}}
@@ -6534,6 +6534,6 @@ body.dark .cal-school-tag{color:#7fd1ad}
 .hero-logo img{height:76px;opacity:.9}
 @media(max-width:640px){.hero-logo{right:20px}.hero-logo img{height:60px}}
 /* 배너 로고: 흰 박스 버전으로 복귀 + 크기 확대 */
-.hero-logo{background:#fff;border-radius:20px;padding:12px 16px;box-shadow:0 6px 18px rgba(15,23,42,.12)}
+.hero-logo{background:#fff;border-radius:12px;padding:12px 16px;box-shadow:0 6px 18px rgba(15,23,42,.12)}
 .hero-logo img{height:76px;opacity:.85}
-@media(max-width:640px){.hero-logo{right:16px;padding:9px 12px;border-radius:16px}.hero-logo img{height:58px}}
+@media(max-width:640px){.hero-logo{right:16px;padding:9px 12px;border-radius:10px}.hero-logo img{height:58px}}
