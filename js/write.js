@@ -179,7 +179,7 @@ el.form.addEventListener("submit",async(event)=>{
 /* 마지막으로 쓴 닉네임 자동 입력 */
 if(el.nickname && window.AnonAPI){
 
-    el.nickname.value=window.AnonAPI.getSavedNick();
+    el.nickname.value=window.AnonAPI.getSavedNick() || "태성인";
 
 }
 

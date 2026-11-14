@@ -816,7 +816,7 @@ window.addEventListener("load",async()=>{
 
     await checkAdmin();
 
-    if(el.commentNickname && window.AnonAPI) el.commentNickname.value=window.AnonAPI.getSavedNick();
+    if(el.commentNickname && window.AnonAPI) el.commentNickname.value=window.AnonAPI.getSavedNick() || "태성인";
 
     loadPost();
 

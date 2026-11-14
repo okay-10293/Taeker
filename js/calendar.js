@@ -155,7 +155,7 @@ const modal=$("calModal");
 function openModal(){
     $("calDate").value=selected;
     $("calTitle").value=""; $("calMemo").value=""; $("calPw").value="";
-    $("calNick").value=window.AnonAPI?.getSavedNick?.()||"";
+    $("calNick").value=window.AnonAPI?.getSavedNick?.()||"태성인";
     modal.classList.add("active");
     setTimeout(()=>$("calTitle").focus(),50);
 }
