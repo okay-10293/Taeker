@@ -41,7 +41,38 @@ async function load(){
         if(error){ console.warn(error); say("일정을 불러오지 못했어요."); }
         (data||[]).forEach((e)=>{ (events[e.event_date]=events[e.event_date]||[]).push(e); });
     }
+    await loadSchool(first,next);
     render();
+}
+
+/* 학사일정(NEIS)을 같은 달력에 자동으로 합친다. 연동이 안 돼 있거나 실패하면 조용히 무시. */
+const schoolCache={};
+async function loadSchool(first,next){
+
+    const c=sb();
+    if(!c) return;
+    const ck=first.slice(0,7);
+    try{
+        if(!schoolCache[ck]){
+            const last=new Date(year,month+1,0);
+            const {data,error}=await c.rpc("neis_get",{p_endpoint:"SchoolSchedule",p_params:{
+                AA_FROM_YMD:first.replace(/-/g,""),
+                AA_TO_YMD:`${last.getFullYear()}${pad(last.getMonth()+1)}${pad(last.getDate())}`
+            }});
+            if(error||!data||!data.SchoolSchedule) { schoolCache[ck]=[]; }
+            else{
+                const seen=new Set(), out=[];
+                (data.SchoolSchedule[1]?.row||[]).forEach((r)=>{
+                    const name=(r.EVENT_NM||"").trim(), d=String(r.AA_YMD||"");
+                    if(!name||d.length!==8||seen.has(d+name)) return;
+                    seen.add(d+name);
+                    out.push({school:true,event_date:`${d.slice(0,4)}-${d.slice(4,6)}-${d.slice(6,8)}`,title:name});
+                });
+                schoolCache[ck]=out;
+            }
+        }
+    }catch(e){ schoolCache[ck]=[]; }
+    (schoolCache[ck]||[]).forEach((e)=>{ (events[e.event_date]=events[e.event_date]||[]).unshift(e); });
 }
 
 /* ---------- 렌더링 ---------- */
@@ -65,7 +96,7 @@ function render(){
         if(dow===6) cls.push("sat");
         h+=`<button type="button" class="${cls.join(" ")}" data-date="${key}">
             <span class="cal-num">${d}</span>
-            ${list.slice(0,2).map((e)=>`<span class="cal-chip">${esc(e.title)}</span>`).join("")}
+            ${list.slice(0,2).map((e)=>`<span class="cal-chip${e.school?" school":""}">${esc(e.title)}</span>`).join("")}
             ${list.length>2?`<span class="cal-more">+${list.length-2}</span>`:""}
         </button>`;
     }
@@ -80,7 +111,13 @@ function renderDay(){
     $("calDayTitle").textContent=`${m}월 ${d}일 (${dow})`;
 
     const list=events[selected]||[];
-    $("calDayList").innerHTML=list.length?list.map((e)=>`
+    $("calDayList").innerHTML=list.length?list.map((e)=>e.school?`
+        <div class="cal-item">
+            <div class="cal-item-main">
+                <strong>${esc(e.title)}</strong>
+                <span class="cal-by cal-school-tag">학사일정</span>
+            </div>
+        </div>`:`
         <div class="cal-item" data-id="${e.id}">
             <div class="cal-item-main">
                 <strong>${esc(e.title)}</strong>
