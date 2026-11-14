@@ -6530,3 +6530,6 @@ body.dark .cal-school-tag{color:#7fd1ad}
 .hero-logo img{height:56px;opacity:.85}
 .hero-logo{padding:10px 14px}
 @media(max-width:640px){.hero-logo img{height:44px}}
+.hero-logo{background:none;box-shadow:none;padding:0}
+.hero-logo img{height:76px;opacity:.9}
+@media(max-width:640px){.hero-logo{right:20px}.hero-logo img{height:60px}}
