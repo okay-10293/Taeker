@@ -122,16 +122,8 @@ el.form.addEventListener("submit",async(event)=>{
 
     }
 
-    const nickname=(el.nickname?.value || "").trim();
+    const nickname=(el.nickname?.value || "").trim() || "태성인";
     const password=el.password?.value || "";
-
-    if(!nickname){
-
-        window.Taecker?.toast?.("닉네임을 입력해주세요.");
-        el.nickname.focus();
-        return;
-
-    }
 
     if(password.length<4){
 

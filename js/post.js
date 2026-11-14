@@ -667,10 +667,9 @@ el.commentForm?.addEventListener("submit",async(event)=>{
     event.preventDefault();
 
     const content=el.commentInput?.value.trim();
-    const nickname=el.commentNickname?.value.trim();
+    const nickname=el.commentNickname?.value.trim() || "태성인";
     const password=el.commentPassword?.value || "";
 
-    if(!nickname){ window.Taecker?.toast?.("닉네임을 입력해주세요."); el.commentNickname?.focus(); return; }
     if(password.length<4){ window.Taecker?.toast?.("비밀번호는 4자 이상 입력해주세요."); el.commentPassword?.focus(); return; }
     if(!content){ el.commentInput?.focus(); return; }
 
