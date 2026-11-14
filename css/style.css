@@ -6522,3 +6522,8 @@ body.dark .cal-modal .input{background:rgba(255,255,255,.06);color:var(--text)}
 .cal-school-tag{color:#2f8f68}
 body.dark .cal-chip.school{background:rgba(79,178,134,.22);color:#7fd1ad}
 body.dark .cal-school-tag{color:#7fd1ad}
+
+.hero-card{position:relative}
+.hero-logo{position:absolute;right:26px;top:50%;transform:translateY(-50%);background:#fff;border-radius:18px;padding:10px 14px;display:flex;box-shadow:0 6px 18px rgba(15,23,42,.12)}
+.hero-logo img{display:block;height:48px;width:auto}
+@media(max-width:640px){.hero-logo{right:16px;padding:7px 10px;border-radius:14px}.hero-logo img{height:38px}}
