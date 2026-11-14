@@ -6537,3 +6537,6 @@ body.dark .cal-school-tag{color:#7fd1ad}
 .hero-logo{background:#fff;border-radius:12px;padding:12px 16px;box-shadow:0 6px 18px rgba(15,23,42,.12)}
 .hero-logo img{height:76px;opacity:.85}
 @media(max-width:640px){.hero-logo{right:16px;padding:9px 12px;border-radius:10px}.hero-logo img{height:58px}}
+.cal-field .input{width:100%;min-width:0;max-width:100%;box-sizing:border-box}
+.cal-field input[type="date"]{-webkit-appearance:none;appearance:none;display:block;text-align:left;min-height:44px;line-height:1.2}
+.cal-field input[type="date"]::-webkit-date-and-time-value{text-align:left;margin:0}
