@@ -6533,3 +6533,7 @@ body.dark .cal-school-tag{color:#7fd1ad}
 .hero-logo{background:none;box-shadow:none;padding:0}
 .hero-logo img{height:76px;opacity:.9}
 @media(max-width:640px){.hero-logo{right:20px}.hero-logo img{height:60px}}
+/* 배너 로고: 흰 박스 버전으로 복귀 + 크기 확대 */
+.hero-logo{background:#fff;border-radius:20px;padding:12px 16px;box-shadow:0 6px 18px rgba(15,23,42,.12)}
+.hero-logo img{height:76px;opacity:.85}
+@media(max-width:640px){.hero-logo{right:16px;padding:9px 12px;border-radius:16px}.hero-logo img{height:58px}}
