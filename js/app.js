@@ -1277,4 +1277,18 @@ window.addEventListener("load",()=>{
 
 });
 
+
+/* 숨겨진 관리자 입구: 메인 배너의 학교 로고를 3초 안에 5번 누르면 관리자 로그인으로 이동 */
+(function hiddenAdminEntry(){
+    document.addEventListener("click",(e)=>{
+        const el=e.target.closest&&e.target.closest(".hero-logo");
+        if(!el) return;
+        const now=Date.now();
+        const hits=(el._hits||[]).filter((t)=>now-t<3000);
+        hits.push(now);
+        el._hits=hits;
+        if(hits.length>=5){ el._hits=[]; location.href="login.html"; }
+    });
+})();
+
 })();
