@@ -236,7 +236,7 @@ async function loadPost(){
 
         const {data,error}=await client
             .from("posts")
-            .select("id,title,content,category,view_count,like_count,comment_count,created_at,nickname,source_notice_id,by_admin")
+            .select("id,title,content,category,view_count,like_count,comment_count,created_at,nickname,source_notice_id,by_admin,is_fixed")
             .eq("id",postId)
             .single();
 
@@ -328,6 +328,15 @@ function renderPost(post){
             const b=document.createElement("span");
             b.className="admin-badge-sm";
             b.textContent="관리자";
+            el.author.appendChild(b);
+
+        }
+
+        if(post.is_fixed){
+
+            const b=document.createElement("span");
+            b.className="fixed-badge-sm";
+            b.textContent="고닉";
             el.author.appendChild(b);
 
         }
@@ -603,7 +612,7 @@ function commentItemHTML(comment){
     return `
         <div class="comment-item" data-comment-id="${comment.id}">
             <div class="comment-item-head">
-                <span class="comment-item-author">${nickname}</span>${comment.by_admin?'<span class="admin-badge-sm">관리자</span>':""}
+                <span class="comment-item-author">${nickname}</span>${comment.by_admin?'<span class="admin-badge-sm">관리자</span>':""}${comment.is_fixed?'<span class="fixed-badge-sm">고닉</span>':""}
                 <span class="comment-item-time">${timeAgo(comment.created_at)}</span>
                 <button type="button" class="comment-item-delete" data-delete-id="${comment.id}">삭제</button>
                 <button type="button" class="comment-item-report" data-report-comment-id="${comment.id}">신고</button>
@@ -624,7 +633,7 @@ async function loadComments(){
 
         const {data,error}=await client
             .from("comments")
-            .select("id,content,created_at,nickname,by_admin")
+            .select("id,content,created_at,nickname,by_admin,is_fixed")
             .eq("post_id",postId)
             .order("created_at",{ascending:true});
 
@@ -732,8 +741,9 @@ el.commentForm?.addEventListener("submit",async(event)=>{
     const nickname=el.commentNickname?.value.trim() || "태성인";
     const password=el.commentPassword?.value || "";
 
+    if(!password){ window.Taecker?.toast?.("비밀번호를 입력해주세요. 댓글을 삭제할 때 필요해요."); el.commentPassword?.focus(); return; }
     if(password.length<4){ window.Taecker?.toast?.("비밀번호는 4자 이상 입력해주세요."); el.commentPassword?.focus(); return; }
-    if(!content){ el.commentInput?.focus(); return; }
+    if(!content){ window.Taecker?.toast?.("댓글 내용을 입력해주세요."); el.commentInput?.focus(); return; }
 
     if(!window.AnonAPI) return;
 

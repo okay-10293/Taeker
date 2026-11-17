@@ -170,6 +170,10 @@ $("calForm").addEventListener("submit",async(e)=>{
     const c=sb(), btn=$("calSubmit");
     if(!c){ say("서버에 연결할 수 없어요."); return; }
     const date=$("calDate").value, nick=$("calNick").value.trim();
+    if(!$("calTitle").value.trim()){ say("일정 제목을 입력해주세요."); $("calTitle").focus(); return; }
+    if(!nick){ say("닉네임을 입력해주세요."); $("calNick").focus(); return; }
+    if(!$("calPw").value){ say("비밀번호를 입력해주세요. 일정을 삭제할 때 필요해요."); $("calPw").focus(); return; }
+    if($("calPw").value.length<4){ say("비밀번호는 4자 이상 입력해주세요."); $("calPw").focus(); return; }
     btn.disabled=true;
     try{
         const {error}=await c.rpc("create_calendar_event",{

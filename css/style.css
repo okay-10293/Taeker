@@ -6629,3 +6629,9 @@ body.dark .ui-dialog-box{background:var(--card)}
 .write-actions{margin-top:20px}
 
 .admin-badge-sm{display:inline-flex;align-items:center;margin-left:6px;padding:1px 7px;border-radius:999px;background:#4D80E4;color:#fff;font-size:10px;font-weight:800;line-height:1.5;vertical-align:middle}
+
+/* ---------- 고정닉 ---------- */
+.fixed-badge-sm{display:inline-flex;align-items:center;margin-left:6px;padding:1px 7px;border-radius:999px;background:#EEF2FF;color:#3D6CCE;border:1px solid #C7D4F7;font-size:10px;font-weight:800;line-height:1.5;vertical-align:middle}
+.fixed-nick-link{display:block;margin:6px 0 0;padding:4px 0;border:0;background:none;color:var(--primary);font:inherit;font-size:13px;font-weight:700;cursor:pointer;text-decoration:underline;text-underline-offset:3px}
+.ui-dialog-sub{margin:-8px 0 18px;font-size:13px;color:var(--sub)}
+body.dark .fixed-badge-sm{background:rgba(96,165,250,.16);color:#93c5fd;border-color:rgba(96,165,250,.3)}

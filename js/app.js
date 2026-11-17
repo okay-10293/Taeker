@@ -942,7 +942,7 @@ function postCardHTML(post){
     const commentBadge=post.comment_count
         ? `<span class="post-comment-count">[${post.comment_count}]</span>`
         : "";
-    const authorHTML=`<span>${nickname}</span>`;
+    const authorHTML=`<span>${nickname}</span>${post.by_admin?'<span class="admin-badge-sm">관리자</span>':''}${post.is_fixed?'<span class="fixed-badge-sm">고닉</span>':''}`;
 
     return `
         <a class="post-card post-card-link fade-in" href="post.html?id=${encodeURIComponent(post.id)}">
@@ -1009,7 +1009,7 @@ async function fetchPosts(){
 
         let query=client
             .from("posts")
-            .select("id,title,content,category,view_count,like_count,comment_count,created_at,nickname")
+            .select("id,title,content,category,view_count,like_count,comment_count,created_at,nickname,is_fixed,by_admin")
             .limit(20);
 
         if(state.category){

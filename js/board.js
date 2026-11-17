@@ -440,7 +440,7 @@ function postCardHTML(post){
     const commentBadge=post.comment_count
         ? `<span class="post-comment-count">[${post.comment_count}]</span>`
         : "";
-    const authorHTML=`<span>${nickname}</span>`;
+    const authorHTML=`<span>${nickname}</span>${post.by_admin?'<span class="admin-badge-sm">관리자</span>':''}${post.is_fixed?'<span class="fixed-badge-sm">고닉</span>':''}`;
 
     const checkboxHTML=state.isAdmin
         ? `<span class="post-select-wrap">
@@ -564,7 +564,7 @@ async function fetchPage(page){
 
         let query=client
             .from("posts")
-            .select("id,title,content,category,view_count,like_count,comment_count,created_at,nickname",{count:"exact"})
+            .select("id,title,content,category,view_count,like_count,comment_count,created_at,nickname,is_fixed,by_admin",{count:"exact"})
             .range(from,to);
 
         if(state.category==="grade"){

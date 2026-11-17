@@ -190,6 +190,14 @@ el.form.addEventListener("submit",async(event)=>{
     const nickname=(el.nickname?.value || "").trim() || "태성인";
     const password=el.password?.value || "";
 
+    if(!password){
+
+        window.Taecker?.toast?.("비밀번호를 입력해주세요. 나중에 글을 수정·삭제할 때 필요해요.");
+        el.password.focus();
+        return;
+
+    }
+
     if(password.length<4){
 
         window.Taecker?.toast?.("비밀번호는 4자 이상 입력해주세요.");

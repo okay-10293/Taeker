@@ -358,6 +358,56 @@ function enhanceDate(inp){
 }
 
 /* =====================================================
+   고정닉 만들기
+===================================================== */
+
+function openFixedNickModal(){
+
+    const say=(m)=>{ if(typeof toast==="function") toast(m); };
+
+    dialog({
+        cancelValue:null,
+        fill(box,done){
+            box.appendChild(h("h3","ui-dialog-title","고정닉 만들기"));
+            box.appendChild(h("p","ui-dialog-msg","닉네임을 나만 쓸 수 있게 등록해요. 글·댓글을 쓸 때 이 닉네임과 비밀번호를 입력하면 IP 대신 <b>고닉</b> 표시가 붙어요."));
+            const nick=h("input","input ui-dialog-input"); nick.type="text"; nick.maxLength=12; nick.placeholder="닉네임 (2~12자)"; nick.autocomplete="off";
+            const pw=h("input","input ui-dialog-input"); pw.type="password"; pw.maxLength=30; pw.placeholder="비밀번호 (4자 이상)"; pw.autocomplete="new-password";
+            pw.style.marginTop="-14px";
+            box.append(nick,pw);
+            box.appendChild(h("p","ui-dialog-sub","비밀번호를 잊어버리면 그 닉네임을 다시 쓸 수 없어요."));
+            const row=h("div","ui-dialog-actions");
+            const c=h("button","btn btn-outline","취소"); c.type="button"; c.onclick=()=>done(null);
+            const o=h("button","btn ui-dialog-ok","등록"); o.type="button";
+            const submit=async()=>{
+                const n=nick.value.trim(), w=pw.value;
+                if(!n){ say("닉네임을 입력해주세요."); nick.focus(); return; }
+                if(!w){ say("비밀번호를 입력해주세요."); pw.focus(); return; }
+                if(w.length<4){ say("비밀번호는 4자 이상 입력해주세요."); pw.focus(); return; }
+                if(!window.AnonAPI){ say("잠시 후 다시 시도해주세요."); return; }
+                o.disabled=true;
+                try{
+                    const r=await window.AnonAPI.registerFixedNick({nickname:n,password:w});
+                    if(r==="exists"){ say("이미 누가 쓰고 있는 고정닉이에요."); o.disabled=false; return; }
+                    window.AnonAPI.saveNick?.(n);
+                    for(const id of ["writeNickname","commentNickname"]){ const el=document.getElementById(id); if(el) el.value=n; }
+                    say(`고정닉 "${n}" 등록 완료! 글·댓글 쓸 때 이 비밀번호를 입력하세요.`);
+                    done(true);
+                }catch(e){ say(e.message||"등록하지 못했어요."); o.disabled=false; }
+            };
+            o.onclick=submit;
+            pw.addEventListener("keydown",(e)=>{ if(e.key==="Enter"){ e.preventDefault(); submit(); } });
+            row.append(c,o); box.appendChild(row);
+        },
+        focus(box){ box.querySelector(".ui-dialog-input")?.focus(); }
+    });
+}
+
+document.addEventListener("click",(e)=>{
+    if(e.target.closest("[data-fixed-nick]")) openFixedNickModal();
+});
+window.openFixedNickModal=openFixedNickModal;
+
+/* =====================================================
    INIT
 ===================================================== */
 
