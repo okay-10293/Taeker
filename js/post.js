@@ -334,8 +334,9 @@ function renderPost(post){
 
         if(post.is_fixed){
 
-            const b=document.createElement("span");
+            const b=document.createElement("a");
             b.className="fixed-badge-sm";
+            b.href="user.html?nick="+encodeURIComponent(post.nickname||"");
             b.textContent="고닉";
             el.author.appendChild(b);
 
@@ -612,7 +613,7 @@ function commentItemHTML(comment){
     return `
         <div class="comment-item" data-comment-id="${comment.id}">
             <div class="comment-item-head">
-                <span class="comment-item-author">${nickname}</span>${comment.by_admin?'<span class="admin-badge-sm">관리자</span>':""}${comment.is_fixed?'<span class="fixed-badge-sm">고닉</span>':""}
+                <span class="comment-item-author">${nickname}</span>${comment.by_admin?'<span class="admin-badge-sm">관리자</span>':""}${comment.is_fixed?`<a class="fixed-badge-sm" href="user.html?nick=${encodeURIComponent(comment.nickname||"")}">고닉</a>`:""}
                 <span class="comment-item-time">${timeAgo(comment.created_at)}</span>
                 <button type="button" class="comment-item-delete" data-delete-id="${comment.id}">삭제</button>
                 <button type="button" class="comment-item-report" data-report-comment-id="${comment.id}">신고</button>
