@@ -236,7 +236,7 @@ async function loadPost(){
 
         const {data,error}=await client
             .from("posts")
-            .select("id,title,content,category,view_count,like_count,comment_count,created_at,nickname,source_notice_id")
+            .select("id,title,content,category,view_count,like_count,comment_count,created_at,nickname,source_notice_id,by_admin")
             .eq("id",postId)
             .single();
 
@@ -319,7 +319,20 @@ function renderPost(post){
     if(el.categoryBadge) el.categoryBadge.textContent=CATEGORY_LABEL[post.category] || "일반";
     if(el.title) el.title.textContent=post.title;
 
-    if(el.author) el.author.textContent=nickname;
+    if(el.author){
+
+        el.author.textContent=nickname;
+
+        if(post.by_admin){
+
+            const b=document.createElement("span");
+            b.className="admin-badge-sm";
+            b.textContent="관리자";
+            el.author.appendChild(b);
+
+        }
+
+    }
 
     /* 관리자 패널 공지에서 자동 생성된 글은 관리자 패널에서만 수정/삭제 */
     const isSystemNotice=!!post.source_notice_id;
@@ -367,7 +380,7 @@ async function loadAttachments(id){
         if(imgs.length){
             html+='<div class="attach-images">'+imgs.map((f)=>{
                 const u=bucket.getPublicUrl(f.path).data.publicUrl;
-                return `<a href="${esc(u)}" target="_blank" rel="noopener"><img src="${esc(u)}" alt="${esc(f.name)}" loading="lazy"></a>`;
+                return `<img src="${esc(u)}" alt="${esc(f.name)}" loading="lazy">`;
             }).join("")+'</div>';
         }
 
@@ -590,7 +603,7 @@ function commentItemHTML(comment){
     return `
         <div class="comment-item" data-comment-id="${comment.id}">
             <div class="comment-item-head">
-                <span class="comment-item-author">${nickname}</span>
+                <span class="comment-item-author">${nickname}</span>${comment.by_admin?'<span class="admin-badge-sm">관리자</span>':""}
                 <span class="comment-item-time">${timeAgo(comment.created_at)}</span>
                 <button type="button" class="comment-item-delete" data-delete-id="${comment.id}">삭제</button>
                 <button type="button" class="comment-item-report" data-report-comment-id="${comment.id}">신고</button>
@@ -611,7 +624,7 @@ async function loadComments(){
 
         const {data,error}=await client
             .from("comments")
-            .select("id,content,created_at,nickname")
+            .select("id,content,created_at,nickname,by_admin")
             .eq("post_id",postId)
             .order("created_at",{ascending:true});
 
