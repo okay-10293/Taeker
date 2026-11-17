@@ -336,6 +336,55 @@ function renderPost(post){
 
     document.title=`${post.title} | 태커`;
 
+    loadAttachments(post.id ?? postId);
+
+}
+
+/* ---------- ATTACHMENTS ---------- */
+
+async function loadAttachments(id){
+
+    const box=document.getElementById("postAttachments");
+    const c=window.sb;
+    if(!box || !c || !id) return;
+
+    try{
+
+        const {data,error}=await c.from("post_attachments")
+            .select("id,path,name,size,mime").eq("post_id",id).order("id",{ascending:true});
+
+        if(error || !data || !data.length){ box.classList.add("hidden"); return; }
+
+        const bucket=c.storage.from("post-files");
+        const kb=(n)=>n>=1048576 ? (n/1048576).toFixed(1)+"MB" : Math.max(1,Math.round(n/1024))+"KB";
+        const esc=(s)=>String(s??"").replace(/[&<>"']/g,(ch)=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]));
+
+        const imgs=data.filter((f)=>(f.mime||"").startsWith("image/") && !/hei[cf]$/.test(f.mime));
+        const files=data.filter((f)=>!imgs.includes(f));
+
+        let html="";
+
+        if(imgs.length){
+            html+='<div class="attach-images">'+imgs.map((f)=>{
+                const u=bucket.getPublicUrl(f.path).data.publicUrl;
+                return `<a href="${esc(u)}" target="_blank" rel="noopener"><img src="${esc(u)}" alt="${esc(f.name)}" loading="lazy"></a>`;
+            }).join("")+'</div>';
+        }
+
+        if(files.length){
+            html+='<ul class="attach-files">'+files.map((f)=>{
+                const u=bucket.getPublicUrl(f.path,{download:f.name}).data.publicUrl;
+                return `<li><a href="${esc(u)}" rel="noopener"><span class="attach-name">${esc(f.name)}</span><span class="attach-size">${kb(f.size)}</span></a></li>`;
+            }).join("")+'</ul>';
+        }
+
+        box.innerHTML=html;
+        box.classList.remove("hidden");
+
+    }
+
+    catch(e){ console.warn(e); }
+
 }
 
 /* ---------- LIKE ---------- */

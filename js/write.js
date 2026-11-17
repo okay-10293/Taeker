@@ -24,6 +24,71 @@ const el={
 
 if(!el.form) return;
 
+/* ---------- FILE ATTACH ---------- */
+
+const MAX_FILES=5;
+const MAX_BYTES=10*1024*1024;
+const EXT_MIME={hwp:"application/x-hwp",hwpx:"application/vnd.hancom.hwpx",heic:"image/heic",heif:"image/heif",
+    pdf:"application/pdf",txt:"text/plain",zip:"application/zip",doc:"application/msword",
+    docx:"application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    xls:"application/vnd.ms-excel",xlsx:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    ppt:"application/vnd.ms-powerpoint",pptx:"application/vnd.openxmlformats-officedocument.presentationml.presentation"};
+const picked=[];
+const fileInput=document.getElementById("writeFiles");
+const fileList=document.getElementById("writeFileList");
+
+function fmtSize(n){ return n>=1048576 ? (n/1048576).toFixed(1)+"MB" : Math.max(1,Math.round(n/1024))+"KB"; }
+function extOf(name){ const m=/\.([A-Za-z0-9]{1,8})$/.exec(name||""); return m?m[1].toLowerCase():""; }
+
+function renderFiles(){
+    if(!fileList) return;
+    fileList.innerHTML="";
+    picked.forEach((f,i)=>{
+        const li=document.createElement("li");
+        li.className="attach-item";
+        const nm=document.createElement("span");
+        nm.className="attach-name"; nm.textContent=f.name;
+        const sz=document.createElement("span");
+        sz.className="attach-size"; sz.textContent=fmtSize(f.size);
+        const rm=document.createElement("button");
+        rm.type="button"; rm.className="attach-remove"; rm.setAttribute("aria-label","첨부 취소"); rm.textContent="✕";
+        rm.onclick=()=>{ picked.splice(i,1); renderFiles(); };
+        li.append(nm,sz,rm);
+        fileList.appendChild(li);
+    });
+}
+
+document.getElementById("writeFilesBtn")?.addEventListener("click",()=>fileInput?.click());
+fileInput?.addEventListener("change",()=>{
+    for(const f of fileInput.files){
+        if(picked.length>=MAX_FILES){ window.Taecker?.toast?.("파일은 최대 5개까지 첨부할 수 있어요."); break; }
+        if(f.size>MAX_BYTES){ window.Taecker?.toast?.(`${f.name}: 10MB를 넘어서 첨부할 수 없어요.`); continue; }
+        if(f.size===0) continue;
+        picked.push(f);
+    }
+    fileInput.value="";
+    renderFiles();
+});
+
+async function uploadAttachments(postId,password){
+    const c=window.sb; if(!c||!picked.length) return {ok:0,fail:0};
+    const done=[]; let fail=0;
+    for(let i=0;i<picked.length;i++){
+        const f=picked[i];
+        const ext=extOf(f.name);
+        const path=`${postId}/${Date.now().toString(36)}${i}${Math.random().toString(36).slice(2,6)}${ext?"."+ext:""}`;
+        const mime=f.type||EXT_MIME[ext]||"application/octet-stream";
+        const {error}=await c.storage.from("post-files").upload(path,f,{contentType:mime,upsert:false});
+        if(error){ console.warn("첨부 업로드 실패:",error.message); fail++; continue; }
+        done.push({path,name:f.name,size:f.size,mime});
+    }
+    if(done.length){
+        try{ await window.AnonAPI.addAttachments({postId,password,files:done}); }
+        catch(e){ console.warn(e); fail+=done.length; return {ok:0,fail}; }
+    }
+    return {ok:done.length,fail};
+}
+
 /* ---------- SUPABASE ---------- */
 
 function getClient(){
@@ -148,7 +213,13 @@ el.form.addEventListener("submit",async(event)=>{
 
         window.AnonAPI.saveNick(nickname);
 
-        window.Taecker?.toast?.("글이 등록되었습니다.");
+        let attachFail=0;
+        if(picked.length){
+            const r=await uploadAttachments(id,password);
+            attachFail=r.fail;
+        }
+
+        window.Taecker?.toast?.(attachFail ? "글은 등록됐지만 일부 파일은 올리지 못했어요." : "글이 등록되었습니다.");
 
         setTimeout(()=>{
 

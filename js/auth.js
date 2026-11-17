@@ -330,6 +330,12 @@ window.AnonAPI={
 
     },
 
+    addAttachments({postId,password,files}){
+
+        return rpc("add_post_attachments",{p_post_id:postId,p_password:password,p_files:files});
+
+    },
+
     updatePost({id,password,title,content}){
 
         return rpc("update_post",{p_id:id,p_password:password,p_title:title,p_content:content});

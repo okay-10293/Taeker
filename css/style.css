@@ -6609,3 +6609,21 @@ body.dark .ui-dialog-box{background:var(--card)}
 .school-grade-select-card{position:relative;z-index:5}
 .ui-dialog-box .btn:focus{outline:none}
 .ui-dialog-box .btn:focus-visible{outline:none;box-shadow:0 0 0 3px rgba(77,128,228,.35)}
+
+/* ---------- 파일 첨부 ---------- */
+.attach-limit{font-weight:400;font-size:13px;color:var(--sub)}
+.attach-btn{display:inline-flex;align-items:center;gap:8px}
+.attach-list{list-style:none;margin:10px 0 0;padding:0;display:flex;flex-direction:column;gap:6px}
+.attach-item{display:flex;align-items:center;gap:10px;padding:9px 12px;border:1px solid var(--border);border-radius:9px;background:var(--card)}
+.attach-name{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:14px}
+.attach-size{flex:none;font-size:12px;color:var(--sub)}
+.attach-remove{flex:none;width:28px;height:28px;border:0;border-radius:7px;background:none;color:var(--sub);cursor:pointer;font-size:14px}
+.attach-remove:hover{background:rgba(220,38,38,.1);color:#dc2626}
+.post-attachments{margin-top:22px;padding-top:18px;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:12px}
+.attach-images{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px}
+.attach-images img{width:100%;aspect-ratio:1/1;object-fit:cover;border-radius:9px;border:1px solid var(--border);display:block}
+.attach-files{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.attach-files a{display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--border);border-radius:9px;color:var(--text);text-decoration:none}
+.attach-files a:hover{border-color:var(--primary)}
+.form-group:has(#writeFiles){margin-top:18px}
+.write-actions{margin-top:20px}
