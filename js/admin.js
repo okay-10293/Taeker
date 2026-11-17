@@ -1309,7 +1309,7 @@ function setupStatusTabs(){
 
 function setupActionDelegation(){
 
-    document.addEventListener("click",(e)=>{
+    document.addEventListener("click",async(e)=>{
 
         const btn=e.target.closest("[data-action]");
 
@@ -1385,7 +1385,7 @@ function setupActionDelegation(){
 
             if(!reportId) return;
 
-            if(confirm("이 신고 내역을 삭제할까요? 되돌릴 수 없습니다.")){
+            if(await uiConfirm("이 신고 내역을 삭제할까요? 되돌릴 수 없습니다.")){
 
                 deleteReport(reportId);
 
@@ -1403,7 +1403,7 @@ function setupActionDelegation(){
 
             const label=TARGET_LABEL[type] || "대상";
 
-            if(confirm(`신고된 ${label}을 삭제하고 신고를 처리완료로 표시할까요?\n되돌릴 수 없습니다.`)){
+            if(await uiConfirm(`신고된 ${label}을 삭제하고 신고를 처리완료로 표시할까요?\n되돌릴 수 없습니다.`)){
 
                 deleteReportTarget(report,type,target);
 
@@ -1437,7 +1437,7 @@ function setupActionDelegation(){
 
             if(!postId) return;
 
-            if(confirm("이 게시글을 삭제할까요?\n댓글과 추천도 함께 삭제되고 되돌릴 수 없습니다.")){
+            if(await uiConfirm("이 게시글을 삭제할까요?\n댓글과 추천도 함께 삭제되고 되돌릴 수 없습니다.")){
 
                 deletePost(postId);
 
@@ -1454,7 +1454,7 @@ function setupActionDelegation(){
 
             if(!commentId) return;
 
-            if(confirm("이 댓글을 삭제할까요? 되돌릴 수 없습니다.")){
+            if(await uiConfirm("이 댓글을 삭제할까요? 되돌릴 수 없습니다.")){
 
                 deleteComment(commentId,postId,btn);
 
@@ -1482,7 +1482,7 @@ function setupActionDelegation(){
 
             if(!noticeId) return;
 
-            if(confirm("이 공지사항을 삭제할까요?")){
+            if(await uiConfirm("이 공지사항을 삭제할까요?")){
 
                 deleteNotice(noticeId);
 

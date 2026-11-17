@@ -68,11 +68,11 @@ el.content?.addEventListener("input",()=>{
 
 /* ---------- CANCEL ---------- */
 
-el.cancelBtn?.addEventListener("click",()=>{
+el.cancelBtn?.addEventListener("click",async()=>{
 
     if(el.title.value.trim() || el.content.value.trim()){
 
-        const leave=confirm("작성 중인 내용이 사라집니다. 나가시겠습니까?");
+        const leave=await uiConfirm("작성 중인 내용이 사라집니다. 나가시겠습니까?",{ok:"나가기"});
 
         if(!leave) return;
 

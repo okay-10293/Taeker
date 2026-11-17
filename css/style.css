@@ -6541,3 +6541,71 @@ body.dark .cal-school-tag{color:#7fd1ad}
 .cal-field input[type="date"]{-webkit-appearance:none;appearance:none;display:block;text-align:left;min-height:44px;line-height:1.2}
 .cal-field input[type="date"]::-webkit-date-and-time-value{text-align:left;margin:0}
 .hero-logo,.hero-logo img{touch-action:manipulation;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent}
+
+/* =====================================================
+   UI KIT (js/ui.js) - 사파리/브라우저 기본 UI 대체
+===================================================== */
+
+input:not([type="checkbox"]):not([type="radio"]),textarea,select,button{-webkit-appearance:none;appearance:none}
+
+.ui-select,.ui-date{position:relative;display:block;width:100%}
+.school-grade-select-card .ui-select,.school-date-nav .ui-select{width:auto;display:inline-block}
+.ui-select-native{position:absolute!important;inset:0;width:100%;height:100%;opacity:0;pointer-events:none;border:0;padding:0;margin:0}
+.ui-select-btn{width:100%;min-height:44px;box-sizing:border-box;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 14px;border:1px solid var(--border);border-radius:9px;background:var(--card);color:var(--text);font:inherit;font-size:15px;text-align:left;cursor:pointer}
+.ui-select:has(.school-select) .ui-select-btn{min-height:0;padding:8px 12px;font-size:14px;border-radius:7px}
+.ui-select-btn:hover{border-color:#B8C5E6}
+.ui-select-btn:focus-visible,.ui-select.open .ui-select-btn,.ui-date.open .ui-select-btn{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px rgba(77,128,228,.18)}
+.ui-select-btn:disabled{background:#F3F4F6;color:var(--sub);cursor:not-allowed}
+.ui-select-label.placeholder{color:var(--sub)}
+.ui-select-caret{display:flex;color:var(--sub);flex:none;transition:transform .15s}
+.ui-select.open .ui-select-caret{transform:rotate(180deg)}
+
+.ui-pop{position:absolute;z-index:900;left:0;top:calc(100% + 6px);min-width:100%;background:var(--card);border:1px solid var(--border);border-radius:10px;box-shadow:0 14px 36px rgba(15,23,42,.16);padding:6px;box-sizing:border-box}
+.ui-pop[hidden]{display:none}
+.ui-pop.up{top:auto;bottom:calc(100% + 6px)}
+.ui-select-list{max-height:260px;overflow-y:auto;display:flex;flex-direction:column;gap:2px;width:max-content;max-width:min(92vw,360px)}
+.ui-opt{display:block;width:100%;padding:10px 12px;border:0;border-radius:7px;background:none;color:var(--text);font:inherit;font-size:15px;text-align:left;cursor:pointer;white-space:nowrap}
+.ui-opt:hover,.ui-opt.active{background:rgba(77,128,228,.10)}
+.ui-opt.selected{color:var(--primary);font-weight:700}
+.ui-opt:disabled{opacity:.4;cursor:not-allowed}
+
+.ui-date-pop{width:300px;padding:12px}
+.ui-date-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.ui-date-head strong{font-size:15px}
+.ui-nav{width:34px;height:34px;border:0;border-radius:8px;background:none;color:var(--text);display:flex;align-items:center;justify-content:center;cursor:pointer}
+.ui-nav:hover{background:rgba(77,128,228,.10)}
+.ui-date-week,.ui-date-grid{display:grid;grid-template-columns:repeat(7,1fr);text-align:center}
+.ui-date-week span{font-size:12px;color:var(--sub);padding:4px 0}
+.ui-date-week .sun,.ui-day.sun{color:#dc2626}
+.ui-date-week .sat,.ui-day.sat{color:var(--primary)}
+.ui-day{height:38px;border:0;border-radius:8px;background:none;color:var(--text);font:inherit;font-size:14px;cursor:pointer}
+.ui-day.empty{cursor:default}
+.ui-day:not(.empty):hover{background:rgba(77,128,228,.10)}
+.ui-day.today{font-weight:900;box-shadow:inset 0 0 0 1.5px var(--primary)}
+.ui-day.selected{background:var(--primary);color:#fff;box-shadow:none}
+.ui-date-foot{display:flex;justify-content:flex-end;margin-top:6px}
+.ui-link{border:0;background:none;color:var(--primary);font:inherit;font-size:14px;font-weight:700;cursor:pointer;padding:6px 8px}
+
+.ui-dialog{z-index:2000}
+.ui-dialog-box{width:min(400px,90%)}
+.ui-dialog-title{margin:0 0 8px;font-size:18px}
+.ui-dialog-msg{margin:0 0 20px;font-size:16px;line-height:1.55;color:var(--text);word-break:keep-all}
+.ui-dialog-input{width:100%;box-sizing:border-box;margin:-6px 0 20px}
+.ui-dialog-actions{display:flex;justify-content:flex-end;gap:8px}
+.ui-dialog-ok{background:var(--primary);color:#fff;border:0}
+.ui-dialog-ok.danger{background:#dc2626}
+
+input[type="checkbox"]{-webkit-appearance:none;appearance:none;width:20px;height:20px;margin:0;flex:none;border:1.5px solid #B9C3DA;border-radius:6px;background:var(--card) center/14px no-repeat;cursor:pointer;vertical-align:middle;transition:background-color .12s,border-color .12s}
+input[type="checkbox"]:checked{background-color:var(--primary);border-color:var(--primary);background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12.5l4.5 4.5L19 7'/%3E%3C/svg%3E")}
+input[type="checkbox"]:focus-visible{outline:none;box-shadow:0 0 0 3px rgba(77,128,228,.25)}
+
+body.dark .ui-select-btn:hover{border-color:#4B5A7C}
+body.dark .ui-select-btn:disabled{background:rgba(255,255,255,.05)}
+body.dark .ui-pop{box-shadow:0 14px 36px rgba(0,0,0,.5)}
+body.dark .ui-opt:hover,body.dark .ui-opt.active,body.dark .ui-nav:hover,body.dark .ui-day:not(.empty):hover{background:rgba(96,165,250,.16)}
+body.dark input[type="checkbox"]{border-color:#4B5A7C}
+body.dark .ui-dialog-box{background:var(--card)}
+.school-grade-select-card,.card:has(.ui-select),.modal-content:has(.ui-select){overflow:visible}
+.school-grade-select-card{position:relative;z-index:5}
+.ui-dialog-box .btn:focus{outline:none}
+.ui-dialog-box .btn:focus-visible{outline:none;box-shadow:0 0 0 3px rgba(77,128,228,.35)}

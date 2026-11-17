@@ -327,7 +327,7 @@ el.adminBulkDeleteBtn?.addEventListener("click",async()=>{
 
     if(ids.length===0) return;
 
-    const confirmDelete=confirm(`선택한 게시글 ${ids.length}개를 삭제하시겠습니까? 삭제하면 복구할 수 없습니다.`);
+    const confirmDelete=await uiConfirm(`선택한 게시글 ${ids.length}개를 삭제하시겠습니까? 삭제하면 복구할 수 없습니다.`);
 
     if(!confirmDelete) return;
 

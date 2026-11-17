@@ -434,7 +434,7 @@ el.deletePostBtn?.addEventListener("click",async()=>{
 
     }
 
-    else if(!confirm("관리자 권한으로 게시글을 삭제합니다. 복구할 수 없어요.")) return;
+    else if(!(await uiConfirm("관리자 권한으로 게시글을 삭제합니다. 복구할 수 없어요.",{danger:true,ok:"삭제"}))) return;
 
     postBusy=true;
 

@@ -197,7 +197,7 @@ $("calForm").addEventListener("submit",async(e)=>{
 $("calDayList").addEventListener("click",async(e)=>{
     const b=e.target.closest("[data-del]");
     if(!b) return;
-    const pw=prompt("일정을 등록할 때 정한 비밀번호를 입력하세요.");
+    const pw=await uiPrompt("일정을 등록할 때 정한 비밀번호를 입력하세요.",{password:true,placeholder:"비밀번호",title:"일정 삭제",ok:"삭제"});
     if(pw===null) return;
     const c=sb(); if(!c) return;
     const {data,error}=await c.rpc("delete_calendar_event",{p_id:Number(b.dataset.del),p_password:pw});
