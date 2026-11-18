@@ -485,13 +485,19 @@ el.likeBtn?.addEventListener("click",async()=>{
 
 let postBusy=false;
 
+/* 로그인한 고닉이 쓴 글/댓글이면 비밀번호 대신 로그인 토큰 사용 */
+function fxToken(nick,isFixed){
+    const fx=window.TaeckerFixed?.get?.();
+    return (fx && isFixed && nick && fx.nickname.toLowerCase()===String(nick).toLowerCase()) ? fx.token : "";
+}
+
 el.deletePostBtn?.addEventListener("click",async()=>{
 
     if(postBusy || !postId || !window.AnonAPI) return;
 
-    let password="";
+    let password=fxToken(state.post?.nickname,state.post?.is_fixed);
 
-    if(!state.isAdmin){
+    if(!state.isAdmin && !password){
 
         const answer=await askDialog({
             title:"글 삭제",
@@ -506,7 +512,7 @@ el.deletePostBtn?.addEventListener("click",async()=>{
 
     }
 
-    else if(!(await uiConfirm("관리자 권한으로 게시글을 삭제합니다. 복구할 수 없어요.",{danger:true,ok:"삭제"}))) return;
+    else if(state.isAdmin && !(await uiConfirm("관리자 권한으로 게시글을 삭제합니다. 복구할 수 없어요.",{danger:true,ok:"삭제"}))) return;
 
     postBusy=true;
 
@@ -553,7 +559,9 @@ el.editPostBtn?.addEventListener("click",async()=>{
         {key:"content",label:"내용",value:state.post.content,multiline:true,max:4000}
     ];
 
-    if(!state.isAdmin) fields.push({key:"password",label:"비밀번호",type:"password",max:30});
+    const myToken=fxToken(state.post?.nickname,state.post?.is_fixed);
+
+    if(!state.isAdmin && !myToken) fields.push({key:"password",label:"비밀번호",type:"password",max:30});
 
     const answer=await askDialog({title:"글 수정",fields,okText:"수정"});
 
@@ -565,7 +573,7 @@ el.editPostBtn?.addEventListener("click",async()=>{
 
         const status=await window.AnonAPI.updatePost({
             id:postId,
-            password:answer.password || "",
+            password:myToken || answer.password || "",
             title:answer.title,
             content:answer.content
         });
@@ -615,7 +623,7 @@ function commentItemHTML(comment){
             <div class="comment-item-head">
                 <span class="comment-item-author">${nickname}</span>${comment.by_admin?'<span class="admin-badge-sm">관리자</span>':""}${comment.is_fixed?`<a class="fixed-badge-sm" href="user.html?nick=${encodeURIComponent(comment.nickname||"")}">고닉</a>`:""}
                 <span class="comment-item-time">${timeAgo(comment.created_at)}</span>
-                <button type="button" class="comment-item-delete" data-delete-id="${comment.id}">삭제</button>
+                <button type="button" class="comment-item-delete" data-delete-id="${comment.id}" data-owner="${comment.is_fixed?escapeHtml(comment.nickname||""):""}">삭제</button>
                 <button type="button" class="comment-item-report" data-report-comment-id="${comment.id}">신고</button>
             </div>
             <div class="comment-item-content">${escapeHtml(comment.content)}</div>
@@ -680,9 +688,9 @@ el.commentList?.addEventListener("click",async(e)=>{
 
     const commentId=btn.dataset.deleteId;
 
-    let password="";
+    let password=fxToken(btn.dataset.owner,!!btn.dataset.owner);
 
-    if(!state.isAdmin){
+    if(!state.isAdmin && !password){
 
         const answer=await askDialog({
             title:"댓글 삭제",
@@ -739,8 +747,9 @@ el.commentForm?.addEventListener("submit",async(event)=>{
     event.preventDefault();
 
     const content=el.commentInput?.value.trim();
-    const nickname=el.commentNickname?.value.trim() || "태성인";
-    const password=el.commentPassword?.value || "";
+    const fx=window.TaeckerFixed?.get?.();
+    const nickname=fx ? fx.nickname : (el.commentNickname?.value.trim() || "태성인");
+    const password=fx ? fx.token : (el.commentPassword?.value || "");
 
     if(!password){ window.Taecker?.toast?.("비밀번호를 입력해주세요. 댓글을 삭제할 때 필요해요."); el.commentPassword?.focus(); return; }
     if(password.length<4){ window.Taecker?.toast?.("비밀번호는 4자 이상 입력해주세요."); el.commentPassword?.focus(); return; }
@@ -754,7 +763,7 @@ el.commentForm?.addEventListener("submit",async(event)=>{
 
         await window.AnonAPI.createComment({postId,nickname,password,content});
 
-        window.AnonAPI.saveNick(nickname);
+        if(!fx) window.AnonAPI.saveNick(nickname);
 
         el.commentInput.value="";
 

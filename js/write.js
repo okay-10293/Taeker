@@ -187,8 +187,9 @@ el.form.addEventListener("submit",async(event)=>{
 
     }
 
-    const nickname=(el.nickname?.value || "").trim() || "태성인";
-    const password=el.password?.value || "";
+    const fx=window.TaeckerFixed?.get?.();
+    const nickname=fx ? fx.nickname : ((el.nickname?.value || "").trim() || "태성인");
+    const password=fx ? fx.token : (el.password?.value || "");
 
     if(!password){
 
@@ -219,7 +220,7 @@ el.form.addEventListener("submit",async(event)=>{
 
         const id=await window.AnonAPI.createPost({nickname,password,title,content,category});
 
-        window.AnonAPI.saveNick(nickname);
+        if(!fx) window.AnonAPI.saveNick(nickname);
 
         let attachFail=0;
         if(picked.length){

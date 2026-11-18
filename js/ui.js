@@ -358,45 +358,100 @@ function enhanceDate(inp){
 }
 
 /* =====================================================
-   고정닉 만들기
+   고닉 로그인 (닉네임+비밀번호로 로그인하면 닉네임 고정, 글/댓글에 비밀번호 불필요)
 ===================================================== */
+
+const FX_KEY="taeker_fixed";
+const Fixed={
+    get(){ try{ const o=JSON.parse(localStorage.getItem(FX_KEY)||"null"); return o&&o.token&&o.nickname?o:null; }catch(e){ return null; } },
+    set(o){ try{ localStorage.setItem(FX_KEY,JSON.stringify(o)); }catch(e){} sync(); },
+    clear(){ try{ localStorage.removeItem(FX_KEY); }catch(e){} sync(); }
+};
+window.TaeckerFixed=Fixed;
+
+function sync(){
+    const fx=Fixed.get();
+    for(const id of ["writeNickname","commentNickname"]){
+        const inp=document.getElementById(id); if(!inp) continue;
+        const box=inp.closest(".input-box"); if(!box) continue;
+        const group=box.parentElement;
+        let bar=group.querySelector(":scope > .fixed-bar");
+        box.style.display=fx?"none":"";
+        group.querySelectorAll(":scope > .input-message").forEach(m=>m.style.display=fx?"none":"");
+        if(fx){
+            if(!bar){ bar=document.createElement("div"); bar.className="fixed-bar"; box.before(bar); }
+            bar.innerHTML=`<span class="fixed-badge-sm" style="margin:0">고닉</span> <b></b> 로그인 중 <button type="button" class="fixed-nick-link" data-fixed-logout>로그아웃</button>`;
+            bar.querySelector("b").textContent=fx.nickname;
+        }else if(bar) bar.remove();
+        group.querySelectorAll("[data-fixed-nick]").forEach(l=>l.style.display=fx?"none":"");
+    }
+}
+async function verify(){
+    const fx=Fixed.get(); if(!fx||!window.sb) return;
+    try{
+        const {data,error}=await window.sb.rpc("fixed_session_ok",{p_token:fx.token});
+        if(!error && !data){ Fixed.clear(); if(typeof toast==="function") toast("고닉 로그인이 만료됐어요. 다시 로그인해주세요."); }
+    }catch(e){}
+}
+if(document.readyState==="loading") document.addEventListener("DOMContentLoaded",()=>{ sync(); verify(); });
+else { sync(); verify(); }
 
 function openFixedNickModal(){
 
     const say=(m)=>{ if(typeof toast==="function") toast(m); };
+    let mode="login";
 
     dialog({
         cancelValue:null,
         fill(box,done){
-            box.appendChild(h("h3","ui-dialog-title","고정닉 만들기"));
-            box.appendChild(h("p","ui-dialog-msg","닉네임을 나만 쓸 수 있게 등록해요. 글·댓글을 쓸 때 이 닉네임과 비밀번호를 입력하면 IP 대신 <b>고닉</b> 표시가 붙어요."));
-            const nick=h("input","input ui-dialog-input"); nick.type="text"; nick.maxLength=12; nick.placeholder="닉네임 (2~12자)"; nick.autocomplete="off";
-            const pw=h("input","input ui-dialog-input"); pw.type="password"; pw.maxLength=30; pw.placeholder="비밀번호 (4자 이상)"; pw.autocomplete="new-password";
+            const title=h("h3","ui-dialog-title","고닉 로그인");
+            const msg=h("p","ui-dialog-msg","로그인하면 닉네임이 고정되고, 글·댓글에 <b>고닉</b> 표시가 붙어요. 비밀번호는 안 써도 돼요.");
+            const nick=h("input","input ui-dialog-input"); nick.type="text"; nick.maxLength=12; nick.placeholder="닉네임"; nick.autocomplete="off";
+            const pw=h("input","input ui-dialog-input"); pw.type="password"; pw.maxLength=30; pw.placeholder="비밀번호"; pw.autocomplete="current-password";
             pw.style.marginTop="-14px";
-            box.append(nick,pw);
-            box.appendChild(h("p","ui-dialog-sub","비밀번호를 잊어버리면 그 닉네임을 다시 쓸 수 없어요."));
+            const sub=h("p","ui-dialog-sub","");
+            const swap=h("button","fixed-nick-link",""); swap.type="button";
             const row=h("div","ui-dialog-actions");
             const c=h("button","btn btn-outline","취소"); c.type="button"; c.onclick=()=>done(null);
-            const o=h("button","btn ui-dialog-ok","등록"); o.type="button";
+            const o=h("button","btn ui-dialog-ok","로그인"); o.type="button";
+            const render=()=>{
+                const reg=mode==="register";
+                title.textContent=reg?"고닉 만들기":"고닉 로그인";
+                msg.innerHTML=reg?"닉네임을 나만 쓸 수 있게 등록해요. 등록하면 바로 로그인돼요."
+                                 :"로그인하면 닉네임이 고정되고, 글·댓글에 <b>고닉</b> 표시가 붙어요. 비밀번호는 안 써도 돼요.";
+                pw.placeholder=reg?"비밀번호 (4자 이상)":"비밀번호";
+                pw.autocomplete=reg?"new-password":"current-password";
+                sub.textContent=reg?"비밀번호를 잊어버리면 그 닉네임을 다시 쓸 수 없어요.":"";
+                sub.style.display=reg?"":"none";
+                swap.textContent=reg?"이미 고닉이 있어요 (로그인)":"고닉 만들기";
+                o.textContent=reg?"등록":"로그인";
+            };
+            swap.onclick=()=>{ mode=mode==="login"?"register":"login"; render(); nick.focus(); };
             const submit=async()=>{
                 const n=nick.value.trim(), w=pw.value;
                 if(!n){ say("닉네임을 입력해주세요."); nick.focus(); return; }
                 if(!w){ say("비밀번호를 입력해주세요."); pw.focus(); return; }
-                if(w.length<4){ say("비밀번호는 4자 이상 입력해주세요."); pw.focus(); return; }
+                if(mode==="register" && w.length<4){ say("비밀번호는 4자 이상 입력해주세요."); pw.focus(); return; }
                 if(!window.AnonAPI){ say("잠시 후 다시 시도해주세요."); return; }
                 o.disabled=true;
                 try{
-                    const r=await window.AnonAPI.registerFixedNick({nickname:n,password:w});
-                    if(r==="exists"){ say("이미 누가 쓰고 있는 고정닉이에요."); o.disabled=false; return; }
-                    window.AnonAPI.saveNick?.(n);
-                    for(const id of ["writeNickname","commentNickname"]){ const el=document.getElementById(id); if(el) el.value=n; }
-                    say(`고정닉 "${n}" 등록 완료! 글·댓글 쓸 때 이 비밀번호를 입력하세요.`);
+                    if(mode==="register"){
+                        const r=await window.AnonAPI.registerFixedNick({nickname:n,password:w});
+                        if(r==="exists"){ say("이미 누가 쓰고 있는 닉네임이에요."); o.disabled=false; return; }
+                    }
+                    const r=await window.AnonAPI.fixedLogin({nickname:n,password:w});
+                    if(r.status==="locked"){ say("비밀번호를 여러 번 틀려서 10분 동안 로그인할 수 없어요."); o.disabled=false; return; }
+                    if(r.status!=="ok"){ say(r.status==="none"?"없는 고닉이에요. '고닉 만들기'로 먼저 등록해주세요.":"닉네임 또는 비밀번호가 맞지 않아요."); o.disabled=false; return; }
+                    Fixed.set({nickname:r.nickname,token:r.token});
+                    say(`${r.nickname} 님으로 로그인했어요.`);
                     done(true);
-                }catch(e){ say(e.message||"등록하지 못했어요."); o.disabled=false; }
+                }catch(e){ say(e.message||"로그인하지 못했어요."); o.disabled=false; }
             };
             o.onclick=submit;
             pw.addEventListener("keydown",(e)=>{ if(e.key==="Enter"){ e.preventDefault(); submit(); } });
-            row.append(c,o); box.appendChild(row);
+            row.append(c,o);
+            box.append(title,msg,nick,pw,sub,swap,row);
+            render();
         },
         focus(box){ box.querySelector(".ui-dialog-input")?.focus(); }
     });
@@ -404,6 +459,12 @@ function openFixedNickModal(){
 
 document.addEventListener("click",(e)=>{
     if(e.target.closest("[data-fixed-nick]")) openFixedNickModal();
+    if(e.target.closest("[data-fixed-logout]")){
+        const fx=Fixed.get();
+        if(fx) window.sb?.rpc("fixed_logout",{p_token:fx.token});
+        Fixed.clear();
+        if(typeof toast==="function") toast("로그아웃했어요.");
+    }
 });
 window.openFixedNickModal=openFixedNickModal;
 

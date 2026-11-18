@@ -312,9 +312,8 @@ async function rpc(name,args){
 
 function fixedNickGuard(id){
 
-    if(id===-1) throw new Error("이 닉네임은 고정닉이에요. 비밀번호 칸에 고정닉 비밀번호를 입력해주세요.");
-    if(id===-2) throw new Error("고정닉 비밀번호를 여러 번 틀려서 10분 동안 쓸 수 없어요.");
-    return id;
+    if(id===-1) throw new Error("이 닉네임은 고닉이에요. 고닉 로그인을 하거나 다른 닉네임을 써주세요.");
+        return id;
 
 }
 
@@ -335,6 +334,13 @@ window.AnonAPI={
             p_category:category,
             p_client_id:getClientId()
         }).then(fixedNickGuard);
+
+    },
+
+    async fixedLogin({nickname,password}){
+
+        const r=await rpc("fixed_login",{p_nickname:nickname,p_password:password,p_client_id:getClientId()});
+        return r||{status:"wrong"};
 
     },
 

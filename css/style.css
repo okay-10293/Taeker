@@ -6654,3 +6654,6 @@ body.dark .fixed-badge-sm{background:rgba(96,165,250,.16);color:#93c5fd;border-c
 .user-empty{padding:10px 0;text-align:center}
 body.dark .user-stats div{background:rgba(255,255,255,.07)}
 .fixed-nick-link{cursor:pointer}
+.fixed-bar{display:flex;align-items:center;gap:6px;padding:10px 12px;border-radius:8px;background:rgba(77,128,228,.08);font-size:14px}
+body.dark .fixed-bar{background:rgba(255,255,255,.07)}
+.fixed-bar .fixed-nick-link{margin-left:auto}
