@@ -6657,3 +6657,13 @@ body.dark .user-stats div{background:rgba(255,255,255,.07)}
 .fixed-bar{display:flex;align-items:center;gap:6px;padding:10px 12px;border-radius:8px;background:rgba(77,128,228,.08);font-size:14px}
 body.dark .fixed-bar{background:rgba(255,255,255,.07)}
 .fixed-bar .fixed-nick-link{margin-left:auto}
+
+/* 헤더 로그인 버튼 */
+.header-login-btn{height:36px;padding:0 14px;font-size:14px;white-space:nowrap;max-width:120px;overflow:hidden;text-overflow:ellipsis}
+.header-login-btn.is-in{background:rgba(77,128,228,.1);border-color:transparent;color:#3D6CCE;font-weight:700}
+body.dark .header-login-btn.is-in{color:#93c5fd;background:rgba(96,165,250,.16)}
+
+/* 댓글 입력줄 정렬 */
+.comment-form{align-items:stretch}
+.comment-form textarea.input{min-height:56px;height:56px;padding:17px 16px;line-height:1.4;box-sizing:border-box}
+.comment-form .btn#commentSubmitBtn{align-self:stretch;min-width:76px;font-size:15px;font-weight:700;padding:0 18px}

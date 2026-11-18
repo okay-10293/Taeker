@@ -371,6 +371,10 @@ window.TaeckerFixed=Fixed;
 
 function sync(){
     const fx=Fixed.get();
+    document.querySelectorAll("[data-fixed-login-btn]").forEach(b=>{
+        b.textContent=fx?fx.nickname:"로그인";
+        b.classList.toggle("is-in",!!fx);
+    });
     for(const id of ["writeNickname","commentNickname"]){
         const inp=document.getElementById(id); if(!inp) continue;
         const box=inp.closest(".input-box"); if(!box) continue;
@@ -457,7 +461,17 @@ function openFixedNickModal(){
     });
 }
 
-document.addEventListener("click",(e)=>{
+document.addEventListener("click",async(e)=>{
+    if(e.target.closest("[data-fixed-login-btn]")){
+        const fx=Fixed.get();
+        if(!fx) openFixedNickModal();
+        else if(await uiConfirm(`${fx.nickname} 님, 로그아웃할까요?`,{ok:"로그아웃"})){
+            window.sb?.rpc("fixed_logout",{p_token:fx.token});
+            Fixed.clear();
+            if(typeof toast==="function") toast("로그아웃했어요.");
+        }
+        return;
+    }
     if(e.target.closest("[data-fixed-nick]")) openFixedNickModal();
     if(e.target.closest("[data-fixed-logout]")){
         const fx=Fixed.get();
