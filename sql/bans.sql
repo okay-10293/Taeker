@@ -37,28 +37,31 @@ end;
 $$;
 revoke all on function public._client_ip() from public, anon, authenticated;
 
-create or replace function public._ban_msg(p_until timestamptz)
+create or replace function public._ban_msg(p_until timestamptz, p_reason text)
 returns text language sql immutable as $$
-    select case when p_until is null then '정지된 사용자예요. (영구 정지)'
-                else '정지된 사용자예요. ' || to_char(p_until at time zone 'Asia/Seoul', 'MM월 DD일 HH24:MI') || '까지 이용할 수 없어요.' end;
+    select case when p_until is null then '영구 정지되었습니다.'
+                else to_char(p_until at time zone 'Asia/Seoul', 'MM월 DD일 HH24:MI') || '까지 정지되었습니다.' end
+        || case when nullif(btrim(coalesce(p_reason,'')),'') is not null then ' 사유: ' || btrim(p_reason) else '' end;
 $$;
 
 create or replace function public._check_ban(p_client_id text, p_pw text)
 returns void language plpgsql security definer set search_path = public as $$
-declare v_ip text := public._client_ip(); v_nick text; v_until timestamptz; v_hit boolean := false;
+declare v_ip text := public._client_ip(); v_nick text; b record;
 begin
     if public.is_admin_user() then return; end if;
     if p_pw like 'tk\_%' then
         select s.nick_key into v_nick from public.fixed_sessions s where s.token = p_pw;
     end if;
-    select max(coalesce(b.until, 'infinity'::timestamptz)), true into v_until, v_hit
-    from public.bans b
-    where (b.until is null or b.until > now())
-      and ((b.kind = 'client' and b.target = p_client_id)
-        or (b.kind = 'ip' and v_ip is not null and b.target = v_ip)
-        or (b.kind = 'fixed' and v_nick is not null and b.target = v_nick));
-    if v_hit and v_until is not null then
-        raise exception '%', public._ban_msg(case when v_until = 'infinity' then null else v_until end) using errcode = 'P0001';
+    select x.until, x.reason into b
+    from public.bans x
+    where (x.until is null or x.until > now())
+      and ((x.kind = 'client' and x.target = p_client_id)
+        or (x.kind = 'ip' and v_ip is not null and x.target = v_ip)
+        or (x.kind = 'fixed' and v_nick is not null and x.target = v_nick))
+    order by x.until desc nulls first
+    limit 1;
+    if found then
+        raise exception '%', public._ban_msg(b.until, b.reason) using errcode = 'P0001';
     end if;
 end;
 $$;
