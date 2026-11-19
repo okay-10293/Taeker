@@ -199,6 +199,7 @@ async function checkAdmin(){
     try{
 
         state.isAdmin=!!(window.Auth && await window.Auth.isAdmin());
+        document.body.classList.toggle("is-admin",state.isAdmin);
 
     }
 
@@ -621,7 +622,7 @@ function commentItemHTML(comment){
     return `
         <div class="comment-item" data-comment-id="${comment.id}">
             <div class="comment-item-head">
-                <span class="comment-item-author">${nickname}</span>${comment.by_admin?'<span class="admin-badge-sm">관리자</span>':""}${comment.is_fixed?`<a class="fixed-badge-sm" href="user.html?nick=${encodeURIComponent(comment.nickname||"")}">고닉</a>`:""}
+                <span class="comment-item-author" data-ban-kind="comment" data-ban-id="${comment.id}">${nickname}</span>${comment.by_admin?'<span class="admin-badge-sm">관리자</span>':""}${comment.is_fixed?`<a class="fixed-badge-sm" href="user.html?nick=${encodeURIComponent(comment.nickname||"")}">고닉</a>`:""}
                 <span class="comment-item-time">${timeAgo(comment.created_at)}</span>
                 <button type="button" class="comment-item-delete" data-delete-id="${comment.id}" data-owner="${comment.is_fixed?escapeHtml(comment.nickname||""):""}">삭제</button>
                 <button type="button" class="comment-item-report" data-report-comment-id="${comment.id}">신고</button>
@@ -905,3 +906,12 @@ window.addEventListener("load",async()=>{
 });
 
 })();
+
+
+/* ---------- 관리자: 글쓴이/댓글 작성자 클릭 → 정지 ---------- */
+document.addEventListener("click",(e)=>{
+    if(!state.isAdmin || e.target.closest("a,button")) return;
+    const c=e.target.closest("[data-ban-kind]");
+    if(c){ window.openBanDialog?.(c.dataset.banKind,c.dataset.banId); return; }
+    if(el.author && el.author.contains(e.target) && postId) window.openBanDialog?.("post",postId);
+});

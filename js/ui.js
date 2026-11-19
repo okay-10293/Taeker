@@ -483,6 +483,65 @@ document.addEventListener("click",async(e)=>{
 window.openFixedNickModal=openFixedNickModal;
 
 /* =====================================================
+   관리자: 작성자 정지 (sql/bans.sql)
+===================================================== */
+window.openBanDialog=async function(kind,id){
+    const say=(m)=>{ if(typeof toast==="function") toast(m); };
+    const sb=window.sb; if(!sb) return;
+    let info;
+    try{
+        const r=await sb.rpc("admin_author_info",{p_kind:kind,p_id:Number(id)});
+        if(r.error) throw new Error(r.error.message); info=r.data;
+    }catch(e){ say("작성자 정보를 불러오지 못했어요."); return; }
+    const fmtUntil=(u)=>u?new Date(u).toLocaleString("ko-KR",{month:"long",day:"numeric",hour:"2-digit",minute:"2-digit"})+"까지":"영구";
+    const kindName={fixed:"고닉 계정",client:"기기",ip:"같은 IP"};
+    dialog({
+        cancelValue:null,
+        fill(box,done){
+            const name=info.nickname||"";
+            box.appendChild(h("h3","ui-dialog-title",esc(name)+" 정지"));
+            box.appendChild(h("p","ui-dialog-msg",info.is_fixed?"고닉 계정이에요.":"비로그인 작성자예요. 기기 단위로 정지돼요."));
+            let hours=24, scope="account";
+            const mk=(label,items,get,set)=>{
+                box.appendChild(h("div","ban-label",label));
+                const row=h("div","ban-chips");
+                items.forEach(([t,v])=>{
+                    const b=h("button","ban-chip"+(get()===v?" on":""),t); b.type="button";
+                    b.onclick=()=>{ set(v); row.querySelectorAll(".ban-chip").forEach(x=>x.classList.remove("on")); b.classList.add("on"); };
+                    row.appendChild(b);
+                });
+                box.appendChild(row);
+            };
+            mk("기간",[["1시간",1],["1일",24],["7일",168],["영구",null]],()=>hours,(v)=>hours=v);
+            mk("대상",[[info.is_fixed?"이 고닉":"이 기기","account"],["같은 IP","ip"]],()=>scope,(v)=>scope=v);
+            if(!info.has_ip) box.appendChild(h("p","ui-dialog-sub","이 글은 IP 기록이 없어서 'IP' 정지는 안 돼요. (이후 글부터 기록돼요)"));
+            const reason=h("input","input ui-dialog-input"); reason.type="text"; reason.maxLength=60; reason.placeholder="사유 (선택)";
+            box.appendChild(reason);
+            if(info.bans?.length){
+                box.appendChild(h("div","ban-label","현재 정지"));
+                info.bans.forEach(b=>{
+                    const r=h("div","ban-active",`<span>${kindName[b.kind]||b.kind} · ${fmtUntil(b.until)}</span>`);
+                    const x=h("button","fixed-nick-link","해제"); x.type="button";
+                    x.onclick=async()=>{ const {error}=await sb.rpc("admin_unban",{p_id:b.id}); say(error?"해제하지 못했어요.":"정지를 해제했어요."); if(!error) done(null); };
+                    r.appendChild(x); box.appendChild(r);
+                });
+            }
+            const row=h("div","ui-dialog-actions");
+            const c=h("button","btn btn-outline","취소"); c.type="button"; c.onclick=()=>done(null);
+            const o=h("button","btn ui-dialog-ok danger","정지"); o.type="button";
+            o.onclick=async()=>{
+                o.disabled=true;
+                const {error}=await sb.rpc("admin_ban",{p_kind:kind,p_id:Number(id),p_scope:scope,p_hours:hours,p_reason:reason.value});
+                if(error){ say(error.code==="P0001"?error.message:"정지하지 못했어요."); o.disabled=false; return; }
+                say("정지했어요."); done(true);
+            };
+            row.append(c,o); box.appendChild(row);
+        }
+    });
+};
+
+
+/* =====================================================
    INIT
 ===================================================== */
 
