@@ -1,0 +1,5 @@
+-- 달력: 로그인한 고닉(글 5개 + 댓글 5개 이상)만 일정 추가.
+-- calendar_eligibility(p_token) → {status: ok|login|short, nickname, posts, comments}
+-- create_calendar_event: 관리자 외에는 토큰 필수, 닉네임은 로그인 닉네임으로 고정 (IP 태그 없음)
+-- delete_calendar_event: 로그인 토큰이 작성자(고닉) 것이면 비밀번호 없이 삭제
+-- 적용된 함수 정의는 Supabase 마이그레이션 calendar_fixed_only 참고

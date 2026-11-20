@@ -152,10 +152,21 @@ $("calNext").onclick=()=>shift(1);
 $("calToday").onclick=()=>{ year=now.getFullYear(); month=now.getMonth(); selected=TODAY; load(); };
 
 const modal=$("calModal");
-function openModal(){
+let calAdmin=false;
+async function openModal(){
+    const fx=window.TaeckerFixed?.get?.();
+    let el={status:"login"};
+    try{
+        const r=await sb()?.rpc("calendar_eligibility",{p_token:fx?.token||""});
+        if(r?.data) el=r.data;
+    }catch(e){}
+    if(el.status==="login"){ say("일정은 로그인한 회원만 추가할 수 있어요."); window.openFixedNickModal?.(); return; }
+    if(el.status==="short"){ say(`글 5개, 댓글 5개 이상 쓴 회원만 일정을 추가할 수 있어요. (현재 글 ${el.posts} / 댓글 ${el.comments})`); return; }
+    calAdmin=!!el.admin;
+    const row=modal.querySelector(".cal-row"); if(row) row.style.display=calAdmin?"":"none";
     $("calDate").value=selected;
     $("calTitle").value=""; $("calMemo").value=""; $("calPw").value="";
-    $("calNick").value=window.AnonAPI?.getSavedNick?.()||"태성인";
+    $("calNick").value=window.AnonAPI?.getSavedNick?.()||"관리자";
     modal.classList.add("active");
     setTimeout(()=>$("calTitle").focus(),50);
 }
@@ -169,11 +180,14 @@ $("calForm").addEventListener("submit",async(e)=>{
     e.preventDefault();
     const c=sb(), btn=$("calSubmit");
     if(!c){ say("서버에 연결할 수 없어요."); return; }
-    const date=$("calDate").value, nick=$("calNick").value.trim();
+    const fx=window.TaeckerFixed?.get?.();
+    const date=$("calDate").value, nick=calAdmin?$("calNick").value.trim():(fx?.nickname||"");
+    const pw=calAdmin?$("calPw").value:(fx?.token||"");
     if(!$("calTitle").value.trim()){ say("일정 제목을 입력해주세요."); $("calTitle").focus(); return; }
-    if(!nick){ say("닉네임을 입력해주세요."); $("calNick").focus(); return; }
-    if(!$("calPw").value){ say("비밀번호를 입력해주세요. 일정을 삭제할 때 필요해요."); $("calPw").focus(); return; }
-    if($("calPw").value.length<4){ say("비밀번호는 4자 이상 입력해주세요."); $("calPw").focus(); return; }
+    if(calAdmin){
+        if(!nick){ say("닉네임을 입력해주세요."); $("calNick").focus(); return; }
+        if(pw.length<4){ say("비밀번호는 4자 이상 입력해주세요."); $("calPw").focus(); return; }
+    }else if(!fx){ say("로그인이 필요해요."); return; }
     btn.disabled=true;
     try{
         const {error}=await c.rpc("create_calendar_event",{
@@ -181,11 +195,10 @@ $("calForm").addEventListener("submit",async(e)=>{
             p_title:$("calTitle").value.trim(),
             p_memo:$("calMemo").value,
             p_nickname:nick,
-            p_password:$("calPw").value,
+            p_password:pw,
             p_client_id:window.AnonAPI?.getClientId?.()
         });
         if(error) throw new Error(error.code==="P0001"?error.message:"일정을 등록하지 못했어요. 잠시 후 다시 시도해주세요.");
-        window.AnonAPI?.saveNick?.(nick);
         closeModal();
         say("일정을 등록했어요.");
         const [y,m]=date.split("-").map(Number);
@@ -201,6 +214,11 @@ $("calForm").addEventListener("submit",async(e)=>{
 $("calDayList").addEventListener("click",async(e)=>{
     const b=e.target.closest("[data-del]");
     if(!b) return;
+    const fx=window.TaeckerFixed?.get?.();
+    if(fx && sb()){
+        const t=await sb().rpc("delete_calendar_event",{p_id:Number(b.dataset.del),p_password:fx.token});
+        if(t.data==="ok"){ say("삭제했어요."); load(); return; }
+    }
     const pw=await uiPrompt("일정을 등록할 때 정한 비밀번호를 입력하세요.",{password:true,placeholder:"비밀번호",title:"일정 삭제",ok:"삭제"});
     if(pw===null) return;
     const c=sb(); if(!c) return;
