@@ -312,7 +312,7 @@ async function rpc(name,args){
 
 function fixedNickGuard(id){
 
-    if(id===-1) throw new Error("이 닉네임은 고닉이에요. 고닉 로그인을 하거나 다른 닉네임을 써주세요.");
+    if(id===-1) throw new Error("이 닉네임은 가입된 닉네임이에요. 로그인하거나 다른 닉네임을 써주세요.");
         return id;
 
 }

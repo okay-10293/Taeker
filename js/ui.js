@@ -394,7 +394,7 @@ async function verify(){
     const fx=Fixed.get(); if(!fx||!window.sb) return;
     try{
         const {data,error}=await window.sb.rpc("fixed_session_ok",{p_token:fx.token});
-        if(!error && !data){ Fixed.clear(); if(typeof toast==="function") toast("고닉 로그인이 만료됐어요. 다시 로그인해주세요."); }
+        if(!error && !data){ Fixed.clear(); if(typeof toast==="function") toast("로그인이 만료됐어요. 다시 로그인해주세요."); }
     }catch(e){}
 }
 if(document.readyState==="loading") document.addEventListener("DOMContentLoaded",()=>{ sync(); verify(); });
@@ -408,7 +408,7 @@ function openFixedNickModal(){
     dialog({
         cancelValue:null,
         fill(box,done){
-            const title=h("h3","ui-dialog-title","고닉 로그인");
+            const title=h("h3","ui-dialog-title","로그인");
             const msg=h("p","ui-dialog-msg","로그인하면 닉네임이 고정되고, 글·댓글에 <b>고닉</b> 표시가 붙어요. 비밀번호는 안 써도 돼요.");
             const nick=h("input","input ui-dialog-input"); nick.type="text"; nick.maxLength=12; nick.placeholder="닉네임"; nick.autocomplete="off";
             const pw=h("input","input ui-dialog-input"); pw.type="password"; pw.maxLength=30; pw.placeholder="비밀번호"; pw.autocomplete="current-password";
@@ -420,15 +420,15 @@ function openFixedNickModal(){
             const o=h("button","btn ui-dialog-ok","로그인"); o.type="button";
             const render=()=>{
                 const reg=mode==="register";
-                title.textContent=reg?"고닉 만들기":"고닉 로그인";
-                msg.innerHTML=reg?"닉네임을 나만 쓸 수 있게 등록해요. 등록하면 바로 로그인돼요."
+                title.textContent=reg?"회원가입":"로그인";
+                msg.innerHTML=reg?"가입하면 이 닉네임은 나만 쓸 수 있고, 바로 로그인돼요."
                                  :"로그인하면 닉네임이 고정되고, 글·댓글에 <b>고닉</b> 표시가 붙어요. 비밀번호는 안 써도 돼요.";
                 pw.placeholder=reg?"비밀번호 (4자 이상)":"비밀번호";
                 pw.autocomplete=reg?"new-password":"current-password";
                 sub.textContent=reg?"비밀번호를 잊어버리면 그 닉네임을 다시 쓸 수 없어요.":"";
                 sub.style.display=reg?"":"none";
-                swap.textContent=reg?"이미 고닉이 있어요 (로그인)":"고닉 만들기";
-                o.textContent=reg?"등록":"로그인";
+                swap.textContent=reg?"이미 계정이 있어요 (로그인)":"회원가입";
+                o.textContent=reg?"가입":"로그인";
             };
             swap.onclick=()=>{ mode=mode==="login"?"register":"login"; render(); nick.focus(); };
             const submit=async()=>{
@@ -445,7 +445,7 @@ function openFixedNickModal(){
                     }
                     const r=await window.AnonAPI.fixedLogin({nickname:n,password:w});
                     if(r.status==="locked"){ say("비밀번호를 여러 번 틀려서 10분 동안 로그인할 수 없어요."); o.disabled=false; return; }
-                    if(r.status!=="ok"){ say(r.status==="none"?"없는 고닉이에요. '고닉 만들기'로 먼저 등록해주세요.":"닉네임 또는 비밀번호가 맞지 않아요."); o.disabled=false; return; }
+                    if(r.status!=="ok"){ say(r.status==="none"?"없는 계정이에요. '회원가입'을 먼저 해주세요.":"닉네임 또는 비밀번호가 맞지 않아요."); o.disabled=false; return; }
                     Fixed.set({nickname:r.nickname,token:r.token});
                     say(`${r.nickname} 님으로 로그인했어요.`);
                     done(true);
