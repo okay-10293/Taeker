@@ -1171,8 +1171,8 @@ async function renderAuthUI(){
             el.authArea?.classList.remove("hidden");
             el.profileDropdown?.classList.add("hidden");
 
-            if(el.heroGreeting) el.heroGreeting.textContent="안녕하세요, 태커에 오신 것을 환영합니다.";
-            if(el.heroSubtext) el.heroSubtext.textContent="닉네임만 적으면 바로 글을 쓸 수 있어요.";
+            if(el.heroGreeting && !el.heroGreeting.dataset.weather) el.heroGreeting.textContent="안녕하세요, 태커에 오신 것을 환영합니다.";
+            if(el.heroSubtext && !el.heroSubtext.dataset.weather) el.heroSubtext.textContent="닉네임만 적으면 바로 글을 쓸 수 있어요.";
 
             return;
 
@@ -1193,8 +1193,8 @@ async function renderAuthUI(){
         setAvatar(el.headerAvatarImg,el.headerAvatarInitial,{...profile,nickname});
         setAvatar(el.menuAvatarImg,el.menuAvatarInitial,{...profile,nickname});
 
-        if(el.heroGreeting) el.heroGreeting.textContent=`안녕하세요, ${nickname}님.`;
-        if(el.heroSubtext) el.heroSubtext.textContent="오늘도 좋은 하루 보내세요.";
+        if(el.heroGreeting && !el.heroGreeting.dataset.weather) el.heroGreeting.textContent=`안녕하세요, ${nickname}님.`;
+        if(el.heroSubtext && !el.heroSubtext.dataset.weather) el.heroSubtext.textContent="오늘도 좋은 하루 보내세요.";
 
         /* ---- 관리자/선생님 전용 메뉴 (is_admin 또는 is_teacher 계정에게만 노출) ---- */
 

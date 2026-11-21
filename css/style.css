@@ -6675,3 +6675,14 @@ body.is-admin .comment-item-author,body.is-admin #postAuthor{cursor:pointer;text
 .ban-chip{padding:8px 14px;border-radius:8px;border:1px solid rgba(128,128,128,.35);background:transparent;color:inherit;font-size:14px;cursor:pointer}
 .ban-chip.on{background:#4D80E4;border-color:#4D80E4;color:#fff;font-weight:700}
 .ban-active{display:flex;align-items:center;justify-content:space-between;padding:6px 0;font-size:14px}
+
+/* 홈 날씨 카드 */
+.weather-card{display:flex;align-items:center;gap:14px;margin:0 0 14px;padding:14px 18px;border-radius:12px;background:var(--card,#fff);border:1px solid rgba(128,128,128,.18)}
+.weather-card.hidden{display:none}
+.weather-ic{flex:none}
+.weather-main{display:flex;align-items:baseline;gap:8px}
+.weather-temp{font-size:26px;font-weight:800;letter-spacing:-1px}
+.weather-label{font-size:15px;font-weight:600}
+.weather-sub{margin-left:auto;font-size:13px;color:var(--text-sub,#6b7280);text-align:right}
+@media(max-width:520px){.weather-sub{font-size:12px}}
+body.dark .weather-card{background:#1f2937;border-color:rgba(255,255,255,.1)}
