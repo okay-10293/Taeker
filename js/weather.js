@@ -51,7 +51,7 @@ function render(d){
     const rain=RAIN.has(code)||RAIN.has(cur), snow=SNOW.has(code)||SNOW.has(cur);
     card.innerHTML=`
         <svg class="weather-ic" width="46" height="46" viewBox="0 0 24 24" aria-hidden="true">${ICON[ic]}</svg>
-        <div class="weather-main"><span class="weather-temp">${t}°</span><span class="weather-label">${label}</span></div>
+        <div class="weather-main"><div class="weather-cap">오늘의 기온</div><div class="weather-row"><span class="weather-temp">${t}°</span><span class="weather-label">${label}</span></div></div>
         <div class="weather-sub">최저 ${min}° · 최고 ${max}°${pop!=null?` · 강수확률 ${pop}%`:""}</div>`;
     card.classList.remove("hidden");
     applyGreeting(rain&&snow?"both":rain?"rain":snow?"snow":"");
